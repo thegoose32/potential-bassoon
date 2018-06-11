@@ -589,6 +589,48 @@
         }
 
         render() {
+        
+          let totalProgramSpend = this.state.headcountEffort.map((hcEffort, progIndex) => {
+            let headcountSpend = hcEffort.map((hcSpend, hcSpendIndex) => {
+              let copiedHcSpend = keepCloning(hcSpend);
+              copiedHcSpend.amount = rounding(copiedHcSpend.amount * this.state.programs[progIndex].fteRate, 100);
+              return copiedHcSpend
+            })
+
+            let totalSpend = this.state.externalSpend[progIndex].map((extSpend, extSpendIndex) => {
+              let copiedExtSpend = keepCloning(extSpend);
+              copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[extSpendIndex].amount, 100);
+              return copiedExtSpend;
+            })
+            return totalSpend;
+          });
+
+          let totalSpend = calculatePeriodTotal(totalProgramSpend);
+          let grandTotal = arrayTotal(totalSpend);
+
+          let percentComplete = totalSpend.map((period, periodIndex) => {
+            let periodCopy = keepCloning(period);
+            periodCopy.amount = rounding(period.amount / grandTotal, 1000000);
+            return periodCopy;
+          });
+          let percentTotal = rounding(arrayTotal(percentComplete), 1000000);
+
+          let dollarCompleteCum = totalSpend.map((period, periodIndex) => {
+            let totalSpendThruPeriod = keepCloning(totalSpend).slice(0, periodIndex + 1);
+            let cummulativeTotal = arrayTotal(totalSpendThruPeriod);
+            let periodCopy = keepCloning(period);
+            periodCopy.amount = cummulativeTotal;
+            return periodCopy;
+          });
+
+          let percentCompleteCum = dollarCompleteCum.map((period, periodIndex) => {
+            let periodCopy = keepCloning(period);
+            periodCopy.amount = rounding(period.amount / grandTotal, 1000000);
+            return periodCopy;
+          });
+          let percentTotalCum = rounding(arrayTotal(percentComplete), 1000000);
+
+
           return (
             <div>
               <ModelSetup
@@ -655,7 +697,23 @@
                 headcountEffort={this.state.headcountEffort}
                 programs={this.state.programs}
                 editHeadcountEffort={this.editHeadcountEffort}
+                totalProgramSpend={totalProgramSpend}
+                grandTotal={grandTotal}
+                dollarCompleteCum={dollarCompleteCum}
+                percentCompleteCum={percentCompleteCum}
+                percentComplete={percentComplete}
+                percentTotal={percentTotal}
+                percentTotalCum={percentTotalCum}
+                totalSpend={totalSpend}
               />
+              <RevenueRecognized
+                startYear={this.state.startYear}
+                yearsOut={this.state.yearsOut}
+                displaySelections={this.state.displaySelections}
+                percentComplete={percentComplete}
+                percentCompleteCum={percentCompleteCum}
+                revenueMilestones={this.state.revenueMilestones}
+              /> 
             </div>
           )
         }
@@ -1128,23 +1186,16 @@
           externalSpend,
           headcountEffort,
           programs,
-          editHeadcountEffort
+          editHeadcountEffort,
+          totalProgramSpend,
+          grandTotal,
+          dollarCompleteCum,
+          percentCompleteCum,
+          percentComplete,
+          percentTotal,
+          percentTotalCum,
+          totalSpend
         } = props;
-
-        let totalProgramSpend = headcountEffort.map((hcEffort, progIndex) => {
-          let headcountSpend = hcEffort.map((hcSpend, hcSpendIndex) => {
-            let copiedHcSpend = keepCloning(hcSpend);
-            copiedHcSpend.amount = rounding(copiedHcSpend.amount * programs[progIndex].fteRate, 100);
-            return copiedHcSpend
-          })
-
-          let totalSpend = externalSpend[progIndex].map((extSpend, extSpendIndex) => {
-            let copiedExtSpend = keepCloning(extSpend);
-            copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[extSpendIndex].amount, 100);
-            return copiedExtSpend;
-          })
-          return totalSpend;
-        });
 
         let totalProgRow = totalProgramSpend.map((totalProg, progIndex) => {
           let totalProgramSpend = arrayTotal(totalProg); 
@@ -1164,32 +1215,6 @@
             </React.Fragment>
           )
         });
-
-        let totalSpend = calculatePeriodTotal(totalProgramSpend);
-        let grandTotal = arrayTotal(totalSpend);
-
-        let percentComplete = totalSpend.map((period, periodIndex) => {
-          let periodCopy = keepCloning(period);
-          periodCopy.amount = rounding(period.amount / grandTotal, 10000);
-          return periodCopy;
-        });
-        let percentTotal = rounding(arrayTotal(percentComplete), 1000);
-
-        let dollarCompleteCum = totalSpend.map((period, periodIndex) => {
-          let totalSpendThruPeriod = keepCloning(totalSpend).slice(0, periodIndex + 1);
-          let cummulativeTotal = arrayTotal(totalSpendThruPeriod);
-          let periodCopy = keepCloning(period);
-          periodCopy.amount = cummulativeTotal;
-          return periodCopy;
-        });
-
-        let percentCompleteCum = dollarCompleteCum.map((period, periodIndex) => {
-          let periodCopy = keepCloning(period);
-          periodCopy.amount = rounding(period.amount / grandTotal, 10000);
-          return periodCopy;
-        });
-        let percentTotalCum = rounding(arrayTotal(percentComplete), 1000);
-
 
         return (
           <section id="Total-Program-Spend">
@@ -1249,6 +1274,79 @@
                   />
                   <td></td>
                 </tr>
+              </tbody>
+            </table>
+          </section>
+        )
+      }
+
+      function RevenueRecognized(props) {
+        const {
+          startYear,
+          yearsOut,
+          displaySelections,
+          revenueMilestones,
+          percentComplete,
+          percentCompleteCum
+        } = props;
+
+        let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
+          let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+          let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+          let blankDataArray = addDataArray(startYear, yearsOut);
+          let milestoneRevEarned = blankDataArray.map((period, periodIndex) => {
+            if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
+              period.amount = rounding(percentCompleteCum[periodIndex].amount * milestone.amount, 10000);
+              return period;
+              } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
+              period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
+              return period;
+ 
+            } else if (period.year > milestoneEarnedYear) {
+              period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
+              return period;
+            } else {
+              period.amount = 0;
+              return period;
+            }
+          });
+
+          let totalRevenueEarned = arrayTotal(milestoneRevEarned);
+
+          return (
+            <React.Fragment>
+              <tr>
+                <td>{milestone.name}</td>
+                <DataRows
+                  startYear={startYear}
+                  displaySelections={displaySelections}
+                  dataArray={milestoneRevEarned}
+                  yearsOut={yearsOut}
+                  input="No"
+                />
+                <td>{rounding(totalRevenueEarned,10)}</td>
+              </tr>
+            </React.Fragment>
+          );
+        })
+
+        return (
+          <section id="Revenue-Recognized">
+            <h2>Revenue Recognized</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Milestone</th>
+                  <TablePeriodHeaders
+                    startYear={startYear}
+                    yearsOut={yearsOut}
+                    displaySelections={displaySelections}
+                  />
+                  <th>Total Milestone Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {milestoneRows}
               </tbody>
             </table>
           </section>
@@ -1327,7 +1425,7 @@
                 <td>
                   <input
                     type="number"
-                    value={cell.amount}
+                    value={rounding(cell.amount,10)}
                     onChange={(e) => editAmount(cell.type, cell.quarter, cell.year, Number(e.target.value), programIndex)}
                   />
                 </td>
@@ -1336,7 +1434,7 @@
           } else if (input === "No") {
             return(
               <React.Fragment>
-                <td>{cell.amount}</td>
+                <td>{rounding(cell.amount,10)}</td>
               </React.Fragment>
             )
           }
@@ -1355,7 +1453,7 @@
         let dataCells = calculatedData.map((cell, cellIndex) => {
           return(
             <React.Fragment>
-              <td>{cell.amount}</td>
+              <td>{rounding(cell.amount, 10)}</td>
             </React.Fragment>
           )
         })
@@ -1388,13 +1486,13 @@
           if (periodDisplay.type === "Annual" && cell.quarter === 4) {
             return(
               <React.Fragment>
-                <td>{cell.amount}</td>
+                <td>{rounding(cell.amount,10)}</td>
               </React.Fragment>
             )
           } else if (periodDisplay.type === "Quarterly") {
             return(
               <React.Fragment>
-                <td>{cell.amount}</td>
+                <td>{rounding(cell.amount,10)}</td>
               </React.Fragment>
             )
           } else {
