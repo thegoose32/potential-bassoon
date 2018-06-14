@@ -1,5 +1,5 @@
-import styles from './index.scss'
-
+//import NumberFormat from 'react-number-format';
+//import {CSVLink} from 'react-csv';
 
 const displayOptions = ['Annual', 'Quarterly'];
 const newAmounts = [
@@ -323,8 +323,9 @@ class PharmaRevRec extends React.Component {
                 quarter: 4,
                 amount: 2
               }
-           ]
-          ]
+            ]
+          ],
+          analyticComparisonIndex: 0
         }
       ]
     }
@@ -363,6 +364,9 @@ class PharmaRevRec extends React.Component {
 
     //Headcount Effort
     this.editHeadcountEffort = this.editHeadcountEffort.bind(this);
+    
+    //Period Analytics
+    this.setComparisonModel = this.setComparisonModel.bind(this);
 
   }
 
@@ -662,6 +666,12 @@ class PharmaRevRec extends React.Component {
     })
   }
 
+  setComparisonModel(newModelIndex) {
+    let newComparisonModel = newModelIndex;
+    this.setScenarioState({comparisonModelIndex: newComparisonModel});
+  }
+
+
   render() {
     const {
       headcountEffort,
@@ -676,17 +686,20 @@ class PharmaRevRec extends React.Component {
       startYear,
       yearsOut,
     } = this.state;
-
-    let totalProgramSpend = headcountEffort.map((hcEffort, progIndex) => {
-      let headcountSpend = hcEffort.map((hcSpend, hcSpendIndex) => {
-        let copiedHcSpend = keepCloning(hcSpend);
-        copiedHcSpend.amount = rounding(copiedHcSpend.amount * programs[progIndex].fteRate, 100);
-        return copiedHcSpend
+    
+    let headcountSpend = headcountEffort.map((progEffort, progIndex) => {
+      let copiedProgEffort = keepCloning(progEffort);
+      copiedProgEffort.map((copiedHcEffort) => { 
+        copiedHcEffort.amount = rounding(copiedHcEffort.amount * programs[progIndex].fteRate, 100);
+        return copiedHcEffort;
       })
+      return copiedProgEffort
+    })
 
-      let totalSpend = externalSpend[progIndex].map((extSpend, extSpendIndex) => {
+    let totalProgramSpend = externalSpend.map((progSpend, progIndex) => {
+      let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
         let copiedExtSpend = keepCloning(extSpend);
-        copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[extSpendIndex].amount, 100);
+        copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[progIndex][extSpendIndex].amount, 100);
         return copiedExtSpend;
       })
       return totalSpend;
@@ -719,100 +732,173 @@ class PharmaRevRec extends React.Component {
 
 
     return (
-      <div id="content">
-        <ModelSetup
-          modelName={modelName}
-          startYear={startYear}
-          setModelName={this.setModelName}
-          setStartYear={this.setStartYear}
-          setYearsOut={this.setYearsOut}
-          yearsOut={yearsOut}
+      <div id="grid">
+        <HeaderBar
+          modelName={this.state.modelName}
         />
-        <ScenarioManager
-          scenario={this.state.scenarios}
-          addScenario={this.addScenario}
-          deleteScenario={this.deleteScenario}
-          editScenarioName={this.editScenarioName}
-          setActiveScenarioId={this.setActiveScenarioId}
+        <SideNavigation
+          scenarios={this.state.scenarios}
           activeScenarioId={this.state.activeScenarioId}
+          setActiveScenarioId={this.setActiveScenarioId}
         />
-        <YearDisplay
-          startYear={startYear}
-          yearsOut={yearsOut}
-          setDisplayType={this.setDisplayType}
-          displaySelections={displaySelections}
-        />
-        <Programs
-          programs={programs}
-          addProgram={this.addProgram}
-          editProgramName={this.editProgramName}
-          editProgramFTERate={this.editProgramFTERate}
-          deleteProgram={this.deleteProgram}
-        />
-        <RevenueMilestones
-          addMilestone={this.addMilestone}
-          deleteMilestone={this.deleteMilestone}
-          editMilestoneName={this.editMilestoneName}
-          editMilestoneEarned={this.editMilestoneEarned}
-          editMilestonePaid={this.editMilestonePaid}
-          editMilestoneAmount={this.editMilestoneAmount}
-          startYear={startYear}
-          revenueMilestones={revenueMilestones}
-          yearsOut={yearsOut}
-        />
-        <ExternalSpend
-          startYear={startYear}
-          yearsOut={yearsOut}
-          displaySelections={displaySelections}
-          externalSpend={externalSpend}
-          programs={programs}
-          editExtSpendAmount={this.editExtSpendAmount}
-        />
-        <HeadcountEffort
-          startYear={startYear}
-          yearsOut={yearsOut}
-          displaySelections={displaySelections}
-          headcountEffort={headcountEffort}
-          programs={programs}
-          editHeadcountEffort={this.editHeadcountEffort}
-        />
-         <HeadcountSpend
-          startYear={startYear}
-          yearsOut={yearsOut}
-          displaySelections={displaySelections}
-          headcountEffort={headcountEffort}
-          programs={programs}
-          editHeadcountEffort={this.editHeadcountEffort}
-        />
-        <TotalProgramSpend
-          startYear={startYear}
-          yearsOut={yearsOut}
-          displaySelections={displaySelections}
-          externalSpend={externalSpend}
-          headcountEffort={headcountEffort}
-          programs={programs}
-          editHeadcountEffort={this.editHeadcountEffort}
-          totalProgramSpend={totalProgramSpend}
-          grandTotal={grandTotal}
-          dollarCompleteCum={dollarCompleteCum}
-          percentCompleteCum={percentCompleteCum}
-          percentComplete={percentComplete}
-          percentTotal={percentTotal}
-          percentTotalCum={percentTotalCum}
-          totalSpend={totalSpend}
-        />
-        <RevenueRecognized
-          startYear={startYear}
-          yearsOut={yearsOut}
-          displaySelections={displaySelections}
-          percentComplete={percentComplete}
-          percentCompleteCum={percentCompleteCum}
-          revenueMilestones={revenueMilestones}
-        /> 
+        <div id="content">
+          <ModelSetup
+            modelName={modelName}
+            startYear={startYear}
+            setModelName={this.setModelName}
+            setStartYear={this.setStartYear}
+            setYearsOut={this.setYearsOut}
+            yearsOut={yearsOut}
+          />
+          <ScenarioManager
+            scenario={this.state.scenarios}
+            addScenario={this.addScenario}
+            deleteScenario={this.deleteScenario}
+            editScenarioName={this.editScenarioName}
+            setActiveScenarioId={this.setActiveScenarioId}
+            activeScenarioId={this.state.activeScenarioId}
+          />
+          <YearDisplay
+            startYear={startYear}
+            yearsOut={yearsOut}
+            setDisplayType={this.setDisplayType}
+            displaySelections={displaySelections}
+          />
+          <Programs
+            programs={programs}
+            addProgram={this.addProgram}
+            editProgramName={this.editProgramName}
+            editProgramFTERate={this.editProgramFTERate}
+            deleteProgram={this.deleteProgram}
+          />
+          <RevenueMilestones
+            addMilestone={this.addMilestone}
+            deleteMilestone={this.deleteMilestone}
+            editMilestoneName={this.editMilestoneName}
+            editMilestoneEarned={this.editMilestoneEarned}
+            editMilestonePaid={this.editMilestonePaid}
+            editMilestoneAmount={this.editMilestoneAmount}
+            startYear={startYear}
+            revenueMilestones={revenueMilestones}
+            yearsOut={yearsOut}
+          />
+          <ExternalSpend
+            startYear={startYear}
+            yearsOut={yearsOut}
+            displaySelections={displaySelections}
+            externalSpend={externalSpend}
+            programs={programs}
+            editExtSpendAmount={this.editExtSpendAmount}
+          />
+          <HeadcountEffort
+            startYear={startYear}
+            yearsOut={yearsOut}
+            displaySelections={displaySelections}
+            headcountEffort={headcountEffort}
+            programs={programs}
+            editHeadcountEffort={this.editHeadcountEffort}
+          />
+           <HeadcountSpend
+            startYear={startYear}
+            yearsOut={yearsOut}
+            displaySelections={displaySelections}
+            headcountEffort={headcountEffort}
+            programs={programs}
+            editHeadcountEffort={this.editHeadcountEffort}
+          />
+          <TotalProgramSpend
+            startYear={startYear}
+            yearsOut={yearsOut}
+            displaySelections={displaySelections}
+            externalSpend={externalSpend}
+            headcountEffort={headcountEffort}
+            programs={programs}
+            editHeadcountEffort={this.editHeadcountEffort}
+            totalProgramSpend={totalProgramSpend}
+            grandTotal={grandTotal}
+            dollarCompleteCum={dollarCompleteCum}
+            percentCompleteCum={percentCompleteCum}
+            percentComplete={percentComplete}
+            percentTotal={percentTotal}
+            percentTotalCum={percentTotalCum}
+            totalSpend={totalSpend}
+          />
+          <RevenueRecognized
+            startYear={startYear}
+            yearsOut={yearsOut}
+            displaySelections={displaySelections}
+            percentComplete={percentComplete}
+            percentCompleteCum={percentCompleteCum}
+            revenueMilestones={revenueMilestones}
+          /> 
+          <DeferredRevenueRoll
+            startYear={startYear}
+            yearsOut={yearsOut}
+            displaySelections={displaySelections}
+            percentComplete={percentComplete}
+            percentCompleteCum={percentCompleteCum}
+            revenueMilestones={revenueMilestones}
+          />
+        </div>
       </div>
     )
   }
 }
+
+function HeaderBar({modelName}) {
+  return(
+    <div id="header">
+      <h2>pharmaRevRec</h2>
+      <h1 className="title">{modelName}</h1>
+      <span>
+        <a href="/logout/">Logout</a>
+      </span>
+    </div>
+  )
+}
+
+function SideNavigation(props) {
+  const {
+    scenarios,
+    activeScenarioId,
+    setActiveScenarioId,
+  } = props;
+
+  let scenarioNames = scenarios.map((scenario) => {
+    return(scenario.scenarioName);
+  })
+
+  let activeScenarioName = scenarios[activeScenarioId].scenarioName;
+
+  return(
+    <div id="sidebar">
+      <a href="#Model_Setup">Setup</a>
+      <a href="#Programs">Programs</a>
+      <a href="#Headcount">Headcount</a>
+      <a href="#Other_Cost">Other Cost</a>
+      <a href="#Financings">Financings</a>
+      <a href="#Cash_Rollforward">Reports</a>
+      <hr></hr>
+      <table>
+        <tr>
+          <td className="a">Active Scenario</td>
+        </tr>
+        <tr>
+          <td>
+            <select
+              value={scenarios[activeScenarioId].scenarioName}
+              onChange={(e) => setActiveScenarioId(e.target.value)}
+            >
+              <Dropdown options={scenarioNames}/>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
+  )
+}
+
+
 
 class ModelSetup extends React.Component {
   constructor(props) {
@@ -1448,26 +1534,7 @@ function RevenueRecognized(props) {
   } = props;
 
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
-    let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
-    let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
-    let blankDataArray = addDataArray(startYear, yearsOut);
-    let milestoneRevEarned = blankDataArray.map((period, periodIndex) => {
-      if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
-        period.amount = rounding(percentCompleteCum[periodIndex].amount * milestone.amount, 10000);
-        return period;
-        } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
-        period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
-        return period;
-
-      } else if (period.year > milestoneEarnedYear) {
-        period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
-        return period;
-      } else {
-        period.amount = 0;
-        return period;
-      }
-    });
-
+    let milestoneRevEarned = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
     let totalRevenueEarned = arrayTotal(milestoneRevEarned);
 
     return (
@@ -1487,6 +1554,14 @@ function RevenueRecognized(props) {
     );
   })
 
+  let milestoneRevEarned = revenueMilestones.map((milestone) => {
+    let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
+    return milestoneRev;
+  })
+
+  let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
+  let grandTotalRevenue = arrayTotal(totalRevenueEarned);
+
   return (
     <section id="Revenue-Recognized">
       <h2>Revenue Recognized</h2>
@@ -1504,11 +1579,152 @@ function RevenueRecognized(props) {
         </thead>
         <tbody>
           {milestoneRows}
+          <tr>
+            <td>Total Revenue</td>
+            <TotalRows
+              displaySelections={displaySelections}
+              dataArray={totalRevenueEarned}
+            />
+            <td>{grandTotalRevenue}</td>
+          </tr>
         </tbody>
       </table>
     </section>
   )
 }
+
+function DeferredRevenueRoll (props) {
+  const {
+    startYear,
+    yearsOut,
+    displaySelections,
+    revenueMilestones,
+    percentComplete,
+    percentCompleteCum
+  } = props;
+
+  let milestoneRevEarned = revenueMilestones.map((milestone) => {
+    let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
+    return milestoneRev;
+  })
+
+  let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
+
+  let milestoneReceived = addDataArray(startYear, yearsOut);
+  milestoneReceived.map((period, periodIndex) => {
+    revenueMilestones.forEach((milestone) => {
+      let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+      let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+      if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
+        period.amount += milestone.amount
+      }
+    })
+    return period;
+  });
+
+  let deferredRevEndBalance = addDataArray(startYear, yearsOut);
+  deferredRevEndBalance.map((period, periodIndex) => {
+    let begBalance = 0;
+    if (periodIndex > 0) {
+      begBalance = keepCloning(deferredRevEndBalance[periodIndex - 1].amount);
+    };
+    let inflows = milestoneReceived[periodIndex].amount;
+    let outflows = totalRevenueEarned[periodIndex].amount;
+    period.amount = begBalance + inflows - outflows; 
+    return period;
+  });
+
+
+  let deferredRevenueBegBalance = addDataArray(startYear, yearsOut);
+  deferredRevenueBegBalance.map((period, periodIndex) => {
+    let begBalance = 0;
+    if (periodIndex > 0) {
+      begBalance = keepCloning(deferredRevEndBalance[periodIndex - 1].amount);
+    } else {
+      begBalance = Number(0);
+    };
+    period.amount = begBalance;
+  })
+
+  return (
+    <section id="Deferred-Revenue-Rollforward">
+      <h2>Deferred Revenue Rollforward</h2>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <TablePeriodHeaders
+              startYear={startYear}
+              yearsOut={yearsOut}
+              displaySelections={displaySelections}
+            />
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Beg Balance</td>
+            <CummulativeTotalRows
+              displaySelections={displaySelections}
+              dataArray={deferredRevenueBegBalance}
+            />
+          </tr>
+          <tr>
+            <td>Additions</td>
+            <TotalRows
+              displaySelections={displaySelections}
+              dataArray={milestoneReceived}
+            />
+          </tr>
+          <tr>
+            <td>Amortization</td>
+            <TotalRows
+              displaySelections={displaySelections}
+              dataArray={totalRevenueEarned}
+            />
+          </tr>
+          <tr>
+            <td>End Balance</td>
+            <CummulativeTotalRows
+              displaySelections={displaySelections}
+              dataArray={deferredRevEndBalance}
+            />
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  )
+}
+
+class PeriodAnalytic extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      selectedPeriod: "Q1 2018"
+    }
+
+    this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
+
+  }
+
+  setSelectedPeriod(newPeriod) {
+    let newSelectedPeriod = newPeriod;
+    this.setState({selectedPeriod: newPeriod});
+  }
+
+  render() {
+    let programs = this.props.programs;
+    let externalSpend = this.props.externalSpend;
+    let headcountSpend = this.props.headcountSpend;
+    let totalProgramSpend = this.props.totalProgramSpend;
+    let headcountEffort = this.props.headcountEffort;
+
+    let comparisonModel = this.props.scenarios[this.props.analyticComparisonIndex]; 
+
+    
+  
+  }
+}
+
 
 function Dropdown({options}) {
   let rows = options.map((x) => {
@@ -1659,7 +1875,42 @@ function CummulativeDataRows(props) {
   return dataCells;
 }
 
+function CummulativeTotalRows(props) {
+  const {
+    displaySelections,
+    dataArray,
+  } = props;
 
+  //Override the type to not sum in calculatedData function below//
+  let displaySelectionsOverride = keepCloning(displaySelections).map((period) => {
+    period.type = "Quarterly"
+    return period;
+  })
+ 
+  let displayType = displayArray(displaySelectionsOverride);
+  let calculatedData = dataToDisplay(displayType, dataArray);
+  let dataCells = calculatedData.map((cell, cellIndex) => {
+    let cellYear = cell.year;
+    let periodDisplayCheck = displaySelections.filter(year => year.year === cellYear)
+    let periodDisplay = periodDisplayCheck[0];
+    if (periodDisplay.type === "Annual" && cell.quarter === 4) {
+      return(
+        <React.Fragment>
+          <td>{rounding(cell.amount,100)}</td>
+        </React.Fragment>
+      )
+    } else if (periodDisplay.type === "Quarterly") {
+      return(
+        <React.Fragment>
+          <td>{rounding(cell.amount,100)}</td>
+        </React.Fragment>
+      )
+    } else {
+      return(null)
+    }
+  })
+  return dataCells;
+}
 
 ReactDOM.render(
   <PharmaRevRec />,
@@ -1830,10 +2081,26 @@ function rounding(input, decimals) {
   return roundNumber;
 }
 
+function calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum) {
+  let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+  let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+  let blankDataArray = addDataArray(startYear, yearsOut);
+  blankDataArray.map((period, periodIndex) => {
+    if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
+      period.amount = rounding(percentCompleteCum[periodIndex].amount * milestone.amount, 10000);
+      return period;
+      } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
+      period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
+      return period;
 
-
-
-
-
-
+    } else if (period.year > milestoneEarnedYear) {
+      period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
+      return period;
+    } else {
+      period.amount = 0;
+      return period;
+    }
+  });
+  return blankDataArray;
+}
 
