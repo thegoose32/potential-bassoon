@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+./deletedb
+rm -rf node_modules
+./clean

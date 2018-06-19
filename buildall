@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+node --version 2>&1 | grep -q '9.4.[0-9]' || { echo "Need Node 9.4.x" && exit 1; }
+npm --version 2>&1 | grep -q '5.7.[0-9]' || { echo "Need NPM 5.7.x" && exit 1; }
+python3 --version 2>&1 | grep -q '3.6.[0-9]' || { echo "Need Python 3.6.x" && exit 1; }
+postgres --version 2>&1 | grep -q -e '9.6.[0-9]' -e '10.' || { echo "Need Postgres 9.6.x or higher" && exit 1; }
+if [ ! -f .env ]; then cp sample.env .env; fi
+pip3 install -r requirements.txt
+npm install
+createdb lrp
+set -o allexport ; source .env ; set +o allexport
+cd server
+python3 manage.py migrate
+python3 manage.py loaddata superuser.json
+cd ..
+./build

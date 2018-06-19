@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+set -o allexport ; source .env ; set +o allexport
+if ! psql $DATABASE_URL -c 'SELECT 1;' > /dev/null 2>&1 ; then
+  database_name=$(echo $DATABASE_URL | grep -Eo '[a-z_-]+$')
+  createdb "$database_name"
+  python3 manage.py migrate
+fi

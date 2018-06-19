@@ -1,0 +1,214 @@
+<html>
+  <head>
+    <style>
+      div, body {
+        margin: 0;
+        padding: 0;
+        font-family: "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+      }
+      h1 {
+        font-size: 1rem;
+      }
+      .title {
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        margin: 0;
+      }
+      .company-name {
+        float: left;
+        color: white;
+        font-size: 0.6rem;
+      }
+      .navbar-item {
+        float: right;
+        font-size: 0.6rem;
+        color: white;
+        margin-right: 1rem;
+      }
+      html {
+        font-size: 20px;
+        color: #222;
+      }
+      #grid {
+        display: grid;
+        grid-template-columns: 200px auto;
+        grid-template-rows: 30px auto;
+        width: 100%;
+        height: 100%;
+      }
+      #header {
+        background-color: #2B5D56;
+        grid-column: 1 / 3;
+        grid-row: 1 / 1;
+        justify-self: stretch;
+      }
+      #sidebar {
+        background-color: #347068;
+        grid-column: 1 / 2;
+        grid-row: 2 / 2;
+      }
+      #content {
+        background-color: #F8F8F8;
+        grid-column: 2 / 2;
+        grid-row: 2 / 2;
+        overflow: auto;
+        padding: 0.4rem 0.4rem 0 0.4rem;
+        z-index: 100;
+      }
+      .section {
+        background-color: #FFFFFF;
+        width: 100%;
+        margin-bottom: 0.4rem;
+        padding: 0.4rem;
+        border-radius: 2px;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.11), 0 0 0 1px rgba(0, 0, 0, 0.03);
+        outline-color: rgba(0, 0, 0, 0.870588);
+        min-height: 150px;
+      }
+      .section-title {
+        color: #2B5D56;
+        font-size: 0.75rem;
+        margin-top: 0;
+        margin-bottom: 0.6rem;
+      }
+      table {
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+        font-size: 0.5rem;
+      }
+      th {
+        font-weight: bold;
+        text-align: left;
+        border-bottom: 2px solid #BBB;
+        color: #555;
+      }
+      td {
+        border-bottom: 1px solid #DDDDDD;
+        color: #555;
+      }
+      td, th {
+        padding: 1px 4px 1px 4px;
+      }
+      th {
+        padding-right: 6px;
+      }
+      input, select {
+        border: none;
+        border-radius: 0;
+        cursor: pointer;
+        color: #555;
+      }
+      button {
+        cursor: pointer;
+      }
+      input.numerical {
+        text-align: right;
+        width: 6rem;
+      }
+      select {
+        background-color: transparent;
+        background: none;
+        background-image: none;
+        -webkit-appearance:none;
+      }
+      .actions-cell {
+        border: none;
+      }
+      button {
+        border: none;
+      }
+      button.delete {
+        background-color: #c63125;
+        color: white;
+      }
+      button.add {
+        background-color: #2B5D56;
+        color: white;
+      }
+      .actions-cell * {
+        opacity: 0;
+      }
+      tr:hover .actions-cell * {
+        opacity: 1;
+      }
+      .actions-row * {
+        opacity: 0;
+        border: none;
+      }
+      .actions-row > td {
+        padding: 4px 0 4px 0;
+      }
+      .actions-row button {
+        margin-left: 0;
+      }
+      table:hover .actions-row * {
+        opacity: 1;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="grid">
+      <div id="header">
+        <!--<h2 class="company-name">Kendall Square Therapeutics</h2>-->
+        <h1 class="title">Q1 Board Review</h1>
+      </div>
+      <div id="sidebar"></div>
+      <div id="content">
+        <div class="section">
+          <h2 class="section-title">Model Setup</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Amount</th>
+                <th>Cost Type</th>
+                <th>Phase</th>
+                <th>Program</th>
+                <th class="actions-cell"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" value="Boodlababa" /></td>
+                <td><input class="numerical" type="text" value="$1,002,321" /></td>
+                <td><select><option>Fixed</option><option>Other</option></td>
+                <td><select><option>Research</option><option>Other</option></td>
+                <td><select><option>Hooper</option><option>Other</option></td>
+                <td class="actions-cell"><button class="delete">Delete</button></td>
+              </tr>
+              <tr>
+                <td><input type="text" value="Boodlababa" /></td>
+                <td><input class="numerical" type="text" value="$1,002,321" /></td>
+                <td><select><option>Fixed</option><option>Other</option></td>
+                <td><select><option>Research</option><option>Other</option></td>
+                <td><select><option>Hooper</option><option>Other</option></td>
+                <td class="actions-cell"><button class="delete">Delete</button></td>
+              </tr>
+              <tr>
+                <td><input type="text" value="Boodlababa" /></td>
+                <td><input class="numerical" type="text" value="$1,002,321" /></td>
+                <td><select><option>Fixed</option><option>Other</option></td>
+                <td><select><option>Research</option><option>Other</option></td>
+                <td><select><option>Hooper</option><option>Other</option></td>
+                <td class="actions-cell"><button class="delete">Delete</button></td>
+              </tr>
+              <tr class="actions-row">
+                <td col="6"><button class="add">Add Development Phase</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+        </div>
+        <div class="section">
+        </div>
+        <div class="section">
+        </div>
+        <div class="section">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

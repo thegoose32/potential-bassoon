@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LRP Engine</title>
+
+    <script>
+      var host = "app.pharmalrp.com";
+      if ((host == window.location.host) && (window.location.protocol != "https:")){
+      window.location.protocol = "https";
+      }
+    </script>
+
+ </head>
+  <body>
+    <link rel="stylesheet" type="text/css" href="/static/index.css" media="screen" />
+    <div id="root"></div>
+    <script>
+      var LRPModel = {{ lrp_model | safe }};
+    </script>
+    <script src="/static/vendor.js"></script>
+    <script src="/static/index.js"></script>
+  </body>
+</html>

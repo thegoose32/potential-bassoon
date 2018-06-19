@@ -1,0 +1,20 @@
+[
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$100000$ANtZqZX49zTv$QuClRRIjNV4EvyMJLvcR9bMb8ulOIv/9CgwJlfZzdvw=",
+    "last_login": "2018-03-01T03:02:46.851Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "Paul",
+    "last_name": "Giese",
+    "email": "paul.giese@pharmalrp.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2018-03-01T02:38:33.431Z",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]

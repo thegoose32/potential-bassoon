@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div id="login">
+    <div id="login-box">
+      <h1>Login to Pharma LRP</h1>
+      <p class="catch-phrase">Telling Pharma's Financial Story</p>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="primary" type="submit">Login</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

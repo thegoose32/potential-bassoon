@@ -1,0 +1,54 @@
+{
+  "name": "lrp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run",
+  "scripts": {
+    "test": "jest",
+    "build": "webpack",
+    "heroku-postbuild": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thegoose32/LRP-engine-React.git"
+  },
+  "author": "Paul Giese",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/thegoose32/LRP-engine-React/issues"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/static/fileMock.js",
+      "\\.(css|less)$": "identity-obj-proxy"
+    },
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/"
+    ]
+  },
+  "homepage": "https://github.com/thegoose32/LRP-engine-React#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.4.1",
+    "babel-loader": "^7.1.4",
+    "babel-preset-react": "^6.24.1",
+    "css-loader": "^0.28.10",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^22.4.2",
+    "node-sass": "^4.7.2",
+    "react-number-format": "^3.2.0",
+    "sass-loader": "^6.0.7",
+    "style-loader": "^0.20.3",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.11"
+  },
+  "dependencies": {
+    "npm": "^5.8.0",
+    "react": "^16.2.0",
+    "react-csv": "^1.0.14",
+    "react-dom": "^16.2.0",
+    "react-number-format": "^3.2.0"
+  }
+}
