@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import {LRP_Engine} from './components'
+import {PharmaRevRec} from './components'
 
 ReactDOM.render(
-  <LRP_Engine />,
+  <PharmaRevRec />,
   document.getElementById('root')
 );

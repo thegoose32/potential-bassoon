@@ -10,7 +10,7 @@ $lighter-gray: #F8F8F8;
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
+del, dfn, em, img, ins, kbd, q, s, samp, span,
 small, strike, strong, sub, sup, tt, var,
 b, u, i, center,
 dl, dt, dd, ol, ul, li,
@@ -23,7 +23,7 @@ time, mark, audio, video {
 	margin: 0;
 	padding: 0;
 	border: 0;
-	font-size: 100%;
+	font-size: 0.5rem;
 	font: inherit;
 	vertical-align: baseline;
 }
@@ -279,7 +279,7 @@ tr {
   }
 }
 
-td {
+td, span {
   border-bottom: 1px solid #DDDDDD;
   color: #555;
 
@@ -298,7 +298,7 @@ td, th {
   padding: 2px 4px 2px 4px;
 }
 
-th {
+th, span {
   padding-right: 6px;
 
   &.numerical {
@@ -306,7 +306,7 @@ th {
   }
 }
 
-input, select {
+input, select, span {
   background: none;
   border: none;
   border-radius: 0;

@@ -24,14 +24,14 @@ export const newAmounts = [
 
 export const defaultState = {
   version: 0,
-  modelName: "hello world",
+  modelName: "Example Collaboration 606 Model",
   startYear: 2018,
   yearsOut: 3,
   activeScenarioId: 0,
   scenarios: [
     {
       scenarioName: "Q2 2018 close",
-      scenarioDate: "6/30/2018",
+      scenarioDate: "Q2 2018",
       displaySelections: [
         {
           year: 2018,
@@ -494,14 +494,14 @@ export function calculateRevenue(startYear, yearsOut, milestone, percentComplete
   let blankDataArray = addDataArray(startYear, yearsOut);
   blankDataArray.map((period, periodIndex) => {
     if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
-      period.amount = rounding(percentCompleteCum[periodIndex].amount * milestone.amount, 10000);
+      period.amount = percentCompleteCum[periodIndex].amount * milestone.amount;
       return period;
       } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
-      period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
+      period.amount = percentComplete[periodIndex].amount * milestone.amount;
       return period;
 
     } else if (period.year > milestoneEarnedYear) {
-      period.amount = rounding(percentComplete[periodIndex].amount * milestone.amount, 10000);
+      period.amount = percentComplete[periodIndex].amount * milestone.amount;
       return period;
     } else {
       period.amount = 0;
