@@ -1,3 +1,5 @@
+var math = require('math.js');
+
 export const displayOptions = ['Annual', 'Quarterly'];
 export const newAmounts = [
   {
@@ -28,6 +30,18 @@ export const defaultState = {
   startYear: 2018,
   yearsOut: 3,
   activeScenarioId: 0,
+  programs: [
+    {
+      name: "Program A", 
+      id: 1001,
+      fteRate: 250000
+    },
+    {
+      name: "Program B",
+      id: 1002,
+      fteRate: 250000
+    }
+  ],
   scenarios: [
     {
       scenarioName: "Q2 2018 close",
@@ -44,18 +58,6 @@ export const defaultState = {
         {
           year: 2020,
           type: "Annual"
-        }
-      ],
-      programs: [
-        {
-          name: "Program A", 
-          id: 1001,
-          fteRate: 250000
-        },
-        {
-          name: "Program B",
-          id: 1002,
-          fteRate: 250000
         }
       ],
       revenueMilestones: [
@@ -521,5 +523,36 @@ export function calculateHeadcountSpend(headcountEffort, programs) {
     return copiedProgEffort
   })
   return headcountSpend;
+}
+
+export function percentCompleteArray(array) {
+  let grandTotal = arrayTotal(array);
+  let percentComplete = array.map((period, periodIndex) => {
+    let periodCopy = keepCloning(period);
+    periodCopy.amount = period.amount / grandTotal;
+    math.format(periodCopy.amount, {precision: 4});
+    return periodCopy;
+  });
+  return percentComplete;
+}
+
+export function dollarCompleteCummArray(totalSpend) {
+  let dollarCompleteCummArray = totalSpend.map((period, periodIndex) => {
+    let totalSpendThruPeriod = keepCloning(totalSpend).slice(0, periodIndex + 1);
+    let cummulativeTotal = arrayTotal(totalSpendThruPeriod);
+    let periodCopy = keepCloning(period);
+    periodCopy.amount = cummulativeTotal;
+    return periodCopy;
+  });
+  return dollarCompleteCummArray;
+}
+
+export function percentCompleteCummArray(dollarCompleteCummArray, grandTotalSpend) { 
+  let percentCompleteCummArray = dollarCompleteCummArray.map((period, periodIndex) => {
+    let periodCopy = keepCloning(period);
+    periodCopy.amount = rounding(period.amount / grandTotalSpend, 1000000);
+    return periodCopy;
+  });
+  return percentCompleteCummArray;
 }
 

@@ -7,7 +7,8 @@ var math = require('math.js');
 import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels,
   displayType, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears,
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, 
-  calculateHeadcountSpend
+  calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
+  percentCompleteCummArray
 
 } from './model'
 
@@ -194,7 +195,7 @@ export class PharmaRevRec extends React.Component {
     let startYear = this.state.startYear;
     let yearsOut = this.state.yearsOut;
  
-    this.setScenarioState((prevState, props) => {
+    this.setState((prevState, props) => {
       let programArray = prevState.programs;
       let oldId = programArray[programArray.length - 1].id;
       let newId = oldId + 1;
@@ -204,24 +205,29 @@ export class PharmaRevRec extends React.Component {
         fteRate: 250000
       }
       programArray.push(newProgram);
+      
+      let scenarios = prevState.scenarios;
+      let newScenarios = scenarios.map((scenario, scenarioIndex) => {
+        let newScenario = keepCloning(scenario);
+        
+        //add external spend array//
+        let newExtSpend = newScenario.externalSpend;
+        let newExtSpendArray = addDataArray(startYear, yearsOut);
+        newExtSpend.push(newExtSpendArray);
 
-
-      //add external spend array//
-      let newExtSpend = prevState.externalSpend;
-      let newExtSpendArray = addDataArray(startYear, yearsOut);
-      newExtSpend.push(newExtSpendArray);
-
-      //add headcount effort array//
-      let newHcEffort = prevState.headcountEffort;
-      let newHcEffortArray = addDataArray(startYear, yearsOut);
-      newHcEffort.push(newHcEffortArray);
-
+        //add headcount effort array//
+        let newHcEffort = newScenario.headcountEffort;
+        let newHcEffortArray = addDataArray(startYear, yearsOut);
+        newHcEffort.push(newHcEffortArray);
+        
+        return newScenario;
+      });
+        
       return {
         programs: programArray,
-        externalSpend: newExtSpend,
-        headcountEffort: newHcEffort
-      }
-    });
+        scenarios: newScenarios
+      } 
+    })
   }
 
   deleteProgram(programIndex) {
@@ -385,15 +391,17 @@ export class PharmaRevRec extends React.Component {
       headcountEffort,
       externalSpend,
       displaySelections,
-      programs,
       revenueMilestones,
-      scenarioDate
+      scenarioDate,
+      analyticComparisonIndex
     } = this.state.scenarios[this.state.activeScenarioId];
  
     const {
       modelName,
       startYear,
       yearsOut,
+      programs,
+      scenarios,
     } = this.state;
     
     let headcountSpend = calculateHeadcountSpend(headcountEffort, programs); 
@@ -407,30 +415,17 @@ export class PharmaRevRec extends React.Component {
     });
 
     let totalSpend = calculatePeriodTotal(totalProgramSpend);
-    let grandTotal = arrayTotal(totalSpend);
+    let grandTotalSpend = arrayTotal(totalSpend);
 
-    let percentComplete = totalSpend.map((period, periodIndex) => {
-      let periodCopy = keepCloning(period);
-      periodCopy.amount = period.amount / grandTotal;
-      math.format(periodCopy.amount, {precision: 4});
-      return periodCopy;
-    });
+    let percentComplete = percentCompleteArray(totalSpend);
     let percentTotal = rounding(arrayTotal(percentComplete), 1000000);
-
-    let dollarCompleteCum = totalSpend.map((period, periodIndex) => {
-      let totalSpendThruPeriod = keepCloning(totalSpend).slice(0, periodIndex + 1);
-      let cummulativeTotal = arrayTotal(totalSpendThruPeriod);
-      let periodCopy = keepCloning(period);
-      periodCopy.amount = cummulativeTotal;
-      return periodCopy;
-    });
-
-    let percentCompleteCum = dollarCompleteCum.map((period, periodIndex) => {
-      let periodCopy = keepCloning(period);
-      periodCopy.amount = rounding(period.amount / grandTotal, 1000000);
-      return periodCopy;
-    });
+    let dollarCompleteCum = dollarCompleteCummArray(totalSpend)
+    let percentCompleteCum = percentCompleteCummArray(dollarCompleteCum, grandTotalSpend);
     let percentTotalCum = rounding(arrayTotal(percentComplete), 1000000);
+
+    let scenarioNames = scenarios.map((scenario) => {
+      return scenario.scenarioName
+    })
 
 
     return (
@@ -519,7 +514,7 @@ export class PharmaRevRec extends React.Component {
             programs={programs}
             editHeadcountEffort={this.editHeadcountEffort}
             totalProgramSpend={totalProgramSpend}
-            grandTotal={grandTotal}
+            grandTotalSpend={grandTotalSpend}
             dollarCompleteCum={dollarCompleteCum}
             percentCompleteCum={percentCompleteCum}
             percentComplete={percentComplete}
@@ -542,6 +537,22 @@ export class PharmaRevRec extends React.Component {
             percentComplete={percentComplete}
             percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
+          />
+          <PeriodBridge
+            startYear={startYear}
+            yearsOut={yearsOut}
+            externalSpend={externalSpend}
+            headcountEffort={headcountEffort}
+            programs={programs}
+            percentCompleteCum={percentCompleteCum}
+            percentComplete={percentComplete}
+            totalProgramSpend={totalProgramSpend}
+            headcountSpend={headcountSpend}
+            grandTotalSpend={grandTotalSpend}
+            revenueMilestones={revenueMilestones}
+            analyticComparisonIndex={analyticComparisonIndex}
+            scenarios={scenarios}
+            scenarioNames={scenarioNames}
           />
         </div>
       </div>
@@ -1213,7 +1224,7 @@ function TotalProgramSpend (props) {
     programs,
     editHeadcountEffort,
     totalProgramSpend,
-    grandTotal,
+    grandTotalSpend,
     dollarCompleteCum,
     percentCompleteCum,
     percentComplete,
@@ -1273,7 +1284,7 @@ function TotalProgramSpend (props) {
             <td className="numerical">
               <NumberFormat
                 displayType="text"
-                value={grandTotal}
+                value={grandTotalSpend}
                 thousandSeparator={true}
               /> 
             </td>
@@ -1520,7 +1531,6 @@ class PeriodAnalytic extends React.Component {
     }
 
     this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
-
   }
 
   setSelectedPeriod(newPeriod) {
@@ -1538,12 +1548,207 @@ class PeriodAnalytic extends React.Component {
     let comparisonModel = this.props.scenarios[this.props.analyticComparisonIndex];
     let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.externalSpend;
-
-    
-  
   }
 }
 
+class PeriodBridge extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      selectedPeriod: "Q1 2018",
+      selectedComparisonIndex: 0
+    }
+
+    this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
+    this.setSelectedComparisonIndex = this.setSelectedComparisonIndex.bind(this);
+  }
+
+  setSelectedPeriod(newPeriod) {
+    let newSelectedPeriod = newPeriod;
+    this.setState({selectedPeriod: newPeriod});
+  }
+
+  setSelectedComparisonIndex(newComparison) {
+    let scenarios = this.props.scenarios;
+    let newIndex = 0;
+    scenarios.forEach((scenario, scenarioIndex) => {
+      if (scenario.scenarioName === newComparison) {
+        newIndex = scenarioIndex
+        return newIndex;
+      }
+    });
+    this.setState({selectedComparisonIndex: newIndex});
+  }
+
+  render() {
+    let programs = this.props.programs;
+    let startYear = this.props.startYear;
+    let yearsOut = this.props.yearsOut;
+    let percentComplete = this.props.percentComplete;
+    let percentCompleteCum = this.props.percentCompleteCum;
+    let selectedQtr = Number(this.state.selectedPeriod[1]);
+    let selectedYear = Number(this.state.selectedPeriod.slice(3));
+    let periodSelections = periodLabels(startYear, yearsOut)
+    let scenarios = this.props.scenarios;
+    let revenueMilestones = this.props.revenueMilestones
+    
+    //Selected Period Variables//
+    let externalSpend = this.props.externalSpend;
+    let headcountSpend = this.props.headcountSpend;
+    let totalProgramSpend = this.props.totalProgramSpend;
+    let headcountEffort = this.props.headcountEffort;
+    let grandTotalSpend = this.props.grandTotalSpend;
+    
+    let milestoneRevEarned = revenueMilestones.map((milestone) => {
+      let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
+      return milestoneRev;
+    })
+
+    let totalMilestones
+
+    let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
+    let grandTotalRevenue = arrayTotal(totalRevenueEarned);
+ 
+    let selectedRevenueEarned = 0;
+    totalRevenueEarned.forEach((period) => {
+      if (period.year === selectedYear && period.quarter === selectedQtr) {
+        selectedRevenueEarned = period.amount;
+        return selectedRevenueEarned;
+      }
+    })
+
+    //Comparison Period Variable//
+    let comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
+    let compRevenueMilestones = comparisonModel.revenueMilestones;
+    let compExternalSpend = comparisonModel.externalSpend;
+    let compHeadcountEffort = comparisonModel.headcountEffort;
+    let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs); 
+    let compTotalProgramSpend = compExternalSpend.map((progSpend, progIndex) => {
+      let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
+        let copiedExtSpend = keepCloning(extSpend);
+        copiedExtSpend.amount = rounding(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
+        return copiedExtSpend;
+      })
+      return totalSpend;
+    });
+
+    let compTotalSpend = calculatePeriodTotal(compTotalProgramSpend);
+    let compGrandTotal = arrayTotal(compTotalSpend);
+    let compPercentComplete = percentCompleteArray(compTotalSpend);
+    let compDollarCompleteCumm = dollarCompleteCummArray(compTotalSpend);
+    let compPercentCompleteCumm = percentCompleteCummArray(compDollarCompleteCumm, compGrandTotal);
+
+    let compMilestoneRevEarned = compRevenueMilestones.map((milestone) => {
+      let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, compPercentComplete, compPercentCompleteCumm); 
+      return milestoneRev;
+    })
+
+
+    let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);
+    let compRevenueEarned = 0;
+    compTotalRevenueEarned.forEach((period) => {
+      if (period.year === selectedYear && period.quarter === selectedQtr) {
+        compRevenueEarned = period.amount;
+        return compRevenueEarned;
+      }
+    })
+
+    //Program Change in Spend Rows//
+    let periodBridgeRow = programs.map((program, programIndex) => {
+      let selectedProgSpendPeriod = 0;
+      totalProgramSpend[programIndex].forEach((period) => {
+        if (period.quarter === selectedQtr && period.year === selectedYear) {
+          selectedProgSpendPeriod = period.amount;
+          return selectedProgSpendPeriod;
+        };
+      });
+      let grandTotalProgramSpend = arrayTotal(totalProgramSpend[programIndex]);
+      let compProgSpendPeriod = 0;
+      compTotalProgramSpend[programIndex].forEach((period) => {
+        if (period.quarter === selectedQtr && period.year === selectedYear) {
+          compProgSpendPeriod = period.amount;
+          return compProgSpendPeriod;
+        };
+      });
+      let compGrandTotalProgramSpend = arrayTotal(compTotalProgramSpend[programIndex]);
+      let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend)));
+      return (
+        <React.Fragment>
+          <tr>
+            <td>{program.name} changes</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(periodDifference,1)}
+                thousandSeparator={true}
+              />
+            </td>
+          </tr>
+        </React.Fragment>
+      )
+    });
+
+    return (
+      <section id="Period-Bridge">
+        <h2>Revenue Bridge</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Selected Period</td>
+              <td>
+                <select
+                  value={this.state.selectedPeriod}
+                  onChange={(e) => this.setSelectedPeriod(e.target.value)}
+                >
+                  <Dropdown options={periodSelections}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Selected Comparison Model</td>
+              <td>
+                <select
+                  value={scenarios[this.state.selectedComparisonIndex].scenarioName}
+                  onChange={(e) => this.setSelectedComparisonIndex(e.target.value)}
+                >
+                  <Dropdown options={this.props.scenarioNames}/>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <tbody>
+            <tr>
+              <td>Current Model Revenue</td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(selectedRevenueEarned,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+            {periodBridgeRow}
+            <tr>
+              <td>Comparison Model Revenue</td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(compRevenueEarned,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+
+
+          </tbody>
+        </table>
+      </section>
+    )
+  }
+}
 
 function Dropdown({options}) {
   let rows = options.map((x) => {
