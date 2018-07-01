@@ -8,7 +8,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   displayType, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears,
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
-  percentCompleteCummArray
+  percentCompleteCummArray, periodType
 
 } from './model'
 
@@ -258,7 +258,7 @@ export class PharmaRevRec extends React.Component {
 
   editProgramFTERate(programIndex, newAmount) {
     this.setScenarioState((prevState, props) => {
-      let programArray = prevState.programs.slice();
+      let programArray = this.state.programs.slice();
       programArray[programIndex].fteRate = newAmount;
       return {
         programs: programArray
@@ -553,6 +553,7 @@ export class PharmaRevRec extends React.Component {
             analyticComparisonIndex={analyticComparisonIndex}
             scenarios={scenarios}
             scenarioNames={scenarioNames}
+            totalSpend={totalSpend}
           />
         </div>
       </div>
@@ -1556,11 +1557,13 @@ class PeriodBridge extends React.Component {
     super(props)
     this.state = {
       selectedPeriod: "Q1 2018",
-      selectedComparisonIndex: 0
+      selectedComparisonIndex: 0,
+      selectedPeriodType: "QTD"
     }
 
     this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
     this.setSelectedComparisonIndex = this.setSelectedComparisonIndex.bind(this);
+    this.setSelectedPeriodType = this.setSelectedPeriodType.bind(this);
   }
 
   setSelectedPeriod(newPeriod) {
@@ -1580,6 +1583,11 @@ class PeriodBridge extends React.Component {
     this.setState({selectedComparisonIndex: newIndex});
   }
 
+  setSelectedPeriodType(newType) {
+    let newSelectedPeriodType = newType;
+    this.setState({selectedPeriodType: newSelectedPeriodType})
+  }
+
   render() {
     let programs = this.props.programs;
     let startYear = this.props.startYear;
@@ -1590,12 +1598,14 @@ class PeriodBridge extends React.Component {
     let selectedYear = Number(this.state.selectedPeriod.slice(3));
     let periodSelections = periodLabels(startYear, yearsOut)
     let scenarios = this.props.scenarios;
-    let revenueMilestones = this.props.revenueMilestones
+    let revenueMilestones = this.props.revenueMilestones;
+    let selectedPeriodType = this.state.selectedPeriodType;
     
     //Selected Period Variables//
     let externalSpend = this.props.externalSpend;
     let headcountSpend = this.props.headcountSpend;
     let totalProgramSpend = this.props.totalProgramSpend;
+    let totalSpend = this.props.totalSpend;
     let headcountEffort = this.props.headcountEffort;
     let grandTotalSpend = this.props.grandTotalSpend;
     
@@ -1611,9 +1621,29 @@ class PeriodBridge extends React.Component {
  
     let selectedRevenueEarned = 0;
     totalRevenueEarned.forEach((period) => {
-      if (period.year === selectedYear && period.quarter === selectedQtr) {
-        selectedRevenueEarned = period.amount;
+      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
+        selectedRevenueEarned += period.amount;
         return selectedRevenueEarned;
+      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
+        selectedRevenueEarned += period.amount;
+        return selectedRevenueEarned;
+      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
+        selectedRevenueEarned += period.amount;
+        return selectedRevenueEarned;
+      }
+    })
+
+    let selectedPeriodSpend = 0;
+    totalSpend.forEach((period) => {
+      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
+        selectedPeriodSpend += period.amount;
+        return selectedPeriodSpend;
+      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter === selectedQtr) {
+        selectedPeriodSpend += period.amount;
+        return selectedPeriodSpend;
+      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
+        selectedPeriodSpend += period.amount;
+        return selectedPeriodSpend;
       }
     })
 
@@ -1647,9 +1677,29 @@ class PeriodBridge extends React.Component {
     let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);
     let compRevenueEarned = 0;
     compTotalRevenueEarned.forEach((period) => {
-      if (period.year === selectedYear && period.quarter === selectedQtr) {
-        compRevenueEarned = period.amount;
+      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
+        compRevenueEarned += period.amount;
         return compRevenueEarned;
+      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
+        compRevenueEarned += period.amount;
+        return compRevenueEarned;
+      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
+        compRevenueEarned += period.amount;
+        return compRevenueEarned;
+      }
+    })
+
+    let compSelectedPeriodSpend = 0;
+    compTotalSpend.forEach((period) => {
+      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
+        compSelectedPeriodSpend += period.amount;
+        return compSelectedPeriodSpend;
+      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
+        compSelectedPeriodSpend += period.amount;
+        return compSelectedPeriodSpend;
+      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
+        compSelectedPeriodSpend += period.amount;
+        return compSelectedPeriodSpend;
       }
     })
 
@@ -1657,18 +1707,30 @@ class PeriodBridge extends React.Component {
     let periodBridgeRow = programs.map((program, programIndex) => {
       let selectedProgSpendPeriod = 0;
       totalProgramSpend[programIndex].forEach((period) => {
-        if (period.quarter === selectedQtr && period.year === selectedYear) {
-          selectedProgSpendPeriod = period.amount;
+        if (selectedPeriodType === "QTD" && period.quarter === selectedQtr && period.year === selectedYear) {
+          selectedProgSpendPeriod += period.amount;
           return selectedProgSpendPeriod;
-        };
+        } else if (selectedPeriodType === "YTD" && period.quarter <= selectedQtr && period.year === selectedYear) {
+          selectedProgSpendPeriod += period.amount;
+          return selectedProgSpendPeriod;
+        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
+          selectedProgSpendPeriod += period.amount;
+          return selectedProgSpendPeriod;
+        }
       });
       let grandTotalProgramSpend = arrayTotal(totalProgramSpend[programIndex]);
       let compProgSpendPeriod = 0;
       compTotalProgramSpend[programIndex].forEach((period) => {
-        if (period.quarter === selectedQtr && period.year === selectedYear) {
-          compProgSpendPeriod = period.amount;
+        if (selectedPeriodType === "QTD" && period.quarter === selectedQtr && period.year === selectedYear) {
+          compProgSpendPeriod += period.amount;
           return compProgSpendPeriod;
-        };
+        } else if (selectedPeriodType === "YTD" && period.quarter <= selectedQtr && period.year === selectedYear) { 
+          compProgSpendPeriod += period.amount;
+          return compProgSpendPeriod;
+        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
+          compProgSpendPeriod += period.amount;
+          return compProgSpendPeriod;
+        }
       });
       let compGrandTotalProgramSpend = arrayTotal(compTotalProgramSpend[programIndex]);
       let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend)));
@@ -1683,6 +1745,29 @@ class PeriodBridge extends React.Component {
                 thousandSeparator={true}
               />
             </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(compProgSpendPeriod - selectedProgSpendPeriod,1)}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(compGrandTotalProgramSpend - grandTotalProgramSpend,1)}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding((((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend))) * 100, 1000)}
+                thousandSeparator={true}
+                suffix={"%"}
+              />
+            </td>
+ 
           </tr>
         </React.Fragment>
       )
@@ -1715,10 +1800,30 @@ class PeriodBridge extends React.Component {
                 </select>
               </td>
             </tr>
+            <tr>
+              <td>Period Type</td>
+              <td>
+                <select
+                  value={this.state.setSelectedPeriodType}
+                  onChange={(e) => this.setSelectedPeriodType(e.target.value)}
+                >
+                  <Dropdown options={periodType}/>
+                </select>
+              </td>
+            </tr> 
           </tbody>
         </table>
         <br></br>
         <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Revenue</th>
+              <th>Period Cost</th>
+              <th>Total Cost</th>
+              <th>% of Total</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
               <td>Current Model Revenue</td>
@@ -1727,6 +1832,29 @@ class PeriodBridge extends React.Component {
                   displayType="text"
                   value={rounding(selectedRevenueEarned,1)}
                   thousandSeparator={true}
+                />
+              </td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(selectedPeriodSpend,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+ 
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(this.props.grandTotalSpend,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding((selectedPeriodSpend / this.props.grandTotalSpend)*100,1000)}
+                  thousandSeparator={true}
+                  suffix={"%"}
                 />
               </td>
             </tr>
@@ -1740,9 +1868,30 @@ class PeriodBridge extends React.Component {
                   thousandSeparator={true}
                 />
               </td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(compSelectedPeriodSpend,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+ 
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(compGrandTotal,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding((compSelectedPeriodSpend / compGrandTotal)*100,1000)}
+                  thousandSeparator={true}
+                  suffix={"%"}
+                />
+              </td>
             </tr>
-
-
           </tbody>
         </table>
       </section>

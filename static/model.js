@@ -1,6 +1,7 @@
 var math = require('math.js');
 
 export const displayOptions = ['Annual', 'Quarterly'];
+export const periodType = ['QTD', 'YTD', 'Full Year'];
 export const newAmounts = [
   {
     year: 0,
