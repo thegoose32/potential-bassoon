@@ -43,6 +43,7 @@ export const defaultState = {
       fteRate: 250000
     }
   ],
+  activityLog: [],
   scenarios: [
     {
       scenarioName: "Q2 2018 close",
@@ -380,23 +381,6 @@ export function periodLabels(startYear, yearsOut) {
   return periodLabels
 }
 
-export function displayType(props) {
-  let quarterDisplay = []
-  displaySelections.forEach((selection, selectionIndex) => {
-    let id = 0;
-    let selectionType = "Annual";
-    for (let x = 1; x < 5; x++) {
-      id = "" + startYear + selectionIndex;
-      selectionType = selection;
-      quarterDisplay.push({
-        id: Number(id),
-        selectionType: selectionType
-      });
-    }
-  });
-  return quarterDisplay;
-}
-
 export function yearsArray(startYear, yearsOut) {                            
   let years = [];
   for (let x = 0; x < yearsOut; x++) {
@@ -555,5 +539,19 @@ export function percentCompleteCummArray(dollarCompleteCummArray, grandTotalSpen
     return periodCopy;
   });
   return percentCompleteCummArray;
+}
+
+export function periodAmountCalc(array, currentQtr, currentYear, periodType) {
+  let periodAmount = 0;
+  array.forEach((period) => {
+    if (periodType === "QTD" && period.quarter === currentQtr && period.year === currentYear) {
+      return periodAmount += period.amount;
+    } else if (periodType === "YTD" && period.quarter <= currentQtr && period.year === currentYear) { 
+      return periodAmount += period.amount;
+    } else if (periodType === "Full Year" && period.year === currentYear) {
+      return periodAmount += period.amount;
+    }
+  });
+  return periodAmount;
 }
 

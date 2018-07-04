@@ -5,10 +5,10 @@ import {CSVLink} from 'react-csv'
 var math = require('math.js');
 
 import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels,
-  displayType, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears,
+  yearsArray, addDataArray, editDataArrayLength, editDataArrayYears,
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
-  percentCompleteCummArray, periodType
+  percentCompleteCummArray, periodType, periodAmountCalc
 
 } from './model'
 
@@ -114,6 +114,17 @@ export class PharmaRevRec extends React.Component {
       }
     })
   }
+  
+  setScenarioDate(newScenarioDate, scenarioIndex) {
+    this.setState(function(prevState, props) {
+      let scenarios = prevState.scenarios;
+      let currentScenario = scenarios[scenarioIndex];
+      currentScenario.scenarioDate = newScenarioDate;
+      return {
+        scenarios: scenarios
+      }
+    })
+  }
 
   setActiveScenarioId(newScenario) {
     this.setState(function(prevState, props) {
@@ -169,14 +180,6 @@ export class PharmaRevRec extends React.Component {
         displaySelections: displaySelections,
         externalSpend: newExtSpend,
         headcountEffort: newHCSpend
-      }
-    })
-  }
-
-  setScenarioDate(newScenarioDate) {
-    this.setScenarioState((prevState, props) => {
-      return {
-        scenarioDate: newScenarioDate
       }
     })
   }
@@ -446,8 +449,6 @@ export class PharmaRevRec extends React.Component {
             setStartYear={this.setStartYear}
             setYearsOut={this.setYearsOut}
             yearsOut={yearsOut}
-            scenarioDate={scenarioDate}
-            setScenarioDate={this.setScenarioDate}
           />
           <ScenarioManager
             scenario={this.state.scenarios}
@@ -456,6 +457,10 @@ export class PharmaRevRec extends React.Component {
             editScenarioName={this.editScenarioName}
             setActiveScenarioId={this.setActiveScenarioId}
             activeScenarioId={this.state.activeScenarioId}
+            scenarioDate={scenarioDate}
+            setScenarioDate={this.setScenarioDate}
+            startYear={startYear}
+            yearsOut={yearsOut}
           />
           <YearDisplay
             startYear={startYear}
@@ -529,6 +534,7 @@ export class PharmaRevRec extends React.Component {
             percentComplete={percentComplete}
             percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
+            scenarioDate={scenarioDate}
           /> 
           <DeferredRevenueRoll
             startYear={startYear}
@@ -555,6 +561,19 @@ export class PharmaRevRec extends React.Component {
             scenarioNames={scenarioNames}
             totalSpend={totalSpend}
           />
+          <PeriodAnalytic
+            startYear={startYear}
+            yearsOut={yearsOut}
+            externalSpend={externalSpend}
+            headcountEffort={headcountEffort}
+            headcountSpend={headcountSpend}
+            programs={programs}
+            totalProgramSpend={totalProgramSpend}
+            analyticComparisonIndex={analyticComparisonIndex}
+            scenarios={scenarios}
+            scenarioNames={scenarioNames}
+            scenarioDate={scenarioDate}
+          /> 
         </div>
       </div>
     )
@@ -597,7 +616,7 @@ function SideNavigation(props) {
       <hr></hr>
       <table>
         <tr>
-          <td className="a">Active Scenario</td>
+          <td className="a">Active Version</td>
         </tr>
         <tr>
           <td>
@@ -614,20 +633,16 @@ function SideNavigation(props) {
   )
 }
 
-
-
 class ModelSetup extends React.Component {
   constructor(props) {
     super(props) 
     this.state = {
       startYear: this.props.startYear,
       yearsOut: this.props.yearsOut,
-      scenarioDate: this.props.scenarioDate
     }
     
     this.setLocalStartYear = this.setLocalStartYear.bind(this);
     this.setLocalYearsOut = this.setLocalYearsOut.bind(this);
-    this.setLocalScenarioDate = this.setLocalScenarioDate.bind(this);
     this.onSubmitClick = this.onSubmitClick.bind(this);
   }
 
@@ -641,14 +656,9 @@ class ModelSetup extends React.Component {
     this.setState({yearsOut: newYearsOut})
   }
 
-  setLocalScenarioDate(newScenarioDate) {
-    this.setState({scenarioDate: newScenarioDate})
-  }
-
   onSubmitClick(event) {
     this.props.setStartYear(this.state.startYear);
     this.props.setYearsOut(this.state.yearsOut);
-    this.props.setScenarioDate(this.state.scenarioDate);
   }
 
   render() {
@@ -656,7 +666,6 @@ class ModelSetup extends React.Component {
     let startYear = this.props.startYear;
     let setModelName = this.props.setModelName;
     let yearsOut = this.props.yearsOut;
-    let scenarioDate = this.props.scenarioDate;
 
     let periodSelections = periodLabels(startYear, yearsOut);
 
@@ -677,33 +686,30 @@ class ModelSetup extends React.Component {
             <tr>
               <th>Start Year</th>
               <td className="long">
-                <input
+                <NumberFormat
+                  className="numerical"
+                  onValueChange={(values, e) => this.setLocalStartYear(e.target.value)}
                   value={this.state.startYear}
-                  onChange={(e) => this.setLocalStartYear(e.target.value)}
+                  thousandSeparator={false}
+                  isNumericString={true}
+                  allowNegative={false}
                 />
               </td>
             </tr>
             <tr>
               <th>Years Out</th>
               <td className="long">
-                <input
+                <NumberFormat
+                  className="numerical"
+                  onValueChange={(values, e) => this.setLocalYearsOut(e.target.value)}
                   value={this.state.yearsOut}
-                  onChange={(e) => this.setLocalYearsOut(e.target.value)}
+                  thousandSeparator={true}
+                  isNumericString={true}
+                  allowNegative={false}
                 />
               </td>
             </tr>
-            <tr>
-              <th>Current Scenario Period</th>
-              <td className="long">
-                <select
-                  value={this.state.scenarioDate}
-                  onChange={(e) => this.setLocalScenarioDate(e.target.value)}
-                >
-                  <Dropdown options={periodSelections}/>
-                </select>
-              </td>
-            </tr>
-          </tbody>
+         </tbody>
         </table>
         <button
           onClick={(e) => this.onSubmitClick(e)}
@@ -722,8 +728,14 @@ function ScenarioManager(props) {
     deleteScenario,
     editScenarioName,
     setActiveScenarioId,
-    activeScenarioId
+    activeScenarioId,
+    setScenarioDate,
+    scenarioDate,
+    startYear,
+    yearsOut
   } = props;
+    
+  let periodSelections = periodLabels(startYear, yearsOut);
 
   let scenarioRows = scenario.map((scenario, index) => {
     let scenarioName = scenario.scenarioName;
@@ -736,6 +748,14 @@ function ScenarioManager(props) {
                 value={scenarioName}
                 onChange={(e) => editScenarioName(e.target.value, index)}
               />
+            </td>
+            <td> 
+              <select
+                value={scenarioDate}
+                onChange={(e) => setScenarioDate(e.target.value, index)}
+              >
+                <Dropdown options={periodSelections}/>
+              </select>
             </td>
             <td></td>
           </tr>
@@ -751,6 +771,14 @@ function ScenarioManager(props) {
                 onChange={(e) => editScenarioName(e.target.value, index)}
               />
             </td>
+            <td> 
+              <select
+                value={scenarioDate}
+                onChange={(e) => setScenarioDate(e.target.value, index)}
+              >
+                <Dropdown options={periodSelections}/>
+              </select>
+            </td>
             <DeleteItem index={index} removeItem={deleteScenario} />
           </tr>
         </React.Fragment>
@@ -760,11 +788,12 @@ function ScenarioManager(props) {
   
   return (
     <section id="Scenarios">
-      <h2>Scenario Manager</h2>
+      <h2>Version Manager</h2>
       <table className="actions-column">
         <thead>
           <tr>
             <th>Name</th>
+            <th>Version Period End</th>
             <th></th>
           </tr>
         </thead>
@@ -772,7 +801,7 @@ function ScenarioManager(props) {
           {scenarioRows}
         </tbody>
       </table>
-      <AddItem addItem={addScenario} label={'Scenario'}/>
+      <AddItem addItem={addScenario} label={'Version'}/>
     </section>
   )
 }
@@ -915,14 +944,6 @@ function RevenueMilestones(props) {
             </select>
           </td>
           <td>
-            <select
-              value={milestone.datePaid}
-              onChange={(e) => editMilestonePaid(milestoneIndex, e.target.value)}
-            >
-              <Dropdown options={periodSelections}/>
-            </select>
-          </td>
-          <td>
             <NumberFormat
               className="numerical"
               value={milestone.amount}
@@ -945,7 +966,6 @@ function RevenueMilestones(props) {
           <tr>
             <th>Name</th>
             <th>Period Earned</th>
-            <th>Period Received</th>
             <th className="numerical">Amount</th>
             <th></th>
           </tr>
@@ -1345,7 +1365,8 @@ function RevenueRecognized(props) {
     displaySelections,
     revenueMilestones,
     percentComplete,
-    percentCompleteCum
+    percentCompleteCum,
+    scenarioDate
   } = props;
 
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
@@ -1383,6 +1404,21 @@ function RevenueRecognized(props) {
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
   let grandTotalRevenue = arrayTotal(totalRevenueEarned);
 
+  let selectedQtr = Number(scenarioDate[1]);
+  let selectedYear = Number(scenarioDate.slice(3));
+  let currentPeriodRev = 0;
+  totalRevenueEarned.forEach((period) => {
+    if (period.quarter === selectedQtr && period.year === selectedYear) {
+      return currentPeriodRev += period.amount
+    }
+  });
+  let currentYTDPeriodRev = 0;
+  totalRevenueEarned.forEach((period) => {
+    if (period.quarter <= selectedQtr && period.year === selectedYear) {
+      return currentYTDPeriodRev += period.amount
+    }
+  });
+
   return (
     <section id="Revenue-Recognized">
       <h2>Revenue Recognized</h2>
@@ -1414,6 +1450,32 @@ function RevenueRecognized(props) {
               /> 
             </td>
           </tr>
+        </tbody>
+      </table>
+      <br></br>
+      <table>
+        <tbody>
+          <tr>
+            <td>{scenarioDate} QTD revenue</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(currentPeriodRev,1)}
+                thousandSeparator={true}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>{scenarioDate} YTD revenue</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(currentYTDPeriodRev,1)}
+                thousandSeparator={true}
+              />
+            </td>
+          </tr>
+ 
         </tbody>
       </table>
     </section>
@@ -1524,34 +1586,6 @@ function DeferredRevenueRoll (props) {
   )
 }
 
-class PeriodAnalytic extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      selectedPeriod: "Q1 2018"
-    }
-
-    this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
-  }
-
-  setSelectedPeriod(newPeriod) {
-    let newSelectedPeriod = newPeriod;
-    this.setState({selectedPeriod: newPeriod});
-  }
-
-  render() {
-    let programs = this.props.programs;
-    let externalSpend = this.props.externalSpend;
-    let headcountSpend = this.props.headcountSpend;
-    let totalProgramSpend = this.props.totalProgramSpend;
-    let headcountEffort = this.props.headcountEffort;
-
-    let comparisonModel = this.props.scenarios[this.props.analyticComparisonIndex];
-    let compExternalSpend = comparisonModel.externalSpend;
-    let compHeadcountEffort = comparisonModel.externalSpend;
-  }
-}
-
 class PeriodBridge extends React.Component {
   constructor(props) {
     super(props)
@@ -1619,34 +1653,10 @@ class PeriodBridge extends React.Component {
     let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
     let grandTotalRevenue = arrayTotal(totalRevenueEarned);
  
-    let selectedRevenueEarned = 0;
-    totalRevenueEarned.forEach((period) => {
-      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-        selectedRevenueEarned += period.amount;
-        return selectedRevenueEarned;
-      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
-        selectedRevenueEarned += period.amount;
-        return selectedRevenueEarned;
-      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-        selectedRevenueEarned += period.amount;
-        return selectedRevenueEarned;
-      }
-    })
+    let selectedRevenueEarned = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
 
-    let selectedPeriodSpend = 0;
-    totalSpend.forEach((period) => {
-      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-        selectedPeriodSpend += period.amount;
-        return selectedPeriodSpend;
-      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-        selectedPeriodSpend += period.amount;
-        return selectedPeriodSpend;
-      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-        selectedPeriodSpend += period.amount;
-        return selectedPeriodSpend;
-      }
-    })
-
+    let selectedPeriodSpend = periodAmountCalc(totalSpend, selectedQtr, selectedYear, selectedPeriodType);
+ 
     //Comparison Period Variable//
     let comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
     let compRevenueMilestones = comparisonModel.revenueMilestones;
@@ -1675,63 +1685,15 @@ class PeriodBridge extends React.Component {
 
 
     let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);
-    let compRevenueEarned = 0;
-    compTotalRevenueEarned.forEach((period) => {
-      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-        compRevenueEarned += period.amount;
-        return compRevenueEarned;
-      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
-        compRevenueEarned += period.amount;
-        return compRevenueEarned;
-      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-        compRevenueEarned += period.amount;
-        return compRevenueEarned;
-      }
-    })
+    let compRevenueEarned = periodAmountCalc(compTotalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
 
-    let compSelectedPeriodSpend = 0;
-    compTotalSpend.forEach((period) => {
-      if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-        compSelectedPeriodSpend += period.amount;
-        return compSelectedPeriodSpend;
-      } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
-        compSelectedPeriodSpend += period.amount;
-        return compSelectedPeriodSpend;
-      } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-        compSelectedPeriodSpend += period.amount;
-        return compSelectedPeriodSpend;
-      }
-    })
+    let compSelectedPeriodSpend = periodAmountCalc(compTotalSpend, selectedQtr, selectedYear, selectedPeriodType);;
 
     //Program Change in Spend Rows//
     let periodBridgeRow = programs.map((program, programIndex) => {
-      let selectedProgSpendPeriod = 0;
-      totalProgramSpend[programIndex].forEach((period) => {
-        if (selectedPeriodType === "QTD" && period.quarter === selectedQtr && period.year === selectedYear) {
-          selectedProgSpendPeriod += period.amount;
-          return selectedProgSpendPeriod;
-        } else if (selectedPeriodType === "YTD" && period.quarter <= selectedQtr && period.year === selectedYear) {
-          selectedProgSpendPeriod += period.amount;
-          return selectedProgSpendPeriod;
-        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-          selectedProgSpendPeriod += period.amount;
-          return selectedProgSpendPeriod;
-        }
-      });
+      let selectedProgSpendPeriod = periodAmountCalc(totalProgramSpend[programIndex], selectedQtr, selectedYear, selectedPeriodType);
       let grandTotalProgramSpend = arrayTotal(totalProgramSpend[programIndex]);
-      let compProgSpendPeriod = 0;
-      compTotalProgramSpend[programIndex].forEach((period) => {
-        if (selectedPeriodType === "QTD" && period.quarter === selectedQtr && period.year === selectedYear) {
-          compProgSpendPeriod += period.amount;
-          return compProgSpendPeriod;
-        } else if (selectedPeriodType === "YTD" && period.quarter <= selectedQtr && period.year === selectedYear) { 
-          compProgSpendPeriod += period.amount;
-          return compProgSpendPeriod;
-        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-          compProgSpendPeriod += period.amount;
-          return compProgSpendPeriod;
-        }
-      });
+      let compProgSpendPeriod = periodAmountCalc(compTotalProgramSpend[programIndex], selectedQtr, selectedYear, selectedPeriodType);
       let compGrandTotalProgramSpend = arrayTotal(compTotalProgramSpend[programIndex]);
       let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend)));
       return (
@@ -1894,6 +1856,298 @@ class PeriodBridge extends React.Component {
             </tr>
           </tbody>
         </table>
+      </section>
+    )
+  }
+}
+
+class PeriodAnalytic extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      selectedPeriod: this.props.scenarioDate, 
+      selectedComparisonIndex: 0,
+      selectedPeriodType: "QTD"
+    }
+
+    this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
+    this.setSelectedComparisonIndex = this.setSelectedComparisonIndex.bind(this);
+    this.setSelectedPeriodType = this.setSelectedPeriodType.bind(this);
+  }
+
+  setSelectedPeriod(newPeriod) {
+    let newSelectedPeriod = newPeriod;
+    this.setState({selectedPeriod: newPeriod});
+  }
+
+  setSelectedComparisonIndex(newComparison) {
+    let scenarios = this.props.scenarios;
+    let newIndex = 0;
+    scenarios.forEach((scenario, scenarioIndex) => {
+      if (scenario.scenarioName === newComparison) {
+        newIndex = scenarioIndex
+        return newIndex;
+      }
+    });
+    this.setState({selectedComparisonIndex: newIndex});
+  }
+
+  setSelectedPeriodType(newType) {
+    let newSelectedPeriodType = newType;
+    this.setState({selectedPeriodType: newSelectedPeriodType})
+  }
+
+  render() {
+    let programs = this.props.programs;
+    let externalSpend = this.props.externalSpend;
+    let headcountSpend = this.props.headcountSpend;
+    let totalProgramSpend = this.props.totalProgramSpend;
+    let headcountEffort = this.props.headcountEffort;
+    let startYear = this.props.startYear;
+    let yearsOut = this.props.yearsOut;
+    let scenarioDate = this.props.scenarioDate;
+    let versionQtr = Number(scenarioDate[1]);
+    let versionYear = Number(scenarioDate.slice(3));
+
+    let selectedQtr = Number(this.state.selectedPeriod[1]);
+    let selectedYear = Number(this.state.selectedPeriod.slice(3));
+    let scenarios = this.props.scenarios;
+    let selectedPeriodType = this.state.selectedPeriodType;
+    let periodSelections = periodLabels(startYear, yearsOut)
+
+    let comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
+    let compExternalSpend = comparisonModel.externalSpend;
+    let compHeadcountEffort = comparisonModel.headcountEffort;
+    let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs); 
+    let compTotalProgramSpend = compExternalSpend.map((progSpend, progIndex) => {
+      let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
+        let copiedExtSpend = keepCloning(extSpend);
+        copiedExtSpend.amount = rounding(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
+        return copiedExtSpend;
+      })
+      return totalSpend;
+    });
+
+    let externalSpendAnalyticRows = programs.map((program, programIndex) => {
+      let currentProgExtSpend = externalSpend[programIndex];
+      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+      let compProgExtSpend = compExternalSpend[programIndex];
+      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType)
+      let diffDollar = currentPeriodSpend - compPeriodSpend;
+      let diffPercent = rounding(diffDollar / compPeriodSpend, 10000);
+      return (
+        <React.Fragment>
+          <tr>
+            <td>{program.name}</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={currentPeriodSpend}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={compPeriodSpend}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={diffDollar}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={diffPercent*100}
+                suffix={"%"}
+              />
+            </td>
+          </tr>
+        </React.Fragment>
+      )
+    });
+
+    let headcountSpendAnalyticRows = programs.map((program, programIndex) => {
+      let currentProgExtSpend = headcountSpend[programIndex];
+      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+      let compProgExtSpend = compHeadcountSpend[programIndex];
+      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+      let diffDollar = currentPeriodSpend - compPeriodSpend;
+      let diffPercent = rounding(diffDollar / compPeriodSpend, 10000);
+      return (
+        <React.Fragment>
+          <tr>
+            <td>{program.name}</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={currentPeriodSpend}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={compPeriodSpend}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={diffDollar}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={diffPercent*100}
+                suffix={"%"}
+              />
+            </td>
+          </tr>
+        </React.Fragment>
+      )
+    });
+
+    let totalSpendAnalyticRows = programs.map((program, programIndex) => {
+      let currentProgExtSpend = totalProgramSpend[programIndex];
+      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+      let compProgExtSpend = compTotalProgramSpend[programIndex];
+      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+      let diffDollar = currentPeriodSpend - compPeriodSpend;
+      let diffPercent = rounding(diffDollar / compPeriodSpend, 10000);
+      return (
+        <React.Fragment>
+          <tr>
+            <td>{program.name}</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={currentPeriodSpend}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={compPeriodSpend}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={diffDollar}
+                thousandSeparator={true}
+              />
+            </td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={diffPercent*100}
+                suffix={"%"}
+              />
+            </td>
+          </tr>
+        </React.Fragment>
+      )
+    });
+
+
+
+    return (
+      <section id="Analytics">
+        <h2>Analytic Engine</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Selected Comparison Period</td>
+              <td>
+                <select
+                  value={this.state.selectedPeriod}
+                  onChange={(e) => this.setSelectedPeriod(e.target.value)}
+                >
+                  <Dropdown options={periodSelections}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Selected Comparison Model</td>
+              <td>
+                <select
+                  value={scenarios[this.state.selectedComparisonIndex].scenarioName}
+                  onChange={(e) => this.setSelectedComparisonIndex(e.target.value)}
+                >
+                  <Dropdown options={this.props.scenarioNames}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Period Type</td>
+              <td>
+                <select
+                  value={this.state.setSelectedPeriodType}
+                  onChange={(e) => this.setSelectedPeriodType(e.target.value)}
+                >
+                  <Dropdown options={periodType}/>
+                </select>
+              </td>
+            </tr> 
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th>External Costs</th>
+              <th>Current Period</th>
+              <th>Comparison Period</th>
+              <th>Change - $</th>
+              <th>Change - %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {externalSpendAnalyticRows}
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th>Headcount Costs</th>
+              <th>Current Period</th>
+              <th>Comparison Period</th>
+              <th>Change - $</th>
+              <th>Change - %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {headcountSpendAnalyticRows}
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th>Total Costs</th>
+              <th>Current Period</th>
+              <th>Comparison Period</th>
+              <th>Change - $</th>
+              <th>Change - %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {totalSpendAnalyticRows}
+          </tbody>
+        </table>
+
       </section>
     )
   }

@@ -3215,6 +3215,18 @@ var PharmaRevRec = function (_React$Component) {
       });
     }
   }, {
+    key: 'setScenarioDate',
+    value: function setScenarioDate(newScenarioDate, scenarioIndex) {
+      this.setState(function (prevState, props) {
+        var scenarios = prevState.scenarios;
+        var currentScenario = scenarios[scenarioIndex];
+        currentScenario.scenarioDate = newScenarioDate;
+        return {
+          scenarios: scenarios
+        };
+      });
+    }
+  }, {
     key: 'setActiveScenarioId',
     value: function setActiveScenarioId(newScenario) {
       this.setState(function (prevState, props) {
@@ -3274,15 +3286,6 @@ var PharmaRevRec = function (_React$Component) {
           displaySelections: displaySelections,
           externalSpend: newExtSpend,
           headcountEffort: newHCSpend
-        };
-      });
-    }
-  }, {
-    key: 'setScenarioDate',
-    value: function setScenarioDate(newScenarioDate) {
-      this.setScenarioState(function (prevState, props) {
-        return {
-          scenarioDate: newScenarioDate
         };
       });
     }
@@ -3567,9 +3570,7 @@ var PharmaRevRec = function (_React$Component) {
             setModelName: this.setModelName,
             setStartYear: this.setStartYear,
             setYearsOut: this.setYearsOut,
-            yearsOut: yearsOut,
-            scenarioDate: scenarioDate,
-            setScenarioDate: this.setScenarioDate
+            yearsOut: yearsOut
           }),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ScenarioManager, {
             scenario: this.state.scenarios,
@@ -3577,7 +3578,11 @@ var PharmaRevRec = function (_React$Component) {
             deleteScenario: this.deleteScenario,
             editScenarioName: this.editScenarioName,
             setActiveScenarioId: this.setActiveScenarioId,
-            activeScenarioId: this.state.activeScenarioId
+            activeScenarioId: this.state.activeScenarioId,
+            scenarioDate: scenarioDate,
+            setScenarioDate: this.setScenarioDate,
+            startYear: startYear,
+            yearsOut: yearsOut
           }),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(YearDisplay, {
             startYear: startYear,
@@ -3650,7 +3655,8 @@ var PharmaRevRec = function (_React$Component) {
             displaySelections: displaySelections,
             percentComplete: percentComplete,
             percentCompleteCum: percentCompleteCum,
-            revenueMilestones: revenueMilestones
+            revenueMilestones: revenueMilestones,
+            scenarioDate: scenarioDate
           }),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(DeferredRevenueRoll, {
             startYear: startYear,
@@ -3676,6 +3682,19 @@ var PharmaRevRec = function (_React$Component) {
             scenarios: scenarios,
             scenarioNames: scenarioNames,
             totalSpend: totalSpend
+          }),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(PeriodAnalytic, {
+            startYear: startYear,
+            yearsOut: yearsOut,
+            externalSpend: externalSpend,
+            headcountEffort: headcountEffort,
+            headcountSpend: headcountSpend,
+            programs: programs,
+            totalProgramSpend: totalProgramSpend,
+            analyticComparisonIndex: analyticComparisonIndex,
+            scenarios: scenarios,
+            scenarioNames: scenarioNames,
+            scenarioDate: scenarioDate
           })
         )
       );
@@ -3768,7 +3787,7 @@ function SideNavigation(props) {
         react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
           'td',
           { className: 'a' },
-          'Active Scenario'
+          'Active Version'
         )
       ),
       react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
@@ -3803,13 +3822,11 @@ var ModelSetup = function (_React$Component2) {
 
     _this4.state = {
       startYear: _this4.props.startYear,
-      yearsOut: _this4.props.yearsOut,
-      scenarioDate: _this4.props.scenarioDate
+      yearsOut: _this4.props.yearsOut
     };
 
     _this4.setLocalStartYear = _this4.setLocalStartYear.bind(_this4);
     _this4.setLocalYearsOut = _this4.setLocalYearsOut.bind(_this4);
-    _this4.setLocalScenarioDate = _this4.setLocalScenarioDate.bind(_this4);
     _this4.onSubmitClick = _this4.onSubmitClick.bind(_this4);
     return _this4;
   }
@@ -3827,16 +3844,10 @@ var ModelSetup = function (_React$Component2) {
       this.setState({ yearsOut: newYearsOut });
     }
   }, {
-    key: 'setLocalScenarioDate',
-    value: function setLocalScenarioDate(newScenarioDate) {
-      this.setState({ scenarioDate: newScenarioDate });
-    }
-  }, {
     key: 'onSubmitClick',
     value: function onSubmitClick(event) {
       this.props.setStartYear(this.state.startYear);
       this.props.setYearsOut(this.state.yearsOut);
-      this.props.setScenarioDate(this.state.scenarioDate);
     }
   }, {
     key: 'render',
@@ -3847,7 +3858,6 @@ var ModelSetup = function (_React$Component2) {
       var startYear = this.props.startYear;
       var setModelName = this.props.setModelName;
       var yearsOut = this.props.yearsOut;
-      var scenarioDate = this.props.scenarioDate;
 
       var periodSelections = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodLabels"])(startYear, yearsOut);
 
@@ -3895,11 +3905,15 @@ var ModelSetup = function (_React$Component2) {
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
                 'td',
                 { className: 'long' },
-                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('input', {
-                  value: this.state.startYear,
-                  onChange: function onChange(e) {
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                  className: 'numerical',
+                  onValueChange: function onValueChange(values, e) {
                     return _this5.setLocalStartYear(e.target.value);
-                  }
+                  },
+                  value: this.state.startYear,
+                  thousandSeparator: false,
+                  isNumericString: true,
+                  allowNegative: false
                 })
               )
             ),
@@ -3914,35 +3928,16 @@ var ModelSetup = function (_React$Component2) {
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
                 'td',
                 { className: 'long' },
-                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('input', {
-                  value: this.state.yearsOut,
-                  onChange: function onChange(e) {
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                  className: 'numerical',
+                  onValueChange: function onValueChange(values, e) {
                     return _this5.setLocalYearsOut(e.target.value);
-                  }
-                })
-              )
-            ),
-            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-              'tr',
-              null,
-              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-                'th',
-                null,
-                'Current Scenario Period'
-              ),
-              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-                'td',
-                { className: 'long' },
-                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-                  'select',
-                  {
-                    value: this.state.scenarioDate,
-                    onChange: function onChange(e) {
-                      return _this5.setLocalScenarioDate(e.target.value);
-                    }
                   },
-                  react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
-                )
+                  value: this.state.yearsOut,
+                  thousandSeparator: true,
+                  isNumericString: true,
+                  allowNegative: false
+                })
               )
             )
           )
@@ -3970,8 +3965,14 @@ function ScenarioManager(props) {
       deleteScenario = props.deleteScenario,
       editScenarioName = props.editScenarioName,
       setActiveScenarioId = props.setActiveScenarioId,
-      activeScenarioId = props.activeScenarioId;
+      activeScenarioId = props.activeScenarioId,
+      setScenarioDate = props.setScenarioDate,
+      scenarioDate = props.scenarioDate,
+      startYear = props.startYear,
+      yearsOut = props.yearsOut;
 
+
+  var periodSelections = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodLabels"])(startYear, yearsOut);
 
   var scenarioRows = scenario.map(function (scenario, index) {
     var scenarioName = scenario.scenarioName;
@@ -3991,6 +3992,20 @@ function ScenarioManager(props) {
                 return editScenarioName(e.target.value, index);
               }
             })
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'select',
+              {
+                value: scenarioDate,
+                onChange: function onChange(e) {
+                  return setScenarioDate(e.target.value, index);
+                }
+              },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
+            )
           ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('td', null)
         )
@@ -4012,6 +4027,20 @@ function ScenarioManager(props) {
               }
             })
           ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'select',
+              {
+                value: scenarioDate,
+                onChange: function onChange(e) {
+                  return setScenarioDate(e.target.value, index);
+                }
+              },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
+            )
+          ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(DeleteItem, { index: index, removeItem: deleteScenario })
         )
       );
@@ -4024,7 +4053,7 @@ function ScenarioManager(props) {
     react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
       'h2',
       null,
-      'Scenario Manager'
+      'Version Manager'
     ),
     react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
       'table',
@@ -4040,6 +4069,11 @@ function ScenarioManager(props) {
             null,
             'Name'
           ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'th',
+            null,
+            'Version Period End'
+          ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('th', null)
         )
       ),
@@ -4049,7 +4083,7 @@ function ScenarioManager(props) {
         scenarioRows
       )
     ),
-    react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(AddItem, { addItem: addScenario, label: 'Scenario' })
+    react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(AddItem, { addItem: addScenario, label: 'Version' })
   );
 }
 
@@ -4264,20 +4298,6 @@ function RevenueMilestones(props) {
         react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
           'td',
           null,
-          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-            'select',
-            {
-              value: milestone.datePaid,
-              onChange: function onChange(e) {
-                return editMilestonePaid(milestoneIndex, e.target.value);
-              }
-            },
-            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
-          )
-        ),
-        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-          'td',
-          null,
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
             className: 'numerical',
             value: milestone.amount,
@@ -4319,11 +4339,6 @@ function RevenueMilestones(props) {
             'th',
             null,
             'Period Earned'
-          ),
-          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
-            'th',
-            null,
-            'Period Received'
           ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
             'th',
@@ -4900,7 +4915,8 @@ function RevenueRecognized(props) {
       displaySelections = props.displaySelections,
       revenueMilestones = props.revenueMilestones,
       percentComplete = props.percentComplete,
-      percentCompleteCum = props.percentCompleteCum;
+      percentCompleteCum = props.percentCompleteCum,
+      scenarioDate = props.scenarioDate;
 
 
   var milestoneRows = revenueMilestones.map(function (milestone, milestoneIndex) {
@@ -4945,6 +4961,21 @@ function RevenueRecognized(props) {
 
   var totalRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(milestoneRevEarned);
   var grandTotalRevenue = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(totalRevenueEarned);
+
+  var selectedQtr = Number(scenarioDate[1]);
+  var selectedYear = Number(scenarioDate.slice(3));
+  var currentPeriodRev = 0;
+  totalRevenueEarned.forEach(function (period) {
+    if (period.quarter === selectedQtr && period.year === selectedYear) {
+      return currentPeriodRev += period.amount;
+    }
+  });
+  var currentYTDPeriodRev = 0;
+  totalRevenueEarned.forEach(function (period) {
+    if (period.quarter <= selectedQtr && period.year === selectedYear) {
+      return currentYTDPeriodRev += period.amount;
+    }
+  });
 
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
     'section',
@@ -5002,6 +5033,53 @@ function RevenueRecognized(props) {
             react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
               displayType: 'text',
               value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(grandTotalRevenue, 1),
+              thousandSeparator: true
+            })
+          )
+        )
+      )
+    ),
+    react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('br', null),
+    react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+      'table',
+      null,
+      react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+        'tbody',
+        null,
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'tr',
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            null,
+            scenarioDate,
+            ' QTD revenue'
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            { className: 'numerical' },
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+              displayType: 'text',
+              value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(currentPeriodRev, 1),
+              thousandSeparator: true
+            })
+          )
+        ),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'tr',
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            null,
+            scenarioDate,
+            ' YTD revenue'
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            { className: 'numerical' },
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+              displayType: 'text',
+              value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(currentYTDPeriodRev, 1),
               thousandSeparator: true
             })
           )
@@ -5149,64 +5227,24 @@ function DeferredRevenueRoll(props) {
   );
 }
 
-var PeriodAnalytic = function (_React$Component3) {
-  _inherits(PeriodAnalytic, _React$Component3);
-
-  function PeriodAnalytic(props) {
-    _classCallCheck(this, PeriodAnalytic);
-
-    var _this6 = _possibleConstructorReturn(this, (PeriodAnalytic.__proto__ || Object.getPrototypeOf(PeriodAnalytic)).call(this, props));
-
-    _this6.state = {
-      selectedPeriod: "Q1 2018"
-    };
-
-    _this6.setSelectedPeriod = _this6.setSelectedPeriod.bind(_this6);
-    return _this6;
-  }
-
-  _createClass(PeriodAnalytic, [{
-    key: 'setSelectedPeriod',
-    value: function setSelectedPeriod(newPeriod) {
-      var newSelectedPeriod = newPeriod;
-      this.setState({ selectedPeriod: newPeriod });
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var programs = this.props.programs;
-      var externalSpend = this.props.externalSpend;
-      var headcountSpend = this.props.headcountSpend;
-      var totalProgramSpend = this.props.totalProgramSpend;
-      var headcountEffort = this.props.headcountEffort;
-
-      var comparisonModel = this.props.scenarios[this.props.analyticComparisonIndex];
-      var compExternalSpend = comparisonModel.externalSpend;
-      var compHeadcountEffort = comparisonModel.externalSpend;
-    }
-  }]);
-
-  return PeriodAnalytic;
-}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
-
-var PeriodBridge = function (_React$Component4) {
-  _inherits(PeriodBridge, _React$Component4);
+var PeriodBridge = function (_React$Component3) {
+  _inherits(PeriodBridge, _React$Component3);
 
   function PeriodBridge(props) {
     _classCallCheck(this, PeriodBridge);
 
-    var _this7 = _possibleConstructorReturn(this, (PeriodBridge.__proto__ || Object.getPrototypeOf(PeriodBridge)).call(this, props));
+    var _this6 = _possibleConstructorReturn(this, (PeriodBridge.__proto__ || Object.getPrototypeOf(PeriodBridge)).call(this, props));
 
-    _this7.state = {
+    _this6.state = {
       selectedPeriod: "Q1 2018",
       selectedComparisonIndex: 0,
       selectedPeriodType: "QTD"
     };
 
-    _this7.setSelectedPeriod = _this7.setSelectedPeriod.bind(_this7);
-    _this7.setSelectedComparisonIndex = _this7.setSelectedComparisonIndex.bind(_this7);
-    _this7.setSelectedPeriodType = _this7.setSelectedPeriodType.bind(_this7);
-    return _this7;
+    _this6.setSelectedPeriod = _this6.setSelectedPeriod.bind(_this6);
+    _this6.setSelectedComparisonIndex = _this6.setSelectedComparisonIndex.bind(_this6);
+    _this6.setSelectedPeriodType = _this6.setSelectedPeriodType.bind(_this6);
+    return _this6;
   }
 
   _createClass(PeriodBridge, [{
@@ -5237,7 +5275,7 @@ var PeriodBridge = function (_React$Component4) {
   }, {
     key: 'render',
     value: function render() {
-      var _this8 = this;
+      var _this7 = this;
 
       var programs = this.props.programs;
       var startYear = this.props.startYear;
@@ -5269,33 +5307,9 @@ var PeriodBridge = function (_React$Component4) {
       var totalRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(milestoneRevEarned);
       var grandTotalRevenue = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(totalRevenueEarned);
 
-      var selectedRevenueEarned = 0;
-      totalRevenueEarned.forEach(function (period) {
-        if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-          selectedRevenueEarned += period.amount;
-          return selectedRevenueEarned;
-        } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
-          selectedRevenueEarned += period.amount;
-          return selectedRevenueEarned;
-        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-          selectedRevenueEarned += period.amount;
-          return selectedRevenueEarned;
-        }
-      });
+      var selectedRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
 
-      var selectedPeriodSpend = 0;
-      totalSpend.forEach(function (period) {
-        if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-          selectedPeriodSpend += period.amount;
-          return selectedPeriodSpend;
-        } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-          selectedPeriodSpend += period.amount;
-          return selectedPeriodSpend;
-        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-          selectedPeriodSpend += period.amount;
-          return selectedPeriodSpend;
-        }
-      });
+      var selectedPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalSpend, selectedQtr, selectedYear, selectedPeriodType);
 
       //Comparison Period Variable//
       var comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
@@ -5324,65 +5338,17 @@ var PeriodBridge = function (_React$Component4) {
       });
 
       var compTotalRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(compMilestoneRevEarned);
-      var compRevenueEarned = 0;
-      compTotalRevenueEarned.forEach(function (period) {
-        if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-          compRevenueEarned += period.amount;
-          return compRevenueEarned;
-        } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
-          compRevenueEarned += period.amount;
-          return compRevenueEarned;
-        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-          compRevenueEarned += period.amount;
-          return compRevenueEarned;
-        }
-      });
+      var compRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(compTotalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
 
-      var compSelectedPeriodSpend = 0;
-      compTotalSpend.forEach(function (period) {
-        if (selectedPeriodType === "QTD" && period.year === selectedYear && period.quarter === selectedQtr) {
-          compSelectedPeriodSpend += period.amount;
-          return compSelectedPeriodSpend;
-        } else if (selectedPeriodType === "YTD" && period.year === selectedYear && period.quarter <= selectedQtr) {
-          compSelectedPeriodSpend += period.amount;
-          return compSelectedPeriodSpend;
-        } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-          compSelectedPeriodSpend += period.amount;
-          return compSelectedPeriodSpend;
-        }
-      });
+      var compSelectedPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(compTotalSpend, selectedQtr, selectedYear, selectedPeriodType);;
 
       //Program Change in Spend Rows//
       var periodBridgeRow = programs.map(function (program, programIndex) {
-        var selectedProgSpendPeriod = 0;
-        totalProgramSpend[programIndex].forEach(function (period) {
-          if (selectedPeriodType === "QTD" && period.quarter === selectedQtr && period.year === selectedYear) {
-            selectedProgSpendPeriod += period.amount;
-            return selectedProgSpendPeriod;
-          } else if (selectedPeriodType === "YTD" && period.quarter <= selectedQtr && period.year === selectedYear) {
-            selectedProgSpendPeriod += period.amount;
-            return selectedProgSpendPeriod;
-          } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-            selectedProgSpendPeriod += period.amount;
-            return selectedProgSpendPeriod;
-          }
-        });
+        var selectedProgSpendPeriod = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalProgramSpend[programIndex], selectedQtr, selectedYear, selectedPeriodType);
         var grandTotalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(totalProgramSpend[programIndex]);
-        var compProgSpendPeriod = 0;
-        compTotalProgramSpend[programIndex].forEach(function (period) {
-          if (selectedPeriodType === "QTD" && period.quarter === selectedQtr && period.year === selectedYear) {
-            compProgSpendPeriod += period.amount;
-            return compProgSpendPeriod;
-          } else if (selectedPeriodType === "YTD" && period.quarter <= selectedQtr && period.year === selectedYear) {
-            compProgSpendPeriod += period.amount;
-            return compProgSpendPeriod;
-          } else if (selectedPeriodType === "Full Year" && period.year === selectedYear) {
-            compProgSpendPeriod += period.amount;
-            return compProgSpendPeriod;
-          }
-        });
+        var compProgSpendPeriod = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(compTotalProgramSpend[programIndex], selectedQtr, selectedYear, selectedPeriodType);
         var compGrandTotalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(compTotalProgramSpend[programIndex]);
-        var periodDifference = grandTotalRevenue * (compProgSpendPeriod / compGrandTotalProgramSpend * (compGrandTotalProgramSpend / compGrandTotal) - selectedProgSpendPeriod / grandTotalProgramSpend * (grandTotalProgramSpend / _this8.props.grandTotalSpend));
+        var periodDifference = grandTotalRevenue * (compProgSpendPeriod / compGrandTotalProgramSpend * (compGrandTotalProgramSpend / compGrandTotal) - selectedProgSpendPeriod / grandTotalProgramSpend * (grandTotalProgramSpend / _this7.props.grandTotalSpend));
         return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
           react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
           null,
@@ -5427,7 +5393,7 @@ var PeriodBridge = function (_React$Component4) {
               { className: 'numerical' },
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
                 displayType: 'text',
-                value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])((compProgSpendPeriod / compGrandTotalProgramSpend * (compGrandTotalProgramSpend / compGrandTotal) - selectedProgSpendPeriod / grandTotalProgramSpend * (grandTotalProgramSpend / _this8.props.grandTotalSpend)) * 100, 10000),
+                value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])((compProgSpendPeriod / compGrandTotalProgramSpend * (compGrandTotalProgramSpend / compGrandTotal) - selectedProgSpendPeriod / grandTotalProgramSpend * (grandTotalProgramSpend / _this7.props.grandTotalSpend)) * 100, 1000),
                 thousandSeparator: true,
                 suffix: "%"
               })
@@ -5466,7 +5432,7 @@ var PeriodBridge = function (_React$Component4) {
                   {
                     value: this.state.selectedPeriod,
                     onChange: function onChange(e) {
-                      return _this8.setSelectedPeriod(e.target.value);
+                      return _this7.setSelectedPeriod(e.target.value);
                     }
                   },
                   react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
@@ -5489,7 +5455,7 @@ var PeriodBridge = function (_React$Component4) {
                   {
                     value: scenarios[this.state.selectedComparisonIndex].scenarioName,
                     onChange: function onChange(e) {
-                      return _this8.setSelectedComparisonIndex(e.target.value);
+                      return _this7.setSelectedComparisonIndex(e.target.value);
                     }
                   },
                   react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: this.props.scenarioNames })
@@ -5512,7 +5478,7 @@ var PeriodBridge = function (_React$Component4) {
                   {
                     value: this.state.setSelectedPeriodType,
                     onChange: function onChange(e) {
-                      return _this8.setSelectedPeriodType(e.target.value);
+                      return _this7.setSelectedPeriodType(e.target.value);
                     }
                   },
                   react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: _model__WEBPACK_IMPORTED_MODULE_4__["periodType"] })
@@ -5657,6 +5623,481 @@ var PeriodBridge = function (_React$Component4) {
   }]);
 
   return PeriodBridge;
+}(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
+
+var PeriodAnalytic = function (_React$Component4) {
+  _inherits(PeriodAnalytic, _React$Component4);
+
+  function PeriodAnalytic(props) {
+    _classCallCheck(this, PeriodAnalytic);
+
+    var _this8 = _possibleConstructorReturn(this, (PeriodAnalytic.__proto__ || Object.getPrototypeOf(PeriodAnalytic)).call(this, props));
+
+    _this8.state = {
+      selectedPeriod: _this8.props.scenarioDate,
+      selectedComparisonIndex: 0,
+      selectedPeriodType: "QTD"
+    };
+
+    _this8.setSelectedPeriod = _this8.setSelectedPeriod.bind(_this8);
+    _this8.setSelectedComparisonIndex = _this8.setSelectedComparisonIndex.bind(_this8);
+    _this8.setSelectedPeriodType = _this8.setSelectedPeriodType.bind(_this8);
+    return _this8;
+  }
+
+  _createClass(PeriodAnalytic, [{
+    key: 'setSelectedPeriod',
+    value: function setSelectedPeriod(newPeriod) {
+      var newSelectedPeriod = newPeriod;
+      this.setState({ selectedPeriod: newPeriod });
+    }
+  }, {
+    key: 'setSelectedComparisonIndex',
+    value: function setSelectedComparisonIndex(newComparison) {
+      var scenarios = this.props.scenarios;
+      var newIndex = 0;
+      scenarios.forEach(function (scenario, scenarioIndex) {
+        if (scenario.scenarioName === newComparison) {
+          newIndex = scenarioIndex;
+          return newIndex;
+        }
+      });
+      this.setState({ selectedComparisonIndex: newIndex });
+    }
+  }, {
+    key: 'setSelectedPeriodType',
+    value: function setSelectedPeriodType(newType) {
+      var newSelectedPeriodType = newType;
+      this.setState({ selectedPeriodType: newSelectedPeriodType });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this9 = this;
+
+      var programs = this.props.programs;
+      var externalSpend = this.props.externalSpend;
+      var headcountSpend = this.props.headcountSpend;
+      var totalProgramSpend = this.props.totalProgramSpend;
+      var headcountEffort = this.props.headcountEffort;
+      var startYear = this.props.startYear;
+      var yearsOut = this.props.yearsOut;
+      var scenarioDate = this.props.scenarioDate;
+      var versionQtr = Number(scenarioDate[1]);
+      var versionYear = Number(scenarioDate.slice(3));
+
+      var selectedQtr = Number(this.state.selectedPeriod[1]);
+      var selectedYear = Number(this.state.selectedPeriod.slice(3));
+      var scenarios = this.props.scenarios;
+      var selectedPeriodType = this.state.selectedPeriodType;
+      var periodSelections = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodLabels"])(startYear, yearsOut);
+
+      var comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
+      var compExternalSpend = comparisonModel.externalSpend;
+      var compHeadcountEffort = comparisonModel.headcountEffort;
+      var compHeadcountSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(compHeadcountEffort, programs);
+      var compTotalProgramSpend = compExternalSpend.map(function (progSpend, progIndex) {
+        var totalSpend = progSpend.map(function (extSpend, extSpendIndex) {
+          var copiedExtSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(extSpend);
+          copiedExtSpend.amount = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
+          return copiedExtSpend;
+        });
+        return totalSpend;
+      });
+
+      var externalSpendAnalyticRows = programs.map(function (program, programIndex) {
+        var currentProgExtSpend = externalSpend[programIndex];
+        var currentPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+        var compProgExtSpend = compExternalSpend[programIndex];
+        var compPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+        var diffDollar = currentPeriodSpend - compPeriodSpend;
+        var diffPercent = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(diffDollar / compPeriodSpend, 10000);
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tr',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              null,
+              program.name
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: currentPeriodSpend,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: compPeriodSpend,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: diffDollar,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: diffPercent * 100,
+                suffix: "%"
+              })
+            )
+          )
+        );
+      });
+
+      var headcountSpendAnalyticRows = programs.map(function (program, programIndex) {
+        var currentProgExtSpend = headcountSpend[programIndex];
+        var currentPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+        var compProgExtSpend = compHeadcountSpend[programIndex];
+        var compPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+        var diffDollar = currentPeriodSpend - compPeriodSpend;
+        var diffPercent = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(diffDollar / compPeriodSpend, 10000);
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tr',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              null,
+              program.name
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: currentPeriodSpend,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: compPeriodSpend,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: diffDollar,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: diffPercent * 100,
+                suffix: "%"
+              })
+            )
+          )
+        );
+      });
+
+      var totalSpendAnalyticRows = programs.map(function (program, programIndex) {
+        var currentProgExtSpend = totalProgramSpend[programIndex];
+        var currentPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+        var compProgExtSpend = compTotalProgramSpend[programIndex];
+        var compPeriodSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+        var diffDollar = currentPeriodSpend - compPeriodSpend;
+        var diffPercent = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(diffDollar / compPeriodSpend, 10000);
+        return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tr',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              null,
+              program.name
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: currentPeriodSpend,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: compPeriodSpend,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: diffDollar,
+                thousandSeparator: true
+              })
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'td',
+              { className: 'numerical' },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+                displayType: 'text',
+                value: diffPercent * 100,
+                suffix: "%"
+              })
+            )
+          )
+        );
+      });
+
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+        'section',
+        { id: 'Analytics' },
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'h2',
+          null,
+          'Analytic Engine'
+        ),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'table',
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tbody',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'tr',
+              null,
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'td',
+                null,
+                'Selected Comparison Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'td',
+                null,
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                  'select',
+                  {
+                    value: this.state.selectedPeriod,
+                    onChange: function onChange(e) {
+                      return _this9.setSelectedPeriod(e.target.value);
+                    }
+                  },
+                  react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
+                )
+              )
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'tr',
+              null,
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'td',
+                null,
+                'Selected Comparison Model'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'td',
+                null,
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                  'select',
+                  {
+                    value: scenarios[this.state.selectedComparisonIndex].scenarioName,
+                    onChange: function onChange(e) {
+                      return _this9.setSelectedComparisonIndex(e.target.value);
+                    }
+                  },
+                  react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: this.props.scenarioNames })
+                )
+              )
+            ),
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'tr',
+              null,
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'td',
+                null,
+                'Period Type'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'td',
+                null,
+                react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                  'select',
+                  {
+                    value: this.state.setSelectedPeriodType,
+                    onChange: function onChange(e) {
+                      return _this9.setSelectedPeriodType(e.target.value);
+                    }
+                  },
+                  react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: _model__WEBPACK_IMPORTED_MODULE_4__["periodType"] })
+                )
+              )
+            )
+          )
+        ),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('br', null),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'table',
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'thead',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'tr',
+              null,
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'External Costs'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Current Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Comparison Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Change - $'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Change - %'
+              )
+            )
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tbody',
+            null,
+            externalSpendAnalyticRows
+          )
+        ),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('br', null),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'table',
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'thead',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'tr',
+              null,
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Headcount Costs'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Current Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Comparison Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Change - $'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Change - %'
+              )
+            )
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tbody',
+            null,
+            headcountSpendAnalyticRows
+          )
+        ),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('br', null),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'table',
+          null,
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'thead',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'tr',
+              null,
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Total Costs'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Current Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Comparison Period'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Change - $'
+              ),
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+                'th',
+                null,
+                'Change - %'
+              )
+            )
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'tbody',
+            null,
+            totalSpendAnalyticRows
+          )
+        )
+      );
+    }
+  }]);
+
+  return PeriodAnalytic;
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 function Dropdown(_ref2) {
@@ -5990,7 +6431,7 @@ react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render(react__WEBPACK_IMPORTED_
 /*!*************************!*\
   !*** ./static/model.js ***!
   \*************************/
-/*! exports provided: displayOptions, periodType, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels, displayType, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears, arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray, percentCompleteCummArray */
+/*! exports provided: displayOptions, periodType, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears, arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray, percentCompleteCummArray, periodAmountCalc */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6002,7 +6443,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayArray", function() { return displayArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dataToDisplay", function() { return dataToDisplay; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "periodLabels", function() { return periodLabels; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "displayType", function() { return displayType; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "yearsArray", function() { return yearsArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addDataArray", function() { return addDataArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "editDataArrayLength", function() { return editDataArrayLength; });
@@ -6016,6 +6456,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "percentCompleteArray", function() { return percentCompleteArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dollarCompleteCummArray", function() { return dollarCompleteCummArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "percentCompleteCummArray", function() { return percentCompleteCummArray; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "periodAmountCalc", function() { return periodAmountCalc; });
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var math = __webpack_require__(/*! math.js */ "./node_modules/math.js/index.js");
@@ -6055,6 +6496,7 @@ var defaultState = {
     id: 1002,
     fteRate: 250000
   }],
+  activityLog: [],
   scenarios: [{
     scenarioName: "Q2 2018 close",
     scenarioDate: "Q2 2018",
@@ -6325,23 +6767,6 @@ function periodLabels(startYear, yearsOut) {
   return periodLabels;
 }
 
-function displayType(props) {
-  var quarterDisplay = [];
-  displaySelections.forEach(function (selection, selectionIndex) {
-    var id = 0;
-    var selectionType = "Annual";
-    for (var x = 1; x < 5; x++) {
-      id = "" + startYear + selectionIndex;
-      selectionType = selection;
-      quarterDisplay.push({
-        id: Number(id),
-        selectionType: selectionType
-      });
-    }
-  });
-  return quarterDisplay;
-}
-
 function yearsArray(startYear, yearsOut) {
   var years = [];
   for (var x = 0; x < yearsOut; x++) {
@@ -6507,6 +6932,20 @@ function percentCompleteCummArray(dollarCompleteCummArray, grandTotalSpend) {
     return periodCopy;
   });
   return percentCompleteCummArray;
+}
+
+function periodAmountCalc(array, currentQtr, currentYear, periodType) {
+  var periodAmount = 0;
+  array.forEach(function (period) {
+    if (periodType === "QTD" && period.quarter === currentQtr && period.year === currentYear) {
+      return periodAmount += period.amount;
+    } else if (periodType === "YTD" && period.quarter <= currentQtr && period.year === currentYear) {
+      return periodAmount += period.amount;
+    } else if (periodType === "Full Year" && period.year === currentYear) {
+      return periodAmount += period.amount;
+    }
+  });
+  return periodAmount;
 }
 
 /***/ }),
