@@ -3577,7 +3577,6 @@ var PharmaRevRec = function (_React$Component) {
             editScenarioName: this.editScenarioName,
             setActiveScenarioId: this.setActiveScenarioId,
             activeScenarioId: this.state.activeScenarioId,
-            scenarioDate: scenarioDate,
             setScenarioDate: this.setScenarioDate,
             startYear: startYear,
             yearsOut: yearsOut
@@ -3965,7 +3964,6 @@ function ScenarioManager(props) {
       setActiveScenarioId = props.setActiveScenarioId,
       activeScenarioId = props.activeScenarioId,
       setScenarioDate = props.setScenarioDate,
-      scenarioDate = props.scenarioDate,
       startYear = props.startYear,
       yearsOut = props.yearsOut;
 
@@ -3974,6 +3972,7 @@ function ScenarioManager(props) {
 
   var scenarioRows = scenario.map(function (scenario, index) {
     var scenarioName = scenario.scenarioName;
+    var scenarioDate = scenario.scenarioDate;
     if (index === 0 || index <= activeScenarioId) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
         react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
@@ -5297,14 +5296,7 @@ var PeriodBridge = function (_React$Component3) {
       var compExternalSpend = comparisonModel.externalSpend;
       var compHeadcountEffort = comparisonModel.headcountEffort;
       var compHeadcountSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(compHeadcountEffort, programs);
-      var compTotalProgramSpend = compExternalSpend.map(function (progSpend, progIndex) {
-        var totalSpend = progSpend.map(function (extSpend, extSpendIndex) {
-          var copiedExtSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(extSpend);
-          copiedExtSpend.amount = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
-          return copiedExtSpend;
-        });
-        return totalSpend;
-      });
+      var compTotalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateTotalSpendArrays"])(compExternalSpend, compHeadcountSpend);
 
       var compTotalSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(compTotalProgramSpend);
       var compGrandTotal = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(compTotalSpend);
@@ -5676,14 +5668,7 @@ var PeriodAnalytic = function (_React$Component4) {
       var compExternalSpend = comparisonModel.externalSpend;
       var compHeadcountEffort = comparisonModel.headcountEffort;
       var compHeadcountSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(compHeadcountEffort, programs);
-      var compTotalProgramSpend = compExternalSpend.map(function (progSpend, progIndex) {
-        var totalSpend = progSpend.map(function (extSpend, extSpendIndex) {
-          var copiedExtSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(extSpend);
-          copiedExtSpend.amount = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
-          return copiedExtSpend;
-        });
-        return totalSpend;
-      });
+      var compTotalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateTotalSpendArrays"])(compExternalSpend, compHeadcountSpend);
 
       var externalSpendAnalyticRows = programs.map(function (program, programIndex) {
         var currentProgExtSpend = externalSpend[programIndex];

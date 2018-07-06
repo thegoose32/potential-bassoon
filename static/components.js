@@ -182,7 +182,6 @@ export class PharmaRevRec extends React.Component {
         return newScenario;
       })
 
-
       return {
         yearsOut: newYearsOut,
         scenarios: newScenarios
@@ -455,7 +454,6 @@ export class PharmaRevRec extends React.Component {
             editScenarioName={this.editScenarioName}
             setActiveScenarioId={this.setActiveScenarioId}
             activeScenarioId={this.state.activeScenarioId}
-            scenarioDate={scenarioDate}
             setScenarioDate={this.setScenarioDate}
             startYear={startYear}
             yearsOut={yearsOut}
@@ -728,7 +726,6 @@ function ScenarioManager(props) {
     setActiveScenarioId,
     activeScenarioId,
     setScenarioDate,
-    scenarioDate,
     startYear,
     yearsOut
   } = props;
@@ -737,6 +734,7 @@ function ScenarioManager(props) {
 
   let scenarioRows = scenario.map((scenario, index) => {
     let scenarioName = scenario.scenarioName;
+    let scenarioDate = scenario.scenarioDate;
     if (index === 0 || index <= activeScenarioId) {
       return (
         <React.Fragment>
