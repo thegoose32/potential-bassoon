@@ -8,7 +8,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   yearsArray, addDataArray, editDataArrayLength, editDataArrayYears,
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
-  percentCompleteCummArray, periodType, periodAmountCalc
+  percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays
 
 } from './model'
 
@@ -147,39 +147,45 @@ export class PharmaRevRec extends React.Component {
 
   setYearsOut(yearsOut) {
     let newYearsOut = Number(yearsOut); 
-    this.setState({yearsOut: newYearsOut});
+    this.setState((prevState, props) => {
 
-    this.setScenarioState((prevState, props) => {
       let startYear = this.state.startYear; 
       let extSpend = prevState.externalSpend;
       let hcSpend = prevState.headcountEffort;
       
-      let displaySelections = []; 
-      for (let x = 0; x < newYearsOut; x++) {
-        let currentYear = startYear + x;
-        displaySelections.push(
-          {
-            year: currentYear,
-            type: "Annual"
-          }
-        );
-      }
+      let scenarios = prevState.scenarios;
+      let newScenarios = scenarios.map((scenario, scenarioIndex) => {
+        let newScenario = keepCloning(scenario);
+        let displaySelections = []; 
+        for (let x = 0; x < newYearsOut; x++) {
+          let currentYear = startYear + x;
+          displaySelections.push(
+            {
+              year: currentYear,
+              type: "Annual"
+            }
+          );
+        }
+        newScenario.displaySelections = displaySelections;
 
-      let newExtSpend = extSpend.map((array) => {
-        let arrayLength = editDataArrayLength(array, startYear, newYearsOut);
-        return editDataArrayYears(arrayLength, startYear, newYearsOut);
-      })
+        let newExtSpend = newScenario.externalSpend.map((array) => {
+          let arrayLength = editDataArrayLength(array, startYear, newYearsOut);
+          return editDataArrayYears(arrayLength, startYear, newYearsOut);
+        })
 
-      let newHCSpend = hcSpend.map((array) => {
-        let arrayLength = editDataArrayLength(array, startYear, newYearsOut);
-        return editDataArrayYears(arrayLength, startYear, newYearsOut);
+        let newHCEffort = newScenario.headcountEffort.map((array) => {
+          let arrayLength = editDataArrayLength(array, startYear, newYearsOut);
+          return editDataArrayYears(arrayLength, startYear, newYearsOut);
+        })
+        newScenario.externalSpend = newExtSpend;
+        newScenario.headcountEffort = newHCEffort;
+        return newScenario;
       })
 
 
       return {
-        displaySelections: displaySelections,
-        externalSpend: newExtSpend,
-        headcountEffort: newHCSpend
+        yearsOut: newYearsOut,
+        scenarios: newScenarios
       }
     })
   }
@@ -408,15 +414,7 @@ export class PharmaRevRec extends React.Component {
     } = this.state;
     
     let headcountSpend = calculateHeadcountSpend(headcountEffort, programs); 
-    let totalProgramSpend = externalSpend.map((progSpend, progIndex) => {
-      let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
-        let copiedExtSpend = keepCloning(extSpend);
-        copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[progIndex][extSpendIndex].amount, 1000);
-        return copiedExtSpend;
-      })
-      return totalSpend;
-    });
-
+    let totalProgramSpend = calculateTotalSpendArrays(externalSpend, headcountSpend);
     let totalSpend = calculatePeriodTotal(totalProgramSpend);
     let grandTotalSpend = arrayTotal(totalSpend);
 
@@ -793,7 +791,7 @@ function ScenarioManager(props) {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Version Period End</th>
+            <th>Version Period</th>
             <th></th>
           </tr>
         </thead>
@@ -1152,15 +1150,7 @@ function HeadcountSpend (props) {
     editHeadcountEffort
   } = props;
 
-  let headcountEffortSpend = headcountEffort.map((hcEffort, hcEffortIndex) => {
-    let headcountSpend = hcEffort.map((hcSpend, hcSpendIndex) => {
-      let copiedHcSpend = keepCloning(hcSpend);
-      copiedHcSpend.amount = rounding(copiedHcSpend.amount * programs[hcEffortIndex].fteRate, 1000);
-      return copiedHcSpend
-    })
-    return headcountSpend;
-  });
-
+  let headcountEffortSpend = calculateHeadcountSpend(headcountEffort, programs);
   let headcountEffortRow = headcountEffortSpend.map((hcEffort, hcEffortIndex) => {
     let totalHeadcountEffort = arrayTotal(hcEffort); 
     return (
@@ -1406,18 +1396,8 @@ function RevenueRecognized(props) {
 
   let selectedQtr = Number(scenarioDate[1]);
   let selectedYear = Number(scenarioDate.slice(3));
-  let currentPeriodRev = 0;
-  totalRevenueEarned.forEach((period) => {
-    if (period.quarter === selectedQtr && period.year === selectedYear) {
-      return currentPeriodRev += period.amount
-    }
-  });
-  let currentYTDPeriodRev = 0;
-  totalRevenueEarned.forEach((period) => {
-    if (period.quarter <= selectedQtr && period.year === selectedYear) {
-      return currentYTDPeriodRev += period.amount
-    }
-  });
+  let currentPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "QTD") 
+  let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "YTD")
 
   return (
     <section id="Revenue-Recognized">
@@ -1663,15 +1643,8 @@ class PeriodBridge extends React.Component {
     let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.headcountEffort;
     let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs); 
-    let compTotalProgramSpend = compExternalSpend.map((progSpend, progIndex) => {
-      let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
-        let copiedExtSpend = keepCloning(extSpend);
-        copiedExtSpend.amount = rounding(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
-        return copiedExtSpend;
-      })
-      return totalSpend;
-    });
-
+    let compTotalProgramSpend = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
+     
     let compTotalSpend = calculatePeriodTotal(compTotalProgramSpend);
     let compGrandTotal = arrayTotal(compTotalSpend);
     let compPercentComplete = percentCompleteArray(compTotalSpend);
@@ -1682,7 +1655,6 @@ class PeriodBridge extends React.Component {
       let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, compPercentComplete, compPercentCompleteCumm); 
       return milestoneRev;
     })
-
 
     let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);
     let compRevenueEarned = periodAmountCalc(compTotalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
@@ -1919,15 +1891,8 @@ class PeriodAnalytic extends React.Component {
     let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.headcountEffort;
     let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs); 
-    let compTotalProgramSpend = compExternalSpend.map((progSpend, progIndex) => {
-      let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
-        let copiedExtSpend = keepCloning(extSpend);
-        copiedExtSpend.amount = rounding(extSpend.amount + compHeadcountSpend[progIndex][extSpendIndex].amount, 1000);
-        return copiedExtSpend;
-      })
-      return totalSpend;
-    });
-
+    let compTotalProgramSpend = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
+     
     let externalSpendAnalyticRows = programs.map((program, programIndex) => {
       let currentProgExtSpend = externalSpend[programIndex];
       let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
@@ -2059,8 +2024,6 @@ class PeriodAnalytic extends React.Component {
         </React.Fragment>
       )
     });
-
-
 
     return (
       <section id="Analytics">

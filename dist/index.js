@@ -3256,36 +3256,42 @@ var PharmaRevRec = function (_React$Component) {
       var _this2 = this;
 
       var newYearsOut = Number(yearsOut);
-      this.setState({ yearsOut: newYearsOut });
+      this.setState(function (prevState, props) {
 
-      this.setScenarioState(function (prevState, props) {
         var startYear = _this2.state.startYear;
         var extSpend = prevState.externalSpend;
         var hcSpend = prevState.headcountEffort;
 
-        var displaySelections = [];
-        for (var x = 0; x < newYearsOut; x++) {
-          var currentYear = startYear + x;
-          displaySelections.push({
-            year: currentYear,
-            type: "Annual"
+        var scenarios = prevState.scenarios;
+        var newScenarios = scenarios.map(function (scenario, scenarioIndex) {
+          var newScenario = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(scenario);
+          var displaySelections = [];
+          for (var x = 0; x < newYearsOut; x++) {
+            var currentYear = startYear + x;
+            displaySelections.push({
+              year: currentYear,
+              type: "Annual"
+            });
+          }
+          newScenario.displaySelections = displaySelections;
+
+          var newExtSpend = newScenario.externalSpend.map(function (array) {
+            var arrayLength = Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayLength"])(array, startYear, newYearsOut);
+            return Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayYears"])(arrayLength, startYear, newYearsOut);
           });
-        }
 
-        var newExtSpend = extSpend.map(function (array) {
-          var arrayLength = Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayLength"])(array, startYear, newYearsOut);
-          return Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayYears"])(arrayLength, startYear, newYearsOut);
-        });
-
-        var newHCSpend = hcSpend.map(function (array) {
-          var arrayLength = Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayLength"])(array, startYear, newYearsOut);
-          return Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayYears"])(arrayLength, startYear, newYearsOut);
+          var newHCEffort = newScenario.headcountEffort.map(function (array) {
+            var arrayLength = Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayLength"])(array, startYear, newYearsOut);
+            return Object(_model__WEBPACK_IMPORTED_MODULE_4__["editDataArrayYears"])(arrayLength, startYear, newYearsOut);
+          });
+          newScenario.externalSpend = newExtSpend;
+          newScenario.headcountEffort = newHCEffort;
+          return newScenario;
         });
 
         return {
-          displaySelections: displaySelections,
-          externalSpend: newExtSpend,
-          headcountEffort: newHCSpend
+          yearsOut: newYearsOut,
+          scenarios: newScenarios
         };
       });
     }
@@ -3528,15 +3534,7 @@ var PharmaRevRec = function (_React$Component) {
 
 
       var headcountSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(headcountEffort, programs);
-      var totalProgramSpend = externalSpend.map(function (progSpend, progIndex) {
-        var totalSpend = progSpend.map(function (extSpend, extSpendIndex) {
-          var copiedExtSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(extSpend);
-          copiedExtSpend.amount = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(extSpend.amount + headcountSpend[progIndex][extSpendIndex].amount, 1000);
-          return copiedExtSpend;
-        });
-        return totalSpend;
-      });
-
+      var totalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateTotalSpendArrays"])(externalSpend, headcountSpend);
       var totalSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(totalProgramSpend);
       var grandTotalSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(totalSpend);
 
@@ -4072,7 +4070,7 @@ function ScenarioManager(props) {
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
             'th',
             null,
-            'Version Period End'
+            'Version Period'
           ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('th', null)
         )
@@ -4606,15 +4604,7 @@ function HeadcountSpend(props) {
       editHeadcountEffort = props.editHeadcountEffort;
 
 
-  var headcountEffortSpend = headcountEffort.map(function (hcEffort, hcEffortIndex) {
-    var headcountSpend = hcEffort.map(function (hcSpend, hcSpendIndex) {
-      var copiedHcSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(hcSpend);
-      copiedHcSpend.amount = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(copiedHcSpend.amount * programs[hcEffortIndex].fteRate, 1000);
-      return copiedHcSpend;
-    });
-    return headcountSpend;
-  });
-
+  var headcountEffortSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(headcountEffort, programs);
   var headcountEffortRow = headcountEffortSpend.map(function (hcEffort, hcEffortIndex) {
     var totalHeadcountEffort = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(hcEffort);
     return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
@@ -4964,18 +4954,8 @@ function RevenueRecognized(props) {
 
   var selectedQtr = Number(scenarioDate[1]);
   var selectedYear = Number(scenarioDate.slice(3));
-  var currentPeriodRev = 0;
-  totalRevenueEarned.forEach(function (period) {
-    if (period.quarter === selectedQtr && period.year === selectedYear) {
-      return currentPeriodRev += period.amount;
-    }
-  });
-  var currentYTDPeriodRev = 0;
-  totalRevenueEarned.forEach(function (period) {
-    if (period.quarter <= selectedQtr && period.year === selectedYear) {
-      return currentYTDPeriodRev += period.amount;
-    }
-  });
+  var currentPeriodRev = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalRevenueEarned, selectedQtr, selectedYear, "QTD");
+  var currentYTDPeriodRev = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalRevenueEarned, selectedQtr, selectedYear, "YTD");
 
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
     'section',
@@ -6431,7 +6411,7 @@ react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render(react__WEBPACK_IMPORTED_
 /*!*************************!*\
   !*** ./static/model.js ***!
   \*************************/
-/*! exports provided: displayOptions, periodType, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears, arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray, percentCompleteCummArray, periodAmountCalc */
+/*! exports provided: displayOptions, periodType, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears, arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray, percentCompleteCummArray, periodAmountCalc, calculateTotalSpendArrays */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6457,6 +6437,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dollarCompleteCummArray", function() { return dollarCompleteCummArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "percentCompleteCummArray", function() { return percentCompleteCummArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "periodAmountCalc", function() { return periodAmountCalc; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calculateTotalSpendArrays", function() { return calculateTotalSpendArrays; });
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var math = __webpack_require__(/*! math.js */ "./node_modules/math.js/index.js");
@@ -6498,8 +6479,8 @@ var defaultState = {
   }],
   activityLog: [],
   scenarios: [{
-    scenarioName: "Q2 2018 close",
-    scenarioDate: "Q2 2018",
+    scenarioName: "Q1 2018 close",
+    scenarioDate: "Q1 2018",
     displaySelections: [{
       year: 2018,
       type: "Annual"
@@ -6806,6 +6787,21 @@ function editDataArrayLength(array, startYear, yearsOut) {
     }();
 
     if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+  } else if (array.length > yearsOut * 4) {
+    var newArray = keepCloning(array);
+
+    var _loop = function _loop(y) {
+      newArray.forEach(function (period) {
+        if (period.year === y) {
+          return period.amount = 0;
+        }
+      });
+    };
+
+    for (var y = startYear + yearsOut; y < startYear + array.length / 4; y++) {
+      _loop(y);
+    };
+    return newArray;
   } else {
     return array;
   }
@@ -6946,6 +6942,18 @@ function periodAmountCalc(array, currentQtr, currentYear, periodType) {
     }
   });
   return periodAmount;
+}
+
+function calculateTotalSpendArrays(externalSpend, headcountSpend) {
+  var totalProgramSpend = externalSpend.map(function (progSpend, progIndex) {
+    var totalSpend = progSpend.map(function (extSpend, extSpendIndex) {
+      var copiedExtSpend = keepCloning(extSpend);
+      copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[progIndex][extSpendIndex].amount, 1000);
+      return copiedExtSpend;
+    });
+    return totalSpend;
+  });
+  return totalProgramSpend;
 }
 
 /***/ }),

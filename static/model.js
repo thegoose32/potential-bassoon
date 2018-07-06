@@ -46,8 +46,8 @@ export const defaultState = {
   activityLog: [],
   scenarios: [
     {
-      scenarioName: "Q2 2018 close",
-      scenarioDate: "Q2 2018",
+      scenarioName: "Q1 2018 close",
+      scenarioDate: "Q1 2018",
       displaySelections: [
         {
           year: 2018,
@@ -414,6 +414,16 @@ export function editDataArrayLength(array, startYear, yearsOut) {
       })
     }
     return newArray;
+  } else if (array.length > yearsOut * 4) {
+    let newArray = keepCloning(array);
+    for (let y = startYear + yearsOut; y < startYear + (array.length / 4); y++) {
+      newArray.forEach((period) => {
+        if (period.year === y) {
+          return period.amount = 0;
+        }
+      })
+    };
+    return newArray;
   } else {
     return array;
   }
@@ -554,4 +564,17 @@ export function periodAmountCalc(array, currentQtr, currentYear, periodType) {
   });
   return periodAmount;
 }
+
+export function calculateTotalSpendArrays(externalSpend, headcountSpend) {
+  let totalProgramSpend = externalSpend.map((progSpend, progIndex) => {
+    let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
+      let copiedExtSpend = keepCloning(extSpend);
+      copiedExtSpend.amount = rounding(extSpend.amount + headcountSpend[progIndex][extSpendIndex].amount, 1000);
+      return copiedExtSpend;
+    })
+    return totalSpend;
+  });
+  return totalProgramSpend;
+}
+
 
