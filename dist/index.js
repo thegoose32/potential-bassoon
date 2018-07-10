@@ -3123,10 +3123,12 @@ var PharmaRevRec = function (_React$Component) {
     _this.deleteScenario = _this.deleteScenario.bind(_this);
     _this.editScenarioName = _this.editScenarioName.bind(_this);
     _this.setActiveScenarioId = _this.setActiveScenarioId.bind(_this);
+    _this.setPriorScenario = _this.setPriorScenario.bind(_this);
 
     //Model Setup
     _this.setModelName = _this.setModelName.bind(_this);
     _this.setStartYear = _this.setStartYear.bind(_this);
+    _this.setEndYear = _this.setEndYear.bind(_this);
     _this.setYearsOut = _this.setYearsOut.bind(_this);
     _this.setScenarioDate = _this.setScenarioDate.bind(_this);
 
@@ -3185,6 +3187,7 @@ var PharmaRevRec = function (_React$Component) {
         var copiedScenarioIndex = prevState.activeScenarioId;
         var copiedScenario = JSON.parse(JSON.stringify(scenarios[copiedScenarioIndex]));
         copiedScenario.scenarioName = "New scenario";
+        copiedScenario.scenarioID = prevState.scenarioID + 1;
         scenarios.push(copiedScenario);
         return {
           scenarios: scenarios
@@ -3240,6 +3243,23 @@ var PharmaRevRec = function (_React$Component) {
       });
     }
   }, {
+    key: 'setPriorScenario',
+    value: function setPriorScenario(priorScenario, scenarioIndex) {
+      this.setState(function (prevState, props) {
+        var scenarios = prevState.scenarios;
+        var priorScenarioID = scenarios.forEach(function (scenario, scenarioIndex) {
+          if (priorScenario === scenario.scenarioName) {
+            return scenario.scenarioID;
+          }
+        });
+        var currentScenario = scenarios[scenarioIndex];
+        currentScenario.priorScenarioID = priorScenarioID;
+        return {
+          scenarios: scenarios
+        };
+      });
+    }
+  }, {
     key: 'setModelName',
     value: function setModelName(name) {
       this.setState({ modelName: name });
@@ -3247,8 +3267,26 @@ var PharmaRevRec = function (_React$Component) {
   }, {
     key: 'setStartYear',
     value: function setStartYear(startYear) {
-      var startYearNum = Number(startYear);
-      this.setState({ startYear: startYearNum });
+      this.setState(function (prevState, props) {
+        var startYearNum = Number(startYear);
+        return {
+          startYear: startYearNum
+        };
+      });
+      var yearsOut = this.state.endYear - startYear + 1;
+      this.setYearsOut(yearsOut);
+    }
+  }, {
+    key: 'setEndYear',
+    value: function setEndYear(endYear) {
+      this.setState(function (prevState, props) {
+        var endYearNum = Number(endYear);
+        return {
+          endYear: endYearNum
+        };
+      });
+      var yearsOut = endYear - this.state.startYear + 1;
+      this.setYearsOut(yearsOut);
     }
   }, {
     key: 'setYearsOut',
@@ -3524,15 +3562,18 @@ var PharmaRevRec = function (_React$Component) {
           displaySelections = _state$scenarios$stat.displaySelections,
           revenueMilestones = _state$scenarios$stat.revenueMilestones,
           scenarioDate = _state$scenarios$stat.scenarioDate,
-          analyticComparisonIndex = _state$scenarios$stat.analyticComparisonIndex;
+          priorScenarioID = _state$scenarios$stat.priorScenarioID,
+          scenarioID = _state$scenarios$stat.scenarioID;
       var _state = this.state,
           modelName = _state.modelName,
           startYear = _state.startYear,
-          yearsOut = _state.yearsOut,
           programs = _state.programs,
-          scenarios = _state.scenarios;
+          scenarios = _state.scenarios,
+          endYear = _state.endYear,
+          activeScenarioId = _state.activeScenarioId;
 
 
+      var yearsOut = endYear - startYear + 1;
       var headcountSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(headcountEffort, programs);
       var totalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateTotalSpendArrays"])(externalSpend, headcountSpend);
       var totalSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(totalProgramSpend);
@@ -3547,6 +3588,17 @@ var PharmaRevRec = function (_React$Component) {
       var scenarioNames = scenarios.map(function (scenario) {
         return scenario.scenarioName;
       });
+
+      var priorVersionIndex = 0;
+      scenarios.forEach(function (scenario, scenarioIndex) {
+        if (priorScenarioID === 0) {
+          return priorVersionIndex = "Initial Model";
+        } else if (priorScenarioID === scenario.scenarioID) {
+          return priorVersionIndex = scenarioIndex;
+        }
+      });
+
+      var cummPercentDiff = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateCummPercentDiff"])(programs, startYear, yearsOut, scenarios, activeScenarioId, priorVersionIndex);
 
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
         'div',
@@ -3568,10 +3620,12 @@ var PharmaRevRec = function (_React$Component) {
             setModelName: this.setModelName,
             setStartYear: this.setStartYear,
             setYearsOut: this.setYearsOut,
-            yearsOut: yearsOut
+            yearsOut: yearsOut,
+            endYear: endYear,
+            setEndYear: this.setEndYear
           }),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(ScenarioManager, {
-            scenario: this.state.scenarios,
+            scenarios: this.state.scenarios,
             addScenario: this.addScenario,
             deleteScenario: this.deleteScenario,
             editScenarioName: this.editScenarioName,
@@ -3579,7 +3633,9 @@ var PharmaRevRec = function (_React$Component) {
             activeScenarioId: this.state.activeScenarioId,
             setScenarioDate: this.setScenarioDate,
             startYear: startYear,
-            yearsOut: yearsOut
+            yearsOut: yearsOut,
+            setPriorScenario: this.setPriorScenario,
+            scenarioNames: scenarioNames
           }),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(YearDisplay, {
             startYear: startYear,
@@ -3646,14 +3702,18 @@ var PharmaRevRec = function (_React$Component) {
             percentTotalCum: percentTotalCum,
             totalSpend: totalSpend
           }),
-          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RevenueRecognized, {
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(RevenueRecognizedModel, {
             startYear: startYear,
             yearsOut: yearsOut,
             displaySelections: displaySelections,
             percentComplete: percentComplete,
             percentCompleteCum: percentCompleteCum,
             revenueMilestones: revenueMilestones,
-            scenarioDate: scenarioDate
+            scenarioDate: scenarioDate,
+            cummPercentDiff: cummPercentDiff,
+            scenarios: scenarios,
+            programs: programs,
+            scenarioID: scenarioID
           }),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(DeferredRevenueRoll, {
             startYear: startYear,
@@ -3675,7 +3735,6 @@ var PharmaRevRec = function (_React$Component) {
             headcountSpend: headcountSpend,
             grandTotalSpend: grandTotalSpend,
             revenueMilestones: revenueMilestones,
-            analyticComparisonIndex: analyticComparisonIndex,
             scenarios: scenarios,
             scenarioNames: scenarioNames,
             totalSpend: totalSpend
@@ -3688,7 +3747,6 @@ var PharmaRevRec = function (_React$Component) {
             headcountSpend: headcountSpend,
             programs: programs,
             totalProgramSpend: totalProgramSpend,
-            analyticComparisonIndex: analyticComparisonIndex,
             scenarios: scenarios,
             scenarioNames: scenarioNames,
             scenarioDate: scenarioDate
@@ -3819,11 +3877,11 @@ var ModelSetup = function (_React$Component2) {
 
     _this4.state = {
       startYear: _this4.props.startYear,
-      yearsOut: _this4.props.yearsOut
+      endYear: _this4.props.endYear
     };
 
     _this4.setLocalStartYear = _this4.setLocalStartYear.bind(_this4);
-    _this4.setLocalYearsOut = _this4.setLocalYearsOut.bind(_this4);
+    _this4.setLocalEndYear = _this4.setLocalEndYear.bind(_this4);
     _this4.onSubmitClick = _this4.onSubmitClick.bind(_this4);
     return _this4;
   }
@@ -3835,16 +3893,16 @@ var ModelSetup = function (_React$Component2) {
       this.setState({ startYear: startYearNum });
     }
   }, {
-    key: 'setLocalYearsOut',
-    value: function setLocalYearsOut(yearsOut) {
-      var newYearsOut = Number(yearsOut);
-      this.setState({ yearsOut: newYearsOut });
+    key: 'setLocalEndYear',
+    value: function setLocalEndYear(endYear) {
+      var endYearNum = Number(endYear);
+      this.setState({ endYear: endYearNum });
     }
   }, {
     key: 'onSubmitClick',
     value: function onSubmitClick(event) {
       this.props.setStartYear(this.state.startYear);
-      this.props.setYearsOut(this.state.yearsOut);
+      this.props.setEndYear(this.state.endYear);
     }
   }, {
     key: 'render',
@@ -3854,7 +3912,8 @@ var ModelSetup = function (_React$Component2) {
       var modelName = this.props.modelName;
       var startYear = this.props.startYear;
       var setModelName = this.props.setModelName;
-      var yearsOut = this.props.yearsOut;
+      var endYear = this.props.endYear;
+      var yearsOut = endYear - startYear + 1;
 
       var periodSelections = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodLabels"])(startYear, yearsOut);
 
@@ -3920,7 +3979,7 @@ var ModelSetup = function (_React$Component2) {
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
                 'th',
                 null,
-                'Years Out'
+                'End Year'
               ),
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
                 'td',
@@ -3928,10 +3987,10 @@ var ModelSetup = function (_React$Component2) {
                 react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
                   className: 'numerical',
                   onValueChange: function onValueChange(values, e) {
-                    return _this5.setLocalYearsOut(e.target.value);
+                    return _this5.setLocalEndYear(e.target.value);
                   },
-                  value: this.state.yearsOut,
-                  thousandSeparator: true,
+                  value: this.state.endYear,
+                  thousandSeparator: false,
                   isNumericString: true,
                   allowNegative: false
                 })
@@ -3957,22 +4016,33 @@ var ModelSetup = function (_React$Component2) {
 }(react__WEBPACK_IMPORTED_MODULE_0___default.a.Component);
 
 function ScenarioManager(props) {
-  var scenario = props.scenario,
+  var scenarios = props.scenarios,
       addScenario = props.addScenario,
       deleteScenario = props.deleteScenario,
       editScenarioName = props.editScenarioName,
-      setActiveScenarioId = props.setActiveScenarioId,
       activeScenarioId = props.activeScenarioId,
       setScenarioDate = props.setScenarioDate,
       startYear = props.startYear,
-      yearsOut = props.yearsOut;
+      yearsOut = props.yearsOut,
+      setPriorScenario = props.setPriorScenario,
+      scenarioNames = props.scenarioNames;
 
 
   var periodSelections = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodLabels"])(startYear, yearsOut);
+  var priorPeriodSelections = scenarioNames;
+  priorPeriodSelections.unshift("N/A - Initial Version");
 
-  var scenarioRows = scenario.map(function (scenario, index) {
+  var scenarioRows = scenarios.map(function (scenario, index) {
     var scenarioName = scenario.scenarioName;
     var scenarioDate = scenario.scenarioDate;
+    var priorScenarioName = scenarios.forEach(function (priorScenario) {
+      if (scenario.priorScenarioID === priorScenario.scenarioID) {
+        return priorScenario.scenarioName;
+      }
+    });
+    var priorModelSelections = priorPeriodSelections.slice();
+    var currentModelName = priorModelSelections.indexOf(scenarioName);
+    priorModelSelections.splice(currentModelName, 1);
     if (index === 0 || index <= activeScenarioId) {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
         react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
@@ -4002,6 +4072,20 @@ function ScenarioManager(props) {
                 }
               },
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
+            )
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'select',
+              {
+                value: priorScenarioName,
+                onChange: function onChange(e) {
+                  return setPriorScenario(e.target.value, index);
+                }
+              },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: priorModelSelections })
             )
           ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('td', null)
@@ -4038,6 +4122,20 @@ function ScenarioManager(props) {
               react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: periodSelections })
             )
           ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'td',
+            null,
+            react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+              'select',
+              {
+                value: priorScenarioName,
+                onChange: function onChange(e) {
+                  return setPriorScenario(e.target.value, index);
+                }
+              },
+              react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Dropdown, { options: priorModelSelections })
+            )
+          ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(DeleteItem, { index: index, removeItem: deleteScenario })
         )
       );
@@ -4070,6 +4168,11 @@ function ScenarioManager(props) {
             'th',
             null,
             'Version Period'
+          ),
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+            'th',
+            null,
+            'Prior Version'
           ),
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement('th', null)
         )
@@ -4898,19 +5001,63 @@ function TotalProgramSpend(props) {
   );
 }
 
-function RevenueRecognized(props) {
+function RevenueRecognizedModel(props) {
   var startYear = props.startYear,
       yearsOut = props.yearsOut,
       displaySelections = props.displaySelections,
       revenueMilestones = props.revenueMilestones,
       percentComplete = props.percentComplete,
       percentCompleteCum = props.percentCompleteCum,
-      scenarioDate = props.scenarioDate;
+      scenarioDate = props.scenarioDate,
+      cummPercentDiff = props.cummPercentDiff,
+      scenarios = props.scenarios,
+      programs = props.programs,
+      scenarioID = props.scenarioID;
 
+
+  var selectedQtr = Number(scenarioDate[1]);
+  var selectedYear = Number(scenarioDate.slice(3));
 
   var milestoneRows = revenueMilestones.map(function (milestone, milestoneIndex) {
-    var milestoneRevEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateRevenue"])(startYear, yearsOut, milestone, percentComplete, percentCompleteCum);
-    var totalRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(milestoneRevEarned);
+    var currentPeriodRev = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateCurrentPeriodRev"])(startYear, yearsOut, milestone, percentCompleteCum);
+    var modelPeriodRev = currentPeriodRev.map(function (period) {
+      var newPeriod = Object(_model__WEBPACK_IMPORTED_MODULE_4__["keepCloning"])(period);
+      scenarios.forEach(function (scenario, scenarioIndex) {
+        if (scenarioID !== scenario.scenarioID) {
+          var scenarioQtr = Number(scenario.scenarioDate[1]);
+          var scenarioYear = Number(scenario.scenarioDate.slice(3));
+          if (newPeriod.quarter === scenarioQtr && newPeriod.year === scenarioYear) {
+            //calculate scenario cumm revenue//
+            var currentHeadcountEffort = scenario.headcountEffort;
+            var currentExternalSpend = scenario.externalSpend;
+
+            var currentHeadcountSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateHeadcountSpend"])(currentHeadcountEffort, programs);
+            var currentTotalProgramSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateTotalSpendArrays"])(currentExternalSpend, currentHeadcountSpend);
+            var currentTotalSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(currentTotalProgramSpend);
+            var currentGrandTotalSpend = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(currentTotalSpend);
+
+            var currentPercentComplete = Object(_model__WEBPACK_IMPORTED_MODULE_4__["percentCompleteArray"])(currentTotalSpend);
+            var currentPercentTotal = Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(currentPercentComplete), 1000000);
+            var currentDollarCompleteCumm = Object(_model__WEBPACK_IMPORTED_MODULE_4__["dollarCompleteCummArray"])(currentTotalSpend);
+            var currentPercentCompleteCumm = Object(_model__WEBPACK_IMPORTED_MODULE_4__["percentCompleteCummArray"])(currentDollarCompleteCumm, currentGrandTotalSpend);
+
+            var versionRevenue = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculateCurrentPeriodRev"])(startYear, yearsOut, milestone, currentPercentCompleteCumm);
+            versionRevenue.forEach(function (versionPeriod) {
+              if (versionPeriod.quarter === newPeriod.quarter && versionPeriod.year === newPeriod.year) {
+                newPeriod.amount = versionPeriod.amount;
+                return newPeriod;
+              };
+            });
+          }
+          return newPeriod;
+        }
+      });
+      return newPeriod;
+    });
+
+    var totalCurrentPeriodRev = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(modelPeriodRev);
+    var priorPeriodRevTrueup = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePriorPeriodRevTrueup"])(cummPercentDiff, milestone, selectedYear, selectedQtr, startYear, yearsOut);
+    var totalPriorPeriodRevTrueup = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(priorPeriodRevTrueup);
 
     return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
       react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment,
@@ -4921,12 +5068,13 @@ function RevenueRecognized(props) {
         react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
           'td',
           null,
-          milestone.name
+          milestone.name,
+          ' - Current Revenue'
         ),
         react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(DataRows, {
           startYear: startYear,
           displaySelections: displaySelections,
-          dataArray: milestoneRevEarned,
+          dataArray: modelPeriodRev,
           yearsOut: yearsOut,
           input: 'No'
         }),
@@ -4935,7 +5083,33 @@ function RevenueRecognized(props) {
           { className: 'numerical' },
           react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
             displayType: 'text',
-            value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(totalRevenueEarned, 1),
+            value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(totalCurrentPeriodRev, 1),
+            thousandSeparator: true
+          })
+        )
+      ),
+      react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+        'tr',
+        null,
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'td',
+          null,
+          milestone.name,
+          ' - Prior Period True Up'
+        ),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(DataRows, {
+          startYear: startYear,
+          displaySelections: displaySelections,
+          dataArray: priorPeriodRevTrueup,
+          yearsOut: yearsOut,
+          input: 'No'
+        }),
+        react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(
+          'td',
+          { className: 'numerical' },
+          react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_number_format__WEBPACK_IMPORTED_MODULE_2___default.a, {
+            displayType: 'text',
+            value: Object(_model__WEBPACK_IMPORTED_MODULE_4__["rounding"])(totalPriorPeriodRevTrueup, 1),
             thousandSeparator: true
           })
         )
@@ -4951,8 +5125,6 @@ function RevenueRecognized(props) {
   var totalRevenueEarned = Object(_model__WEBPACK_IMPORTED_MODULE_4__["calculatePeriodTotal"])(milestoneRevEarned);
   var grandTotalRevenue = Object(_model__WEBPACK_IMPORTED_MODULE_4__["arrayTotal"])(totalRevenueEarned);
 
-  var selectedQtr = Number(scenarioDate[1]);
-  var selectedYear = Number(scenarioDate.slice(3));
   var currentPeriodRev = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalRevenueEarned, selectedQtr, selectedYear, "QTD");
   var currentYTDPeriodRev = Object(_model__WEBPACK_IMPORTED_MODULE_4__["periodAmountCalc"])(totalRevenueEarned, selectedQtr, selectedYear, "YTD");
 
@@ -6396,7 +6568,7 @@ react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render(react__WEBPACK_IMPORTED_
 /*!*************************!*\
   !*** ./static/model.js ***!
   \*************************/
-/*! exports provided: displayOptions, periodType, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears, arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray, percentCompleteCummArray, periodAmountCalc, calculateTotalSpendArrays */
+/*! exports provided: displayOptions, periodType, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels, yearsArray, addDataArray, editDataArrayLength, editDataArrayYears, arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray, percentCompleteCummArray, periodAmountCalc, calculateTotalSpendArrays, calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6423,6 +6595,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "percentCompleteCummArray", function() { return percentCompleteCummArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "periodAmountCalc", function() { return periodAmountCalc; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calculateTotalSpendArrays", function() { return calculateTotalSpendArrays; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calculateCummPercentDiff", function() { return calculateCummPercentDiff; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calculatePriorPeriodRevTrueup", function() { return calculatePriorPeriodRevTrueup; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calculateCurrentPeriodRev", function() { return calculateCurrentPeriodRev; });
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var math = __webpack_require__(/*! math.js */ "./node_modules/math.js/index.js");
@@ -6451,7 +6626,7 @@ var defaultState = {
   version: 0,
   modelName: "Example Collaboration 606 Model",
   startYear: 2018,
-  yearsOut: 3,
+  endYear: 2020,
   activeScenarioId: 0,
   programs: [{
     name: "Program A",
@@ -6466,6 +6641,8 @@ var defaultState = {
   scenarios: [{
     scenarioName: "Q1 2018 close",
     scenarioDate: "Q1 2018",
+    scenarioID: 1,
+    priorScenarioID: 0,
     displaySelections: [{
       year: 2018,
       type: "Annual"
@@ -6676,8 +6853,7 @@ var defaultState = {
       year: 2020,
       quarter: 4,
       amount: 2
-    }]],
-    analyticComparisonIndex: 0
+    }]]
   }]
 
   //Utility Components
@@ -6939,6 +7115,123 @@ function calculateTotalSpendArrays(externalSpend, headcountSpend) {
     return totalSpend;
   });
   return totalProgramSpend;
+}
+
+function calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, currentVersionIndex, priorVersionIndex) {
+  if (priorVersionIndex === "Initial Model") {
+    var currentHeadcountEffort = scenarios[currentVersionIndex].headcountEffort;
+    var currentExternalSpend = scenarios[currentVersionIndex].externalSpend;
+    var currentRevenueMilestones = scenarios[currentVersionIndex].revenueMilestones;
+
+    var currentHeadcountSpend = calculateHeadcountSpend(currentHeadcountEffort, programs);
+    var currentTotalProgramSpend = calculateTotalSpendArrays(currentExternalSpend, currentHeadcountSpend);
+    var currentTotalSpend = calculatePeriodTotal(currentTotalProgramSpend);
+    var currentGrandTotalSpend = arrayTotal(currentTotalSpend);
+
+    var currentPercentComplete = percentCompleteArray(currentTotalSpend);
+    var currentPercentTotal = rounding(arrayTotal(currentPercentComplete), 1000000);
+    var currentDollarCompleteCumm = dollarCompleteCummArray(currentTotalSpend);
+    var currentPercentCompleteCumm = percentCompleteCummArray(currentDollarCompleteCumm, currentGrandTotalSpend);
+    var currentPercentTotalCumm = rounding(arrayTotal(currentPercentComplete), 1000000);
+
+    var cummTotalDiff = currentPercentCompleteCumm.map(function (period, periodIndex) {
+      var newPeriod = keepCloning(period);
+      newPeriod.amount = currentPercentCompleteCumm[periodIndex].amount - 0;
+      return newPeriod;
+    });
+    return cummTotalDiff;
+  } else {
+    var _currentHeadcountEffort = scenarios[currentVersionIndex].headcountEffort;
+    var _currentExternalSpend = scenarios[currentVersionIndex].externalSpend;
+    var _currentRevenueMilestones = scenarios[currentVersionIndex].revenueMilestones;
+
+    var _currentHeadcountSpend = calculateHeadcountSpend(_currentHeadcountEffort, programs);
+    var _currentTotalProgramSpend = calculateTotalSpendArrays(_currentExternalSpend, _currentHeadcountSpend);
+    var _currentTotalSpend = calculatePeriodTotal(_currentTotalProgramSpend);
+    var _currentGrandTotalSpend = arrayTotal(_currentTotalSpend);
+
+    var _currentPercentComplete = percentCompleteArray(_currentTotalSpend);
+    var _currentPercentTotal = rounding(arrayTotal(_currentPercentComplete), 1000000);
+    var _currentDollarCompleteCumm = dollarCompleteCummArray(_currentTotalSpend);
+    var _currentPercentCompleteCumm = percentCompleteCummArray(_currentDollarCompleteCumm, _currentGrandTotalSpend);
+    var _currentPercentTotalCumm = rounding(arrayTotal(_currentPercentComplete), 1000000);
+
+    var priorHeadcountEffort = scenarios[priorVersionIndex].headcountEffort;
+    var priorExternalSpend = scenarios[priorVersionIndex].externalSpend;
+    var priorRevenueMilestones = scenarios[priorVersionIndex].revenueMilestones;
+
+    var priorHeadcountSpend = calculateHeadcountSpend(priorHeadcountEffort, programs);
+    var priorTotalProgramSpend = calculateTotalSpendArrays(priorExternalSpend, priorHeadcountSpend);
+    var priorTotalSpend = calculatePeriodTotal(priorTotalProgramSpend);
+    var priorGrandTotalSpend = arrayTotal(priorTotalSpend);
+
+    var priorPercentComplete = percentCompleteArray(priorTotalSpend);
+    var priorPercentTotal = rounding(arrayTotal(priorPercentComplete), 1000000);
+    var priorDollarCompleteCumm = dollarCompleteCummArray(priorTotalSpend);
+    var priorPercentCompleteCumm = percentCompleteCummArray(priorDollarCompleteCumm, priorGrandTotalSpend);
+    var priorPercentTotalCumm = rounding(arrayTotal(priorPercentComplete), 1000000);
+
+    var _cummTotalDiff = _currentPercentCompleteCumm.map(function (period, periodIndex) {
+      var newPeriod = keepCloning(period);
+      newPeriod.amount = _currentPercentCompleteCumm[periodIndex].amount - priorPercentCompleteCumm[periodIndex].amount;
+      return newPeriod;
+    });
+    return _cummTotalDiff;
+  }
+}
+
+function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, currentYear, currentQtr, startYear, yearsOut) {
+  var priorPeriodYear = 0;
+  var priorPeriodQtr = 0;
+  var milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+  var milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+  var priorRevArray = addDataArray(startYear, yearsOut);
+  if (currentQtr - 1 === 0) {
+    priorPeriodQtr = 4;
+    priorPeriodYear = currentYear - 1;
+  } else {
+    priorPeriodQtr = currentQtr - 1;
+    priorPeriodYear = currentYear;
+  }
+  var priorPeriodCummPercent = 0;
+  cummPercentDiffArray.forEach(function (period) {
+    if (period.year === priorPeriodYear && period.quarter === priorPeriodQtr) {
+      priorPeriodCummPercent = period.amount;
+      return priorPeriodCummPercent;
+    }
+  });
+  priorRevArray.forEach(function (period) {
+    if (period.year === currentYear && period.quarter === currentQtr) {
+      period.amount = priorPeriodCummPercent * milestone.amount;
+      return period;
+    }
+  });
+  return priorRevArray;
+}
+
+function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm) {
+  var milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+  var milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+  var blankDataArray = addDataArray(startYear, yearsOut);
+  blankDataArray.map(function (period, periodIndex) {
+    if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
+      period.amount = percentCompleteCumm[periodIndex].amount * milestone.amount;
+      return period;
+    } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr || period.year > milestoneEarnedYear) {
+      var priorPeriodAmount = 0;
+      if (periodIndex - 1 === -1) {
+        priorPeriodAmount = 0;
+      } else {
+        priorPeriodAmount = percentCompleteCumm[periodIndex - 1].amount;
+      }
+      period.amount = (percentCompleteCumm[periodIndex].amount - priorPeriodAmount) * milestone.amount;
+      return period;
+    } else {
+      period.amount = 0;
+      return period;
+    }
+  });
+  return blankDataArray;
 }
 
 /***/ }),

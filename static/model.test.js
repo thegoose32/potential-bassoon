@@ -1744,3 +1744,599 @@ test("calculateRevenue - milestone at mid point", () => {
   ]
   expect(actual).toEqual(expected);
 })
+
+test("periodAmountCalc - QTD", () => {
+  const array = [
+    {
+      year: 2020,
+      quarter: 1,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 2,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 3,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 4,
+      amount: 5000
+    },
+    {
+      year: 2021,
+      quarter: 1,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 2,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 3,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 4,
+      amount: 10000
+    },
+    {
+      year: 2022,
+      quarter: 1,
+      amount: 10000
+    },
+    {
+      year: 2022,
+      quarter: 2,
+      amount: 20000
+    },
+    {
+      year: 2022,
+      quarter: 3,
+      amount: 0
+    },
+    {
+      year: 2022,
+      quarter: 4,
+      amount: 10000
+    }
+  ]
+  const currentQtr = 3;
+  const currentYear = 2022;
+  const periodType = "QTD"
+  const actual = model.periodAmountCalc(array, currentQtr, currentYear, periodType);
+  const expected = 0;
+  expect(actual).toEqual(expected);
+})
+
+test("periodAmountCalc - YTD", () => {
+  const array = [
+    {
+      year: 2020,
+      quarter: 1,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 2,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 3,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 4,
+      amount: 5000
+    },
+    {
+      year: 2021,
+      quarter: 1,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 2,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 3,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 4,
+      amount: 10000
+    },
+    {
+      year: 2022,
+      quarter: 1,
+      amount: 10000
+    },
+    {
+      year: 2022,
+      quarter: 2,
+      amount: 20000
+    },
+    {
+      year: 2022,
+      quarter: 3,
+      amount: 0
+    },
+    {
+      year: 2022,
+      quarter: 4,
+      amount: 10000
+    }
+  ]
+  const currentQtr = 3;
+  const currentYear = 2022;
+  const periodType = "YTD"
+  const actual = model.periodAmountCalc(array, currentQtr, currentYear, periodType);
+  const expected = 30000;
+  expect(actual).toEqual(expected);
+})
+
+test("periodAmountCalc - Full Year", () => {
+  const array = [
+    {
+      year: 2020,
+      quarter: 1,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 2,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 3,
+      amount: 5000
+    },
+    {
+      year: 2020,
+      quarter: 4,
+      amount: 5000
+    },
+    {
+      year: 2021,
+      quarter: 1,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 2,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 3,
+      amount: 10000
+    },
+    {
+      year: 2021,
+      quarter: 4,
+      amount: 10000
+    },
+    {
+      year: 2022,
+      quarter: 1,
+      amount: 10000
+    },
+    {
+      year: 2022,
+      quarter: 2,
+      amount: 20000
+    },
+    {
+      year: 2022,
+      quarter: 3,
+      amount: 0
+    },
+    {
+      year: 2022,
+      quarter: 4,
+      amount: 10000
+    }
+  ]
+  const currentQtr = 3;
+  const currentYear = 2022;
+  const periodType = "Full Year"
+  const actual = model.periodAmountCalc(array, currentQtr, currentYear, periodType);
+  const expected = 40000;
+  expect(actual).toEqual(expected);
+})
+
+test("calculateTotalSpendArray test",() => {
+  const externalSpend = [ 
+    [ 
+      {
+        year: 2020,
+        quarter: 1,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 2,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 3,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 4,
+        amount: 200
+      },
+      {
+        year: 2021,
+        quarter: 1,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 2,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 3,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 4,
+        amount: 400
+      },
+      {
+        year: 2022,
+        quarter: 1,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 2,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 3,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 4,
+        amount: 100
+      }
+    ],
+    [
+      {
+        year: 2020,
+        quarter: 1,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 2,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 3,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 4,
+        amount: 200
+      },
+      {
+        year: 2021,
+        quarter: 1,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 2,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 3,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 4,
+        amount: 400
+      },
+      {
+        year: 2022,
+        quarter: 1,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 2,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 3,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 4,
+        amount: 100
+      }
+    ]
+  ];
+  const headcountSpend = [ 
+    [ 
+      {
+        year: 2020,
+        quarter: 1,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 2,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 3,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 4,
+        amount: 200
+      },
+      {
+        year: 2021,
+        quarter: 1,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 2,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 3,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 4,
+        amount: 400
+      },
+      {
+        year: 2022,
+        quarter: 1,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 2,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 3,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 4,
+        amount: 100
+      }
+    ],
+    [
+      {
+        year: 2020,
+        quarter: 1,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 2,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 3,
+        amount: 200
+      },
+      {
+        year: 2020,
+        quarter: 4,
+        amount: 200
+      },
+      {
+        year: 2021,
+        quarter: 1,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 2,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 3,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 4,
+        amount: 400
+      },
+      {
+        year: 2022,
+        quarter: 1,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 2,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 3,
+        amount: 100
+      },
+      {
+        year: 2022,
+        quarter: 4,
+        amount: 100
+      }
+    ]
+  ]
+  const actual = model.calculateTotalSpendArrays(externalSpend, headcountSpend);
+  const expected = [
+    [
+      {
+        year: 2020,
+        quarter: 1,
+        amount: 400
+      },
+      {
+        year: 2020,
+        quarter: 2,
+        amount: 400
+      },
+      {
+        year: 2020,
+        quarter: 3,
+        amount: 400
+      },
+      {
+        year: 2020,
+        quarter: 4,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 1,
+        amount: 800
+      },
+      {
+        year: 2021,
+        quarter: 2,
+        amount: 800
+      },
+      {
+        year: 2021,
+        quarter: 3,
+        amount: 800
+      },
+      {
+        year: 2021,
+        quarter: 4,
+        amount: 800
+      },
+      {
+        year: 2022,
+        quarter: 1,
+        amount: 200
+      },
+      {
+        year: 2022,
+        quarter: 2,
+        amount: 200
+      },
+      {
+        year: 2022,
+        quarter: 3,
+        amount: 200
+      },
+      {
+        year: 2022,
+        quarter: 4,
+        amount: 200
+      }
+    ],
+    [
+      {
+        year: 2020,
+        quarter: 1,
+        amount: 400
+      },
+      {
+        year: 2020,
+        quarter: 2,
+        amount: 400
+      },
+      {
+        year: 2020,
+        quarter: 3,
+        amount: 400
+      },
+      {
+        year: 2020,
+        quarter: 4,
+        amount: 400
+      },
+      {
+        year: 2021,
+        quarter: 1,
+        amount: 800
+      },
+      {
+        year: 2021,
+        quarter: 2,
+        amount: 800
+      },
+      {
+        year: 2021,
+        quarter: 3,
+        amount: 800
+      },
+      {
+        year: 2021,
+        quarter: 4,
+        amount: 800
+      },
+      {
+        year: 2022,
+        quarter: 1,
+        amount: 200
+      },
+      {
+        year: 2022,
+        quarter: 2,
+        amount: 200
+      },
+      {
+        year: 2022,
+        quarter: 3,
+        amount: 200
+      },
+      {
+        year: 2022,
+        quarter: 4,
+        amount: 200
+      }
+    ]
+  ];
+  expect(actual).toEqual(expected);
+})
