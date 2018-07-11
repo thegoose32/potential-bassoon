@@ -9,7 +9,8 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
-  calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev
+  calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
+  setYearsOut, calculateModelRevenue
 
 } from './model'
 
@@ -184,46 +185,8 @@ export class PharmaRevRec extends React.Component {
 
   setYearsOut(yearsOut) {
     let newYearsOut = Number(yearsOut); 
-    this.setState((prevState, props) => {
-
-      let startYear = this.state.startYear; 
-      let extSpend = prevState.externalSpend;
-      let hcSpend = prevState.headcountEffort;
-      
-      let scenarios = prevState.scenarios;
-      let newScenarios = scenarios.map((scenario, scenarioIndex) => {
-        let newScenario = keepCloning(scenario);
-        let displaySelections = []; 
-        for (let x = 0; x < newYearsOut; x++) {
-          let currentYear = startYear + x;
-          displaySelections.push(
-            {
-              year: currentYear,
-              type: "Annual"
-            }
-          );
-        }
-        newScenario.displaySelections = displaySelections;
-
-        let newExtSpend = newScenario.externalSpend.map((array) => {
-          let arrayLength = editDataArrayLength(array, startYear, newYearsOut);
-          return editDataArrayYears(arrayLength, startYear, newYearsOut);
-        })
-
-        let newHCEffort = newScenario.headcountEffort.map((array) => {
-          let arrayLength = editDataArrayLength(array, startYear, newYearsOut);
-          return editDataArrayYears(arrayLength, startYear, newYearsOut);
-        })
-        newScenario.externalSpend = newExtSpend;
-        newScenario.headcountEffort = newHCEffort;
-        return newScenario;
-      })
-
-      return {
-        yearsOut: newYearsOut,
-        scenarios: newScenarios
-      }
-    })
+    let startYear = this.state.startYear; 
+    this.setState(setYearsOut(startYear, yearsOut))
   }
 
   setDisplayType(display, displayIndex) {
@@ -1138,6 +1101,8 @@ function ExternalSpend (props) {
   )
 }
 
+
+// TODO: Adjust the way the headcount rate is displayed
 function HeadcountEffort (props) {
   const {
     startYear,

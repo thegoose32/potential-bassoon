@@ -65,6 +65,7 @@ export const defaultState = {
         }
       ],
       revenueMilestones: [
+        // TODO: Change the date to an object with quarter and year amount
         {
           id: 1000,
           name: "Upfront Payment",
@@ -73,6 +74,7 @@ export const defaultState = {
           amount: 100000
         }
       ],
+      // TODO: Add the Program ID to the array associated with the appropriate program
       externalSpend: [
         [
           {
@@ -201,6 +203,7 @@ export const defaultState = {
       ],
      headcountEffort: [
         [
+        // TODO Add the Program ID to the array associated with the appropriate program
           {
             year: 2018,
             quarter: 1,
@@ -329,7 +332,7 @@ export const defaultState = {
   ]
 }
 
-//Utility Components
+// Utility Components
 
 export function displayArray(displaySelections) {
   let displayArray = [];
@@ -374,9 +377,9 @@ export function dataToDisplay(displayType, dataArray) {
 
 export function periodLabels(startYear, yearsOut) {
   let periodLabels = [];
-  for (let y = startYear; y < startYear + yearsOut; y ++) {
-    for (let x = 1; x < 5; x++) {
-      periodLabels.push("Q" + x + " " + y)
+  for (let year = startYear; year < startYear + yearsOut; year ++) {
+    for (let quarter = 1; quarter <= 4; quarter++) {
+      periodLabels.push("Q" + quarter + " " + year)
     }
   }
   return periodLabels
@@ -392,16 +395,11 @@ export function yearsArray(startYear, yearsOut) {
 
 export function addDataArray(startYear, yearsOut) {
   let newDataArray = [];
-  for (let x = startYear; x < startYear + yearsOut; x++) {
-    for (let y = 1; y < 5; y++) {
-      let newCell = Object();
-      newCell.year = x;
-      newCell.quarter = y;
-      newCell.amount = 0;
-      newDataArray.push(newCell);
+  for (let year = startYear; year < startYear + yearsOut; year++) {
+    for (let quarter = 1; quarter <= 4; quarter++) {
+      newDataArray.push({year, quarter, amount: 0});
     }
   }
-  
   return newDataArray;
 }
 
@@ -695,8 +693,51 @@ export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percen
   return blankDataArray;
 }
 
-// export function calculateModelRevenue(startYear, yearsOut, 
+export function calculateModelRevenue(model) {
+  return Object()
+}
+
+export function setYearsOut(startYear, yearsOut) {
+  return (prevState, props) => {
+
+    let extSpend = prevState.externalSpend;
+    let hcSpend = prevState.headcountEffort;
+    
+    let scenarios = prevState.scenarios;
+    let newScenarios = scenarios.map((scenario, scenarioIndex) => {
+      let newScenario = keepCloning(scenario);
+      let displaySelections = []; 
+      for (let x = 0; x < yearsOut; x++) {
+        let currentYear = startYear + x;
+        displaySelections.push(
+          {
+            year: currentYear,
+            type: "Annual"
+          }
+        );
+      }
+      newScenario.displaySelections = displaySelections;
+
+      let newExtSpend = newScenario.externalSpend.map((array) => {
+        let arrayLength = editDataArrayLength(array, startYear, yearsOut);
+        return editDataArrayYears(arrayLength, startYear, yearsOut);
+      })
+
+      let newHCEffort = newScenario.headcountEffort.map((array) => {
+        let arrayLength = editDataArrayLength(array, startYear, yearsOut);
+        return editDataArrayYears(arrayLength, startYear, yearsOut);
+      })
+      newScenario.externalSpend = newExtSpend;
+      newScenario.headcountEffort = newHCEffort;
+      return newScenario;
+    })
+
+    return {
+      yearsOut: yearsOut,
+      scenarios: newScenarios
+    }
+  }
+}
 
 
-  
 

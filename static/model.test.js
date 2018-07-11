@@ -196,7 +196,7 @@ test("dataToDisplay function", () => {
   expect(actual).toEqual(expected);
 });
 
-test("test periodLabels", () => {
+test("periodLabels - test", () => {
   const startYear = 2020;
   const yearsOut = 3;
   const actual = model.periodLabels(startYear, yearsOut);
@@ -204,7 +204,7 @@ test("test periodLabels", () => {
   expect(actual).toEqual(expected);
 });
 
-test("test yearsArray", () => {
+test("yearsArray - test", () => {
   const startYear = 2020;
   const yearsOut = 5;
   const actual = model.yearsArray(startYear, yearsOut);
@@ -212,7 +212,7 @@ test("test yearsArray", () => {
   expect(actual).toEqual(expected);
 });
 
-test("test addDataArray", () => {
+test("addDataArray - test", () => {
   const startYear = 2020;
   const yearsOut = 3;
   const actual = model.addDataArray(startYear, yearsOut)
@@ -281,7 +281,7 @@ test("test addDataArray", () => {
   expect(actual).toEqual(expected);
 });
 
-test("add year to editDataArrayLength", () => {
+test("editDataArrayLength - add year", () => {
   const array = [ 
     {
       year: 2020,
@@ -2340,3 +2340,517 @@ test("calculateTotalSpendArray test",() => {
   ];
   expect(actual).toEqual(expected);
 })
+
+test("simple revenue model", () => {
+  const simpleModel = fixtureSimpleModel();
+  const actual = model.calculateModelRevenue(simpleModel); 
+  const expected = [
+    {
+      year: 2018,
+      quarter: 1,
+      amount: 62.5
+    },
+    {
+      year: 2018,
+      quarter: 2,
+      amount: 62.5
+    },
+    {
+      year: 2018,
+      quarter: 3,
+      amount: 62.5
+    },
+    {
+      year: 2018,
+      quarter: 4,
+      amount: 62.5
+    },
+    {
+      year: 2019,
+      quarter: 1,
+      amount: 87.5
+    },
+    {
+      year: 2019,
+      quarter: 2,
+      amount: 87.5
+    },
+    {
+      year: 2019,
+      quarter: 3,
+      amount: 87.5
+    },
+    {
+      year: 2019,
+      quarter: 4,
+      amount: 87.5
+    },
+    {
+      year: 2020,
+      quarter: 1,
+      amount: 50
+    },
+    {
+      year: 2020,
+      quarter: 2,
+      amount: 50
+    },
+    {
+      year: 2020,
+      quarter: 3,
+      amount: 50
+    },
+    {
+      year: 2020,
+      quarter: 4,
+      amount: 50
+    },
+    {
+      year: 2021,
+      quarter: 1,
+      amount: 50
+    },
+    {
+      year: 2021,
+      quarter: 2,
+      amount: 50
+    },
+    {
+      year: 2021,
+      quarter: 3,
+      amount: 50
+    },
+    {
+      year: 2021,
+      quarter: 4,
+      amount: 50
+    }
+  ]
+  expect(actual).toEqual(expected);
+})
+
+function fixtureSimpleModel () {
+  const simpleModelFixture = {
+    version: 0,
+    modelName: "Example Collaboration 606 Model",
+    startYear: 2018,
+    endYear: 2021,
+    activeScenarioId: 0,
+    programs: [
+      {
+        name: "Program A", 
+        id: 1001,
+        fteRate: 250000
+      }
+    ],
+    activityLog: [],
+    scenarios: [
+      {
+        scenarioName: "Q1 2018 close",
+        scenarioDate: "Q1 2018",
+        scenarioID: 1,
+        priorScenarioID: 0,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          }, 
+          {
+            year: 2019,
+            type: "Annual"
+          },
+          {
+            year: 2020,
+            type: "Annual"
+          },
+          {
+            year: 2021,
+            type: "Annual"
+          }
+
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: "Q1 2018",
+            datePaid: "Q1 2018",
+            amount: 100000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 100
+            },
+            {
+              year: 2019,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2019,
+              quarter: 2,
+              amount: 100
+            },
+            {
+              year: 2019,
+              quarter: 3,
+              amount: 100
+            },
+            {
+              year: 2019,
+              quarter: 4,
+              amount: 100
+            },
+            {
+              year: 2020,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2020,
+              quarter: 2,
+              amount: 100
+            },
+            {
+              year: 2020,
+              quarter: 3,
+              amount: 100
+            },
+            {
+              year: 2020,
+              quarter: 4,
+              amount: 100
+            },
+            {
+              year: 2021,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2021,
+              quarter: 2,
+              amount: 100
+            },
+            {
+              year: 2021,
+              quarter: 3,
+              amount: 100
+            },
+            {
+              year: 2021,
+              quarter: 4,
+              amount: 100
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 4,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 4,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 4,
+              amount: 0
+            }
+          ]
+        ]
+      },
+      {
+        scenarioName: "Q2 2018 close",
+        scenarioDate: "Q2 2018",
+        scenarioID: 2,
+        priorScenarioID: 1,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          }, 
+          {
+            year: 2019,
+            type: "Annual"
+          },
+          {
+            year: 2020,
+            type: "Annual"
+          },
+          {
+            year: 2021,
+            type: "Annual"
+          }
+
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: "Q1 2018",
+            datePaid: "Q1 2018",
+            amount: 100000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 100
+            },
+            {
+              year: 2019,
+              quarter: 1,
+              amount: 50
+            },
+            {
+              year: 2019,
+              quarter: 2,
+              amount: 50
+            },
+            {
+              year: 2019,
+              quarter: 3,
+              amount: 50
+            },
+            {
+              year: 2019,
+              quarter: 4,
+              amount: 50
+            },
+            {
+              year: 2020,
+              quarter: 1,
+              amount: 50
+            },
+            {
+              year: 2020,
+              quarter: 2,
+              amount: 50
+            },
+            {
+              year: 2020,
+              quarter: 3,
+              amount: 50
+            },
+            {
+              year: 2020,
+              quarter: 4,
+              amount: 50
+            },
+            {
+              year: 2021,
+              quarter: 1,
+              amount: 50
+            },
+            {
+              year: 2021,
+              quarter: 2,
+              amount: 50
+            },
+            {
+              year: 2021,
+              quarter: 3,
+              amount: 50
+            },
+            {
+              year: 2021,
+              quarter: 4,
+              amount: 50
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2019,
+              quarter: 4,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2020,
+              quarter: 4,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2021,
+              quarter: 4,
+              amount: 0
+            }
+          ]
+        ]
+      }
+    ]  
+  }
+  return simpleModelFixture;
+}
+
