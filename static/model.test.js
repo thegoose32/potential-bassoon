@@ -2343,7 +2343,13 @@ test("calculateTotalSpendArray test",() => {
 
 test("simple revenue model", () => {
   const simpleModel = fixtureSimpleModel();
-  const actual = model.calculateModelRevenue(simpleModel); 
+  const startYear = simpleModel.startYear;
+  const yearsOut = simpleModel.endYear - startYear + 1;
+  const scenarios = simpleModel.scenarios;
+  const milestone = scenarios[1].revenueMilestones[0];
+  const programs = simpleModel.programs;
+  const activeScenarioId = simpleModel.activeScenarioId;
+  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
   const expected = [
     {
       year: 2018,
@@ -2353,89 +2359,48 @@ test("simple revenue model", () => {
     {
       year: 2018,
       quarter: 2,
-      amount: 62.5
+      amount: 350
     },
     {
       year: 2018,
       quarter: 3,
-      amount: 62.5
+      amount: 200
     },
     {
       year: 2018,
       quarter: 4,
-      amount: 62.5
-    },
-    {
-      year: 2019,
-      quarter: 1,
-      amount: 87.5
-    },
-    {
-      year: 2019,
-      quarter: 2,
-      amount: 87.5
-    },
-    {
-      year: 2019,
-      quarter: 3,
-      amount: 87.5
-    },
-    {
-      year: 2019,
-      quarter: 4,
-      amount: 87.5
-    },
-    {
-      year: 2020,
-      quarter: 1,
-      amount: 50
-    },
-    {
-      year: 2020,
-      quarter: 2,
-      amount: 50
-    },
-    {
-      year: 2020,
-      quarter: 3,
-      amount: 50
-    },
-    {
-      year: 2020,
-      quarter: 4,
-      amount: 50
-    },
-    {
-      year: 2021,
-      quarter: 1,
-      amount: 50
-    },
-    {
-      year: 2021,
-      quarter: 2,
-      amount: 50
-    },
-    {
-      year: 2021,
-      quarter: 3,
-      amount: 50
-    },
-    {
-      year: 2021,
-      quarter: 4,
-      amount: 50
+      amount: 200
     }
   ]
   expect(actual).toEqual(expected);
 })
+
+test("calculatePriorVersionIndex - index = 0", () => {
+  const simpleModel = fixtureSimpleModel();
+  const scenarios = simpleModel.scenarios;
+  const priorScenarioID = scenarios[0].priorScenarioID;
+  const actual = model.calculatePriorVersionIndex(scenarios, priorScenarioID);
+  const expected = "Initial Model";
+  expect(actual).toEqual(expected);
+})
+
+test("calculatePriorVersionIndex - index = 1", () => {
+  const simpleModel = fixtureSimpleModel();
+  const scenarios = simpleModel.scenarios;
+  const priorScenarioID = scenarios[1].priorScenarioID;
+  const actual = model.calculatePriorVersionIndex(scenarios, priorScenarioID);
+  const expected = 0;
+  expect(actual).toEqual(expected);
+})
+
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
     version: 0,
     modelName: "Example Collaboration 606 Model",
     startYear: 2018,
-    endYear: 2021,
-    activeScenarioId: 0,
+    endYear: 2018,
+    activeScenarioId: 1,
     programs: [
       {
         name: "Program A", 
@@ -2454,20 +2419,7 @@ function fixtureSimpleModel () {
           {
             year: 2018,
             type: "Annual"
-          }, 
-          {
-            year: 2019,
-            type: "Annual"
-          },
-          {
-            year: 2020,
-            type: "Annual"
-          },
-          {
-            year: 2021,
-            type: "Annual"
-          }
-
+          } 
         ],
         revenueMilestones: [
           {
@@ -2475,7 +2427,7 @@ function fixtureSimpleModel () {
             name: "Upfront Payment",
             dateEarned: "Q1 2018",
             datePaid: "Q1 2018",
-            amount: 100000
+            amount: 1000
           }
         ],
         externalSpend: [
@@ -2497,66 +2449,6 @@ function fixtureSimpleModel () {
             },
             {
               year: 2018,
-              quarter: 4,
-              amount: 100
-            },
-            {
-              year: 2019,
-              quarter: 1,
-              amount: 100
-            },
-            {
-              year: 2019,
-              quarter: 2,
-              amount: 100
-            },
-            {
-              year: 2019,
-              quarter: 3,
-              amount: 100
-            },
-            {
-              year: 2019,
-              quarter: 4,
-              amount: 100
-            },
-            {
-              year: 2020,
-              quarter: 1,
-              amount: 100
-            },
-            {
-              year: 2020,
-              quarter: 2,
-              amount: 100
-            },
-            {
-              year: 2020,
-              quarter: 3,
-              amount: 100
-            },
-            {
-              year: 2020,
-              quarter: 4,
-              amount: 100
-            },
-            {
-              year: 2021,
-              quarter: 1,
-              amount: 100
-            },
-            {
-              year: 2021,
-              quarter: 2,
-              amount: 100
-            },
-            {
-              year: 2021,
-              quarter: 3,
-              amount: 100
-            },
-            {
-              year: 2021,
               quarter: 4,
               amount: 100
             }
@@ -2581,66 +2473,6 @@ function fixtureSimpleModel () {
             },
             {
               year: 2018,
-              quarter: 4,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 1,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 2,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 3,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 4,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 1,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 2,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 3,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 4,
-              amount: 0
-            },
-            {
-              year: 2021,
-              quarter: 1,
-              amount: 0
-            },
-            {
-              year: 2021,
-              quarter: 2,
-              amount: 0
-            },
-            {
-              year: 2021,
-              quarter: 3,
-              amount: 0
-            },
-            {
-              year: 2021,
               quarter: 4,
               amount: 0
             }
@@ -2656,20 +2488,7 @@ function fixtureSimpleModel () {
           {
             year: 2018,
             type: "Annual"
-          }, 
-          {
-            year: 2019,
-            type: "Annual"
-          },
-          {
-            year: 2020,
-            type: "Annual"
-          },
-          {
-            year: 2021,
-            type: "Annual"
-          }
-
+          } 
         ],
         revenueMilestones: [
           {
@@ -2677,7 +2496,7 @@ function fixtureSimpleModel () {
             name: "Upfront Payment",
             dateEarned: "Q1 2018",
             datePaid: "Q1 2018",
-            amount: 100000
+            amount: 1000
           }
         ],
         externalSpend: [
@@ -2701,66 +2520,6 @@ function fixtureSimpleModel () {
               year: 2018,
               quarter: 4,
               amount: 100
-            },
-            {
-              year: 2019,
-              quarter: 1,
-              amount: 50
-            },
-            {
-              year: 2019,
-              quarter: 2,
-              amount: 50
-            },
-            {
-              year: 2019,
-              quarter: 3,
-              amount: 50
-            },
-            {
-              year: 2019,
-              quarter: 4,
-              amount: 50
-            },
-            {
-              year: 2020,
-              quarter: 1,
-              amount: 50
-            },
-            {
-              year: 2020,
-              quarter: 2,
-              amount: 50
-            },
-            {
-              year: 2020,
-              quarter: 3,
-              amount: 50
-            },
-            {
-              year: 2020,
-              quarter: 4,
-              amount: 50
-            },
-            {
-              year: 2021,
-              quarter: 1,
-              amount: 50
-            },
-            {
-              year: 2021,
-              quarter: 2,
-              amount: 50
-            },
-            {
-              year: 2021,
-              quarter: 3,
-              amount: 50
-            },
-            {
-              year: 2021,
-              quarter: 4,
-              amount: 50
             }
           ]
         ],
@@ -2783,66 +2542,6 @@ function fixtureSimpleModel () {
             },
             {
               year: 2018,
-              quarter: 4,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 1,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 2,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 3,
-              amount: 0
-            },
-            {
-              year: 2019,
-              quarter: 4,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 1,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 2,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 3,
-              amount: 0
-            },
-            {
-              year: 2020,
-              quarter: 4,
-              amount: 0
-            },
-            {
-              year: 2021,
-              quarter: 1,
-              amount: 0
-            },
-            {
-              year: 2021,
-              quarter: 2,
-              amount: 0
-            },
-            {
-              year: 2021,
-              quarter: 3,
-              amount: 0
-            },
-            {
-              year: 2021,
               quarter: 4,
               amount: 0
             }

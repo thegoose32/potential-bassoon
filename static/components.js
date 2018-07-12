@@ -10,7 +10,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
-  setYearsOut, calculateModelRevenue
+  setYearsOut, calculateModelRevenue, calculatePriorVersionIndex
 
 } from './model'
 
@@ -91,7 +91,7 @@ export class PharmaRevRec extends React.Component {
       let copiedScenarioIndex = prevState.activeScenarioId;
       let copiedScenario = JSON.parse(JSON.stringify(scenarios[copiedScenarioIndex])); 
       copiedScenario.scenarioName = "New scenario";
-      copiedScenario.scenarioID = prevState.scenarioID + 1;
+      copiedScenario.scenarioID += 1;
       scenarios.push(copiedScenario);
       return {
         scenarios: scenarios
@@ -144,13 +144,15 @@ export class PharmaRevRec extends React.Component {
   setPriorScenario(priorScenario, scenarioIndex) {
     this.setState(function(prevState, props) {
       let scenarios = prevState.scenarios;
-      let priorScenarioID = scenarios.forEach((scenario, scenarioIndex) => {
+      let newPriorScenarioID = 0;
+      scenarios.forEach((scenario, scenarioIndex) => {
         if (priorScenario === scenario.scenarioName) {
-          return scenario.scenarioID
+          return newPriorScenarioID = scenario.scenarioID
         }
+        return newPriorScenarioID;
       })
       let currentScenario = scenarios[scenarioIndex];
-      currentScenario.priorScenarioID = priorScenarioID;
+      currentScenario.priorScenarioID = newPriorScenarioID;
       return {
         scenarios: scenarios
       }
@@ -239,23 +241,29 @@ export class PharmaRevRec extends React.Component {
   }
 
   deleteProgram(programIndex) {
-    this.setScenarioState((prevState, props) => {
+    this.setState((prevState, props) => {
       let programArray = prevState.programs;
-      let externalSpendArray = prevState.externalSpend;
-      let headcountEffortArray = prevState.headcountEffort;
       programArray.splice(programIndex, 1);
-      externalSpendArray.splice(programIndex, 1);
-      headcountEffortArray.splice(programIndex, 1);
+      let scenarios = prevState.scenarios;
+      let newScenarios = scenarios.map((scenario, scenarioIndex) => {
+        let newScenario = keepCloning(scenario);
+        let externalSpendArray = newScenario.externalSpend;
+        externalSpendArray.splice(programIndex, 1);
+
+        let headcountEffortArray = newScenario.headcountEffort;
+        headcountEffortArray.splice(programIndex, 1);
+        return newScenario;
+      })
+        
       return {
         programs: programArray,
-        externalSpend: externalSpendArray,
-        headcountEffort: headcountEffortArray
+        scenarios: newScenarios
       }
     });
   }
   
   editProgramName(programIndex, programName) {
-    this.setScenarioState((prevState, props) => {
+    this.setState((prevState, props) => {
       let programArray = prevState.programs.slice();
       programArray[programIndex].name = programName;
       return {
@@ -265,7 +273,7 @@ export class PharmaRevRec extends React.Component {
   }
 
   editProgramFTERate(programIndex, newAmount) {
-    this.setScenarioState((prevState, props) => {
+    this.setState((prevState, props) => {
       let programArray = this.state.programs.slice();
       programArray[programIndex].fteRate = newAmount;
       return {
@@ -430,15 +438,7 @@ export class PharmaRevRec extends React.Component {
       return scenario.scenarioName
     })
 
-    let priorVersionIndex = 0
-    scenarios.forEach((scenario, scenarioIndex) => {
-      if (priorScenarioID === 0) {
-        return priorVersionIndex = "Initial Model";
-      } else if (priorScenarioID === scenario.scenarioID) {
-        return priorVersionIndex = scenarioIndex;
-      }
-    })
-
+    let priorVersionIndex = calculatePriorVersionIndex(scenarios, priorScenarioID);
     let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, activeScenarioId, priorVersionIndex);
 
 
@@ -553,6 +553,7 @@ export class PharmaRevRec extends React.Component {
             scenarios={scenarios}
             programs={programs}
             scenarioID={scenarioID}
+            activeScenarioId={this.state.activeScenarioId}
           /> 
           <DeferredRevenueRoll
             startYear={startYear}
@@ -1409,7 +1410,8 @@ function RevenueRecognizedModel(props) {
     cummPercentDiff,
     scenarios,
     programs,
-    scenarioID
+    scenarioID,
+    activeScenarioId
   } = props;
 
   let selectedQtr = Number(scenarioDate[1]);
@@ -1506,6 +1508,10 @@ function RevenueRecognizedModel(props) {
 
   let currentPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "QTD") 
   let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "YTD")
+
+  let revTest = revenueMilestones.map((milestone) => {
+    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
+  })
 
   return (
     <section id="Revenue-Recognized">

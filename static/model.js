@@ -550,6 +550,16 @@ export function percentCompleteCummArray(dollarCompleteCummArray, grandTotalSpen
   return percentCompleteCummArray;
 }
 
+export function percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs) {
+  let headcountSpend = calculateHeadcountSpend(headcountEffort, programs); 
+  let totalProgramSpend = calculateTotalSpendArrays(externalSpend, headcountSpend);
+  let totalSpend = calculatePeriodTotal(totalProgramSpend);
+  let grandTotalSpend = arrayTotal(totalSpend);
+  let dollarCompleteCumm = dollarCompleteCummArray(totalSpend)
+  let percentCompleteCumm = percentCompleteCummArray(dollarCompleteCumm, grandTotalSpend);
+  return percentCompleteCumm;
+}
+
 export function periodAmountCalc(array, currentQtr, currentYear, periodType) {
   let periodAmount = 0;
   array.forEach((period) => {
@@ -578,21 +588,7 @@ export function calculateTotalSpendArrays(externalSpend, headcountSpend) {
 
 export function calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, currentVersionIndex, priorVersionIndex) {
   if (priorVersionIndex === "Initial Model") {  
-    let currentHeadcountEffort = scenarios[currentVersionIndex].headcountEffort;
-    let currentExternalSpend = scenarios[currentVersionIndex].externalSpend;
-    let currentRevenueMilestones = scenarios[currentVersionIndex].revenueMilestones;
-    
-    let currentHeadcountSpend = calculateHeadcountSpend(currentHeadcountEffort, programs); 
-    let currentTotalProgramSpend = calculateTotalSpendArrays(currentExternalSpend, currentHeadcountSpend);
-    let currentTotalSpend = calculatePeriodTotal(currentTotalProgramSpend);
-    let currentGrandTotalSpend = arrayTotal(currentTotalSpend);
-
-    let currentPercentComplete = percentCompleteArray(currentTotalSpend);
-    let currentPercentTotal = rounding(arrayTotal(currentPercentComplete), 1000000);
-    let currentDollarCompleteCumm = dollarCompleteCummArray(currentTotalSpend)
-    let currentPercentCompleteCumm = percentCompleteCummArray(currentDollarCompleteCumm, currentGrandTotalSpend);
-    let currentPercentTotalCumm = rounding(arrayTotal(currentPercentComplete), 1000000);
-    
+    let currentPercentCompleteCumm = percentCompleteCummArrayFromData(scenarios[currentVersionIndex].headcountEffort, scenarios[currentVersionIndex].externalSpend, programs)
     let cummTotalDiff = currentPercentCompleteCumm.map((period, periodIndex) => {
       let newPeriod = keepCloning(period);
       newPeriod.amount = currentPercentCompleteCumm[periodIndex].amount - 0;
@@ -600,36 +596,8 @@ export function calculateCummPercentDiff(programs, startYear, yearsOut, scenario
     })
     return cummTotalDiff;
   } else {
-    let currentHeadcountEffort = scenarios[currentVersionIndex].headcountEffort;
-    let currentExternalSpend = scenarios[currentVersionIndex].externalSpend;
-    let currentRevenueMilestones = scenarios[currentVersionIndex].revenueMilestones;
-    
-    let currentHeadcountSpend = calculateHeadcountSpend(currentHeadcountEffort, programs); 
-    let currentTotalProgramSpend = calculateTotalSpendArrays(currentExternalSpend, currentHeadcountSpend);
-    let currentTotalSpend = calculatePeriodTotal(currentTotalProgramSpend);
-    let currentGrandTotalSpend = arrayTotal(currentTotalSpend);
-
-    let currentPercentComplete = percentCompleteArray(currentTotalSpend);
-    let currentPercentTotal = rounding(arrayTotal(currentPercentComplete), 1000000);
-    let currentDollarCompleteCumm = dollarCompleteCummArray(currentTotalSpend)
-    let currentPercentCompleteCumm = percentCompleteCummArray(currentDollarCompleteCumm, currentGrandTotalSpend);
-    let currentPercentTotalCumm = rounding(arrayTotal(currentPercentComplete), 1000000);
-    
-    let priorHeadcountEffort = scenarios[priorVersionIndex].headcountEffort;
-    let priorExternalSpend = scenarios[priorVersionIndex].externalSpend;
-    let priorRevenueMilestones = scenarios[priorVersionIndex].revenueMilestones;
-    
-    let priorHeadcountSpend = calculateHeadcountSpend(priorHeadcountEffort, programs); 
-    let priorTotalProgramSpend = calculateTotalSpendArrays(priorExternalSpend, priorHeadcountSpend);
-    let priorTotalSpend = calculatePeriodTotal(priorTotalProgramSpend);
-    let priorGrandTotalSpend = arrayTotal(priorTotalSpend);
-
-    let priorPercentComplete = percentCompleteArray(priorTotalSpend);
-    let priorPercentTotal = rounding(arrayTotal(priorPercentComplete), 1000000);
-    let priorDollarCompleteCumm = dollarCompleteCummArray(priorTotalSpend)
-    let priorPercentCompleteCumm = percentCompleteCummArray(priorDollarCompleteCumm, priorGrandTotalSpend);
-    let priorPercentTotalCumm = rounding(arrayTotal(priorPercentComplete), 1000000);
-
+    let currentPercentCompleteCumm = percentCompleteCummArrayFromData(scenarios[currentVersionIndex].headcountEffort, scenarios[currentVersionIndex].externalSpend, programs)
+    let priorPercentCompleteCumm = percentCompleteCummArrayFromData(scenarios[priorVersionIndex].headcountEffort, scenarios[priorVersionIndex].externalSpend, programs)
     let cummTotalDiff = currentPercentCompleteCumm.map((period, periodIndex) => {
       let newPeriod = keepCloning(period);
       newPeriod.amount = currentPercentCompleteCumm[periodIndex].amount - priorPercentCompleteCumm[periodIndex].amount;
@@ -693,8 +661,33 @@ export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percen
   return blankDataArray;
 }
 
-export function calculateModelRevenue(model) {
-  return Object()
+export function calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId) {
+  let currentVersion = scenarios[activeScenarioId];
+  let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
+  let initialModelRevenueArray = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm)
+  let adjModelRevenueArray = initialModelRevenueArray.map((period, periodIndex) => {
+    scenarios.forEach((scenario, scenarioIndex) => {
+      let scenarioQtr = Number(scenario.scenarioDate.slice(1, 2));
+      let scenarioYear = Number(scenario.scenarioDate.slice(3));
+      if (period.quarter === scenarioQtr && period.year === scenarioYear) {
+        let curVerCummPercentCompl = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs);
+        let curVerRevenue = calculateCurrentPeriodRev(startYear, yearsOut, milestone, curVerCummPercentCompl);
+        curVerRevenue.forEach((curVerRevPeriod, curVerRevPeriodIndex) => {
+          if (curVerRevPeriod.quarter === scenarioQtr && curVerRevPeriod.year === scenarioYear) {
+            let priorVersionIndex = calculatePriorVersionIndex(scenarios, scenario.priorScenarioID);
+            let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, scenarioIndex, priorVersionIndex);
+            let priorPeriodTrueUpArray = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, scenario.year, scenario.quarter, startYear, yearsOut);
+            let priorPeriodTrueUp = priorPeriodTrueUpArray[curVerRevPeriodIndex];
+            return period.amount = curVerRevPeriod.amount + priorPeriodTrueUp.amount;
+          }
+        });
+        return period;
+      }
+      return period;
+    })
+    return period;
+  })
+  return adjModelRevenueArray;
 }
 
 export function setYearsOut(startYear, yearsOut) {
@@ -737,6 +730,17 @@ export function setYearsOut(startYear, yearsOut) {
       scenarios: newScenarios
     }
   }
+}
+
+export function calculatePriorVersionIndex(scenarios, priorScenarioID) {
+  let priorVersionIndex = scenarios.map((scenario, scenarioIndex) => {
+    if (priorScenarioID === 0) {
+      return priorVersionIndex = "Initial Model";
+    } else if (priorScenarioID === scenario.scenarioID) {
+      return priorVersionIndex = scenarioIndex;
+    }
+  })
+  return priorVersionIndex[0];
 }
 
 
