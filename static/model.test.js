@@ -2349,12 +2349,12 @@ test("simple revenue model", () => {
   const milestone = scenarios[1].revenueMilestones[0];
   const programs = simpleModel.programs;
   const activeScenarioId = simpleModel.activeScenarioId;
-  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
+  const actual = model.calculateModelRevenueVersion2(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
   const expected = [
     {
       year: 2018,
       quarter: 1,
-      amount: 62.5
+      amount: 250
     },
     {
       year: 2018,
@@ -2392,6 +2392,41 @@ test("calculatePriorVersionIndex - index = 1", () => {
   const expected = 0;
   expect(actual).toEqual(expected);
 })
+
+test("percentCompleteCummArrayFromData - simpleModel", () => {
+  const simpleModel = fixtureSimpleModel();
+  const scenario = simpleModel.scenarios[0];
+  const externalSpend = scenario.externalSpend;
+  const headcountEffort = scenario.headcountEffort;
+  const programs = simpleModel.programs;
+  const actual = model.percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs);
+  const expected = [
+    {
+      year: 2018,
+      quarter: 1,
+      amount: 0.25
+    },
+    {
+      year: 2018,
+      quarter: 2,
+      amount: 0.5
+    },
+    {
+      year: 2018,
+      quarter: 3,
+      amount: 0.75
+    },
+    {
+      year: 2018,
+      quarter: 4,
+      amount: 1
+    },
+  ];
+  expect(actual).toEqual(expected);
+})
+
+
+
 
 
 function fixtureSimpleModel () {
@@ -2509,17 +2544,17 @@ function fixtureSimpleModel () {
             {
               year: 2018,
               quarter: 2,
-              amount: 100
+              amount: 50
             },
             {
               year: 2018,
               quarter: 3,
-              amount: 100
+              amount: 50
             },
             {
               year: 2018,
               quarter: 4,
-              amount: 100
+              amount: 50
             }
           ]
         ],

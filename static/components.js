@@ -10,7 +10,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
-  setYearsOut, calculateModelRevenue, calculatePriorVersionIndex
+  setYearsOut, calculateModelRevenue, calculatePriorVersionIndex, calculateModelRevenueVersion2
 
 } from './model'
 
@@ -91,7 +91,8 @@ export class PharmaRevRec extends React.Component {
       let copiedScenarioIndex = prevState.activeScenarioId;
       let copiedScenario = JSON.parse(JSON.stringify(scenarios[copiedScenarioIndex])); 
       copiedScenario.scenarioName = "New scenario";
-      copiedScenario.scenarioID += 1;
+      let lastID = scenarios[scenarios.length - 1].scenarioID;
+      copiedScenario.scenarioID = lastID + 1;
       scenarios.push(copiedScenario);
       return {
         scenarios: scenarios
@@ -1510,7 +1511,7 @@ function RevenueRecognizedModel(props) {
   let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "YTD")
 
   let revTest = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
+    return calculateModelRevenueVersion2(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
   })
 
   return (
