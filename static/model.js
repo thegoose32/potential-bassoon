@@ -574,6 +574,7 @@ export function periodAmountCalc(array, currentQtr, currentYear, periodType) {
   return periodAmount;
 }
 
+// TODO: change to bring in headcountEffort and programs rather than headcountSpend
 export function calculateTotalSpendArrays(externalSpend, headcountSpend) {
   let totalProgramSpend = externalSpend.map((progSpend, progIndex) => {
     let totalSpend = progSpend.map((extSpend, extSpendIndex) => {
@@ -662,35 +663,6 @@ export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percen
 }
 
 export function calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId) {
-  let currentVersion = scenarios[activeScenarioId];
-  let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
-  let initialModelRevenueArray = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm)
-  let adjModelRevenueArray = initialModelRevenueArray.map((period, periodIndex) => {
-    scenarios.forEach((scenario, scenarioIndex) => {
-      let scenarioQtr = Number(scenario.scenarioDate.slice(1, 2));
-      let scenarioYear = Number(scenario.scenarioDate.slice(3));
-      if (period.quarter === scenarioQtr && period.year === scenarioYear) {
-        let curVerCummPercentCompl = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs);
-        let curVerRevenue = calculateCurrentPeriodRev(startYear, yearsOut, milestone, curVerCummPercentCompl);
-        curVerRevenue.forEach((curVerRevPeriod, curVerRevPeriodIndex) => {
-          if (curVerRevPeriod.quarter === scenarioQtr && curVerRevPeriod.year === scenarioYear) {
-            let priorVersionIndex = calculatePriorVersionIndex(scenarios, scenario.priorScenarioID);
-            let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, scenarioIndex, priorVersionIndex);
-            let priorPeriodTrueUpArray = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, scenarioYear, scenarioQtr, startYear, yearsOut);
-            let priorPeriodTrueUp = priorPeriodTrueUpArray[curVerRevPeriodIndex];
-            return period.amount = curVerRevPeriod.amount + priorPeriodTrueUp.amount;
-          }
-        });
-        return period;
-      }
-      return period;
-    })
-    return period;
-  })
-  return adjModelRevenueArray;
-}
-
-export function calculateModelRevenueVersion2(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId) {
   let currentVersion = scenarios[activeScenarioId];
   let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
   let initialModelRevenueArray = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm)

@@ -10,7 +10,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
-  setYearsOut, calculateModelRevenue, calculatePriorVersionIndex, calculateModelRevenueVersion2
+  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, percentCompleteCummArrayFromData
 
 } from './model'
 
@@ -447,6 +447,7 @@ export class PharmaRevRec extends React.Component {
       <div id="grid">
         <HeaderBar
           modelName={this.state.modelName}
+          versionName={scenarios[activeScenarioId].scenarioName}
         />
         <SideNavigation
           scenarios={this.state.scenarios}
@@ -563,6 +564,9 @@ export class PharmaRevRec extends React.Component {
             percentComplete={percentComplete}
             percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
+            programs={programs}
+            scenarios={scenarios}
+            activeScenarioId={activeScenarioId}
           />
           <PeriodBridge
             startYear={startYear}
@@ -579,6 +583,7 @@ export class PharmaRevRec extends React.Component {
             scenarios={scenarios}
             scenarioNames={scenarioNames}
             totalSpend={totalSpend}
+            activeScenarioId={activeScenarioId}
           />
           <PeriodAnalytic
             startYear={startYear}
@@ -598,11 +603,11 @@ export class PharmaRevRec extends React.Component {
   }
 }
 
-function HeaderBar({modelName}) {
+function HeaderBar({modelName, versionName}) {
   return(
     <div id="header">
       <h2>pharmaRevRec</h2>
-      <h1 className="title">{modelName}</h1>
+      <h1 className="title">{modelName} - {versionName}</h1>
       <span>
         <a href="/logout/">Logout</a>
       </span>
@@ -626,11 +631,10 @@ function SideNavigation(props) {
   return(
     <div id="sidebar">
       <a href="#Model_Setup">Setup</a>
-      <a href="#Programs">Programs</a>
-      <a href="#Headcount">Headcount</a>
-      <a href="#Other_Cost">Other Cost</a>
-      <a href="#Financings">Financings</a>
-      <a href="#Cash_Rollforward">Reports</a>
+      <a href="#Versions">Versions</a>
+      <a href="#External-Spend">Costs</a>
+      <a href="#Revenue-Recognized">Revenues</a>
+      <a href="#Period-Bridge">Reports</a>
       <hr></hr>
       <table>
         <tr>
@@ -833,7 +837,7 @@ function ScenarioManager(props) {
   });
   
   return (
-    <section id="Scenarios">
+    <section id="Versions">
       <h2>Version Manager</h2>
       <table className="actions-column">
         <thead>
@@ -1102,7 +1106,6 @@ function ExternalSpend (props) {
     </section>
   )
 }
-
 
 // TODO: Adjust the way the headcount rate is displayed
 function HeadcountEffort (props) {
@@ -1427,20 +1430,7 @@ function RevenueRecognizedModel(props) {
           let scenarioQtr = Number(scenario.scenarioDate[1]);
           let scenarioYear = Number(scenario.scenarioDate.slice(3));
           if (newPeriod.quarter === scenarioQtr && newPeriod.year === scenarioYear) {
-            //calculate scenario cumm revenue//
-            let currentHeadcountEffort = scenario.headcountEffort;
-            let currentExternalSpend = scenario.externalSpend;
-            
-            let currentHeadcountSpend = calculateHeadcountSpend(currentHeadcountEffort, programs); 
-            let currentTotalProgramSpend = calculateTotalSpendArrays(currentExternalSpend, currentHeadcountSpend);
-            let currentTotalSpend = calculatePeriodTotal(currentTotalProgramSpend);
-            let currentGrandTotalSpend = arrayTotal(currentTotalSpend);
-
-            let currentPercentComplete = percentCompleteArray(currentTotalSpend);
-            let currentPercentTotal = rounding(arrayTotal(currentPercentComplete), 1000000);
-            let currentDollarCompleteCumm = dollarCompleteCummArray(currentTotalSpend)
-            let currentPercentCompleteCumm = percentCompleteCummArray(currentDollarCompleteCumm, currentGrandTotalSpend);
-         
+            let currentPercentCompleteCumm = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs)
             let versionRevenue = calculateCurrentPeriodRev(startYear, yearsOut, milestone, currentPercentCompleteCumm);
             versionRevenue.forEach((versionPeriod) => {
               if (versionPeriod.quarter === newPeriod.quarter && versionPeriod.year === newPeriod.year) {
@@ -1500,8 +1490,7 @@ function RevenueRecognizedModel(props) {
   })
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
-    return milestoneRev;
+    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
   })
 
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1509,10 +1498,6 @@ function RevenueRecognizedModel(props) {
 
   let currentPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "QTD") 
   let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "YTD")
-
-  let revTest = revenueMilestones.map((milestone) => {
-    return calculateModelRevenueVersion2(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
-  })
 
   return (
     <section id="Revenue-Recognized">
@@ -1584,12 +1569,14 @@ function DeferredRevenueRoll (props) {
     displaySelections,
     revenueMilestones,
     percentComplete,
-    percentCompleteCum
+    percentCompleteCum,
+    scenarios,
+    programs,
+    activeScenarioId
   } = props;
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
-    return milestoneRev;
+    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
   })
 
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1739,11 +1726,8 @@ class PeriodBridge extends React.Component {
     let grandTotalSpend = this.props.grandTotalSpend;
     
     let milestoneRevEarned = revenueMilestones.map((milestone) => {
-      let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum); 
-      return milestoneRev;
+      return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, this.props.activeScenarioId)
     })
-
-    let totalMilestones
 
     let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
     let grandTotalRevenue = arrayTotal(totalRevenueEarned);
@@ -1757,17 +1741,14 @@ class PeriodBridge extends React.Component {
     let compRevenueMilestones = comparisonModel.revenueMilestones;
     let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.headcountEffort;
-    let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs); 
+    let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs)
     let compTotalProgramSpend = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
      
     let compTotalSpend = calculatePeriodTotal(compTotalProgramSpend);
     let compGrandTotal = arrayTotal(compTotalSpend);
-    let compPercentComplete = percentCompleteArray(compTotalSpend);
-    let compDollarCompleteCumm = dollarCompleteCummArray(compTotalSpend);
-    let compPercentCompleteCumm = percentCompleteCummArray(compDollarCompleteCumm, compGrandTotal);
-
+    let compPercentCompleteCumm = percentCompleteCummArrayFromData(compHeadcountEffort, compExternalSpend, programs)
     let compMilestoneRevEarned = compRevenueMilestones.map((milestone) => {
-      let milestoneRev = calculateRevenue(startYear, yearsOut, milestone, compPercentComplete, compPercentCompleteCumm); 
+      let milestoneRev = calculateCurrentPeriodRev(startYear, yearsOut, milestone, compPercentCompleteCumm); 
       return milestoneRev;
     })
 
@@ -2433,7 +2414,7 @@ function CummulativeTotalRows(props) {
     startOrEnd
   } = props;
 
-  //Override the type to not sum in calculatedData function below//
+  // Override the type to not sum in calculatedData function below//
   let displaySelectionsOverride = keepCloning(displaySelections).map((period) => {
     period.type = "Quarterly"
     return period;
