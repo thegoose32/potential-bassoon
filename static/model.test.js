@@ -2341,7 +2341,7 @@ test("calculateTotalSpendArray test",() => {
   expect(actual).toEqual(expected);
 })
 
-test("simple revenue model", () => {
+test("calculateModelRevenue - single milestone", () => {
   const simpleModel = fixtureSimpleModel();
   const startYear = simpleModel.startYear;
   const yearsOut = simpleModel.endYear - startYear + 1;
@@ -2349,7 +2349,7 @@ test("simple revenue model", () => {
   const milestone = scenarios[1].revenueMilestones[0];
   const programs = simpleModel.programs;
   const activeScenarioId = simpleModel.activeScenarioId;
-  const actual = model.calculateModelRevenueVersion2(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
+  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
   const expected = [
     {
       year: 2018,
@@ -2374,6 +2374,265 @@ test("simple revenue model", () => {
   ]
   expect(actual).toEqual(expected);
 })
+
+test("calculateModelRevenue - single milestone period 3", () => {
+  const simpleModel = {
+    version: 0,
+    modelName: "Example Collaboration 606 Model",
+    startYear: 2018,
+    endYear: 2018,
+    activeScenarioId: 2,
+    programs: [
+      {
+        name: "Program A", 
+        id: 1001,
+        fteRate: 250000
+      }
+    ],
+    activityLog: [],
+    scenarios: [
+      {
+        scenarioName: "Q1 2018 close",
+        scenarioDate: "Q1 2018",
+        scenarioID: 1,
+        priorScenarioID: 0,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: "Q3 2018",
+            datePaid: "Q3 2018",
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 100
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 0
+            }
+          ]
+        ]
+      },
+      {
+        scenarioName: "Q2 2018 close",
+        scenarioDate: "Q2 2018",
+        scenarioID: 2,
+        priorScenarioID: 1,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: "Q3 2018",
+            datePaid: "Q3 2018",
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 50
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 50
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 50
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 0
+            }
+          ]
+        ]
+      },
+      {
+        scenarioName: "Q3 2018 close",
+        scenarioDate: "Q3 2018",
+        scenarioID: 3,
+        priorScenarioID: 2,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: "Q3 2018",
+            datePaid: "Q3 2018",
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 100
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 50
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 25
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 25
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              year: 2018,
+              quarter: 1,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 2,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 3,
+              amount: 0
+            },
+            {
+              year: 2018,
+              quarter: 4,
+              amount: 0
+            }
+          ]
+        ]
+      }
+    ]  
+  }
+
+  const startYear = simpleModel.startYear;
+  const yearsOut = simpleModel.endYear - startYear + 1;
+  const scenarios = simpleModel.scenarios;
+  const programs = simpleModel.programs;
+  const activeScenarioId = simpleModel.activeScenarioId;
+  const milestone = simpleModel.scenarios[activeScenarioId].revenueMilestones[0];
+  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId);
+  const expected = [
+    {
+      year: 2018,
+      quarter: 1,
+      amount: 0
+    },
+    {
+      year: 2018,
+      quarter: 2,
+      amount: 0
+    },
+    {
+      year: 2018,
+      quarter: 3,
+      amount: 875
+    },
+    {
+      year: 2018,
+      quarter: 4,
+      amount: 125
+    }
+  ]
+  expect(actual).toEqual(expected);
+})
+
 
 test("calculatePriorVersionIndex - index = 0", () => {
   const simpleModel = fixtureSimpleModel();
@@ -2425,9 +2684,63 @@ test("percentCompleteCummArrayFromData - simpleModel", () => {
   expect(actual).toEqual(expected);
 })
 
-
-
-
+test("calculateCurrentPeriodRev - milestone period 3", () => {
+  const startYear = 2018;
+  const yearsOut = 1;
+  const milestone = {
+      id: 1000,
+      name: "Upfront Payment",
+      dateEarned: "Q3 2018",
+      datePaid: "Q3 2018",
+      amount: 1000
+    }
+  const percentCompleteCumm = [
+    {
+      year: 2018,
+      quarter: 1,
+      amount: 0.25
+    },
+    {
+      year: 2018,
+      quarter: 2,
+      amount: 0.5
+    },
+    {
+      year: 2018,
+      quarter: 3,
+      amount: 0.75
+    },
+    {
+      year: 2018,
+      quarter: 4,
+      amount: 1
+    },
+  ];
+  const actual = model.calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm);
+  const expected = [ 
+    {
+      year: 2018,
+      quarter: 1,
+      amount: 0
+    },
+    {
+      year: 2018,
+      quarter: 2,
+      amount: 0
+    },
+    {
+      year: 2018,
+      quarter: 3,
+      amount: 750
+    },
+    {
+      year: 2018,
+      quarter: 4,
+      amount: 250
+    },
+  ];
+  expect(actual).toEqual(expected);
+})
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {

@@ -664,6 +664,8 @@ export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percen
 
 export function calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId) {
   let currentVersion = scenarios[activeScenarioId];
+  let currentVersionQtr = Number(currentVersion.scenarioDate.slice(1, 2));
+  let currentVersionYear = Number(currentVersion.scenarioDate.slice(3));
   let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
   let initialModelRevenueArray = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm)
   let adjModelRevenueArray = initialModelRevenueArray.map((period, periodIndex) => {
@@ -672,20 +674,17 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, scenarios,
       let scenarioYear = Number(scenario.scenarioDate.slice(3));
       let priorVersionIndex = calculatePriorVersionIndex(scenarios, scenario.priorScenarioID);
       if (scenarioQtr === period.quarter && scenarioYear === period.year && priorVersionIndex !== "Initial Model") {
-        let curVerCummPercentComplArray = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs);
-        let curVerCummPercentCompl = curVerCummPercentComplArray.filter(curVerPeriod => curVerPeriod.quarter === scenarioQtr && curVerPeriod.year === scenarioYear);
-
+        let curVerCummPercentCompl = periodCummPercentComp(scenario.headcountEffort, scenario.externalSpend, programs, scenarioQtr, scenarioYear);
         let priorVersion = scenarios[priorVersionIndex];
         let priorVersionQtr = Number(priorVersion.scenarioDate.slice(1, 2));
         let priorVersionYear = Number(priorVersion.scenarioDate.slice(3));
-        let priorVerCummPercentComplArray = percentCompleteCummArrayFromData(priorVersion.headcountEffort, priorVersion.externalSpend, programs);
-        let priorVerCummPercentCompl = priorVerCummPercentComplArray.filter(priorVerPeriod => priorVerPeriod.quarter === priorVersionQtr && priorVerPeriod.year === priorVersionYear);
-
-        return period.amount = milestone.amount * (curVerCummPercentCompl[0].amount - priorVerCummPercentCompl[0].amount);
+        let priorVerCummPercentCompl = periodCummPercentComp(priorVersion.headcountEffort, priorVersion.externalSpend, programs, priorVersionQtr, priorVersionYear)
+        let milestoneAmount = milestonePeriodRevenue(milestone, scenarioQtr, scenarioYear, curVerCummPercentCompl, priorVerCummPercentCompl)
+        return milestoneAmount
       } else if (scenarioQtr === period.quarter && scenarioYear === period.year && priorVersionIndex === "Initial Model") {
-        let curVerCummPercentComplArray = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs);
-        let curVerCummPercentCompl = curVerCummPercentComplArray.filter(curVerPeriod => curVerPeriod.quarter === scenarioQtr && curVerPeriod.year === scenarioYear);
-        return period.amount = milestone.amount * curVerCummPercentCompl[0].amount 
+        let curVerCummPercentCompl = periodCummPercentComp(scenario.headcountEffort, scenario.externalSpend, programs, scenarioQtr, scenarioYear);
+        let milestoneAmount = milestonePeriodRevenue(milestone, scenarioQtr, scenarioYear, curVerCummPercentCompl)
+        return milestoneAmount
       }
       return period;
     })
@@ -748,5 +747,31 @@ export function calculatePriorVersionIndex(scenarios, priorScenarioID) {
   return priorVersionIndex;
 }
 
+export function periodCummPercentComp(headcountEffort, externalSpend, programs, currentQtr, currentYear) {
+  let cummPercentComplArray = percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs);
+  let cummPercentCompl = cummPercentComplArray.filter(curVerPeriod => curVerPeriod.quarter === currentQtr && curVerPeriod.year === currentYear);
+  let cummPercentComplete = cummPercentCompl[0].amount;
+  return cummPercentComplete;
+}
 
+export function milestoneDateCheck(milestone, period) {
+  let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+  let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+  let milestoneAmount = 0;
+  if (milestoneEarnedQtr <= period.quarter && milestoneEarnedYear === period.year || milestoneEarnedYear < period.year) {
+    milestoneAmount = milestone.amount;
+  };
+  return milestoneAmount;
+}
 
+export function milestonePeriodRevenue(milestone, scenarioQtr, scenarioYear, period, curVerCummPercentCompl, priorVerCummPercentCompl) {
+  let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
+  let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
+  let milestoneAmount = 0;
+  if (scenarioYear === milestoneEarnedYear && scenarioQtr === milestoneEarnedQtr) {
+    milestoneAmount = curVerCummPercentCompl * milestone.amount;
+  } else if (scenarioYear === milestoneEarnedYear && scenarioQtr === milestoneEarnedQtr || milestoneEarnedYear < scenarioYear) {
+    milestoneAmount = (curVerCummPercentCompl - priorVerCummPercentCompl) * milestone.amount;
+  }
+  return milestoneAmount;
+}
