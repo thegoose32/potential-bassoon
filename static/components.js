@@ -69,8 +69,8 @@ export class PharmaRevRec extends React.Component {
 
   setScenarioState(scenarioChanges) {
     this.setState((prevState, props) => {
-      const activeScenarioId = prevState.activeScenarioId;
-      const currentScenario = prevState.scenarios[activeScenarioId];
+      const activeVersionId = prevState.activeVersionId;
+      const currentScenario = prevState.scenarios[activeVersionId];
       let updatedCurrentScenario;
       let updatedAssumptions;
       if (typeof scenarioChanges === "function") {
@@ -80,7 +80,7 @@ export class PharmaRevRec extends React.Component {
         updatedCurrentScenario = Object.assign({}, currentScenario, scenarioChanges);
       }
       const newState = prevState
-      newState.scenarios[activeScenarioId] = updatedCurrentScenario;
+      newState.scenarios[activeVersionId] = updatedCurrentScenario;
       return newState;
     })
   }
@@ -88,7 +88,7 @@ export class PharmaRevRec extends React.Component {
   addScenario() {
     this.setState((prevState, props) => {
       let scenarios = prevState.scenarios;
-      let copiedScenarioIndex = prevState.activeScenarioId;
+      let copiedScenarioIndex = prevState.activeVersionId;
       let copiedScenario = JSON.parse(JSON.stringify(scenarios[copiedScenarioIndex])); 
       copiedScenario.scenarioName = "New scenario";
       let lastID = scenarios[scenarios.length - 1].scenarioID;
@@ -137,7 +137,7 @@ export class PharmaRevRec extends React.Component {
       let scenarios = prevState.scenarios;
       let newScenarioIndex = scenarios.findIndex(x => x.scenarioName === newScenario);
       return {
-        activeScenarioId: newScenarioIndex 
+        activeVersionId: newScenarioIndex 
       }
     })
   }
@@ -412,7 +412,7 @@ export class PharmaRevRec extends React.Component {
       scenarioDate,
       priorScenarioID,
       scenarioID
-    } = this.state.scenarios[this.state.activeScenarioId];
+    } = this.state.scenarios[this.state.activeVersionId];
  
     const {
       modelName,
@@ -420,7 +420,7 @@ export class PharmaRevRec extends React.Component {
       programs,
       scenarios,
       endYear,
-      activeScenarioId
+      activeVersionId
     } = this.state;
    
     let yearsOut = endYear - startYear + 1;
@@ -440,18 +440,18 @@ export class PharmaRevRec extends React.Component {
     })
 
     let priorVersionIndex = calculatePriorVersionIndex(scenarios, priorScenarioID);
-    let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, activeScenarioId, priorVersionIndex);
+    let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, activeVersionId, priorVersionIndex);
 
 
     return (
       <div id="grid">
         <HeaderBar
           modelName={this.state.modelName}
-          versionName={scenarios[activeScenarioId].scenarioName}
+          versionName={scenarios[activeVersionId].scenarioName}
         />
         <SideNavigation
           scenarios={this.state.scenarios}
-          activeScenarioId={this.state.activeScenarioId}
+          activeVersionId={this.state.activeVersionId}
           setActiveScenarioId={this.setActiveScenarioId}
         />
         <div id="content">
@@ -471,7 +471,7 @@ export class PharmaRevRec extends React.Component {
             deleteScenario={this.deleteScenario}
             editScenarioName={this.editScenarioName}
             setActiveScenarioId={this.setActiveScenarioId}
-            activeScenarioId={this.state.activeScenarioId}
+            activeVersionId={this.state.activeVersionId}
             setScenarioDate={this.setScenarioDate}
             startYear={startYear}
             yearsOut={yearsOut}
@@ -555,7 +555,7 @@ export class PharmaRevRec extends React.Component {
             scenarios={scenarios}
             programs={programs}
             scenarioID={scenarioID}
-            activeScenarioId={this.state.activeScenarioId}
+            activeVersionId={this.state.activeVersionId}
           /> 
           <DeferredRevenueRoll
             startYear={startYear}
@@ -566,7 +566,7 @@ export class PharmaRevRec extends React.Component {
             revenueMilestones={revenueMilestones}
             programs={programs}
             scenarios={scenarios}
-            activeScenarioId={activeScenarioId}
+            activeVersionId={activeVersionId}
           />
           <PeriodBridge
             startYear={startYear}
@@ -583,7 +583,7 @@ export class PharmaRevRec extends React.Component {
             scenarios={scenarios}
             scenarioNames={scenarioNames}
             totalSpend={totalSpend}
-            activeScenarioId={activeScenarioId}
+            activeVersionId={activeVersionId}
           />
           <PeriodAnalytic
             startYear={startYear}
@@ -618,7 +618,7 @@ function HeaderBar({modelName, versionName}) {
 function SideNavigation(props) {
   const {
     scenarios,
-    activeScenarioId,
+    activeVersionId,
     setActiveScenarioId,
   } = props;
 
@@ -626,7 +626,7 @@ function SideNavigation(props) {
     return(scenario.scenarioName);
   })
 
-  let activeScenarioName = scenarios[activeScenarioId].scenarioName;
+  let activeScenarioName = scenarios[activeVersionId].scenarioName;
 
   return(
     <div id="sidebar">
@@ -643,7 +643,7 @@ function SideNavigation(props) {
         <tr>
           <td>
             <select
-              value={scenarios[activeScenarioId].scenarioName}
+              value={scenarios[activeVersionId].scenarioName}
               onChange={(e) => setActiveScenarioId(e.target.value)}
             >
               <Dropdown options={scenarioNames}/>
@@ -750,7 +750,7 @@ function ScenarioManager(props) {
     addScenario,
     deleteScenario,
     editScenarioName,
-    activeScenarioId,
+    activeVersionId,
     setScenarioDate,
     startYear,
     yearsOut,
@@ -773,7 +773,7 @@ function ScenarioManager(props) {
     let priorModelSelections = priorPeriodSelections.slice();
     let currentModelName = priorModelSelections.indexOf(scenarioName)
     priorModelSelections.splice(currentModelName, 1);
-    if (index === 0 || index <= activeScenarioId) {
+    if (index === 0 || index <= activeVersionId) {
       return (
         <React.Fragment>
           <tr>
@@ -1415,7 +1415,7 @@ function RevenueRecognizedModel(props) {
     scenarios,
     programs,
     scenarioID,
-    activeScenarioId
+    activeVersionId
   } = props;
 
   let selectedQtr = Number(scenarioDate[1]);
@@ -1490,7 +1490,7 @@ function RevenueRecognizedModel(props) {
   })
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
+    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeVersionId)
   })
 
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1572,11 +1572,11 @@ function DeferredRevenueRoll (props) {
     percentCompleteCum,
     scenarios,
     programs,
-    activeScenarioId
+    activeVersionId
   } = props;
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId)
+    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeVersionId)
   })
 
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1726,7 +1726,7 @@ class PeriodBridge extends React.Component {
     let grandTotalSpend = this.props.grandTotalSpend;
     
     let milestoneRevEarned = revenueMilestones.map((milestone) => {
-      return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, this.props.activeScenarioId)
+      return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, this.props.activeVersionId)
     })
 
     let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);

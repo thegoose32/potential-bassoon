@@ -30,7 +30,7 @@ export const defaultState = {
   modelName: "Example Collaboration 606 Model",
   startYear: 2018,
   endYear: 2020,
-  activeScenarioId: 0,
+  activeVersionId: 0,
   programs: [
     {
       name: "Program A", 
@@ -456,10 +456,10 @@ export function calculatePeriodTotal(arrayOfArrays) {
     let totalArray = [];
     arrayOfArrays.forEach((array, arrayIndex) => {
       if (arrayIndex === 0) {
-        return totalArray = keepCloning(array);
+        totalArray = keepCloning(array);
       } else {
         array.forEach((cell, cellIndex) => {
-          return totalArray[cellIndex].amount += cell.amount
+          totalArray[cellIndex].amount += cell.amount
         })
       }
     })
@@ -471,11 +471,10 @@ export function keepCloning(objectpassed) {
   if (objectpassed === null || typeof objectpassed !== 'object') {
     return objectpassed;
   }
-
-var temporaryStorage = objectpassed.constructor();
-  for (var key in objectpassed) {
-    temporaryStorage[key] = keepCloning(objectpassed[key]);
-  }
+  var temporaryStorage = objectpassed.constructor();
+    for (var key in objectpassed) {
+      temporaryStorage[key] = keepCloning(objectpassed[key]);
+    }
   return temporaryStorage;
 }
 
@@ -488,20 +487,15 @@ export function calculateRevenue(startYear, yearsOut, milestone, percentComplete
   let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
   let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
   let blankDataArray = addDataArray(startYear, yearsOut);
-  blankDataArray.map((period, periodIndex) => {
+  blankDataArray.forEach((period, periodIndex) => {
     if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
       period.amount = percentCompleteCum[periodIndex].amount * milestone.amount;
-      return period;
-      } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
+    } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
       period.amount = percentComplete[periodIndex].amount * milestone.amount;
-      return period;
-
     } else if (period.year > milestoneEarnedYear) {
       period.amount = percentComplete[periodIndex].amount * milestone.amount;
-      return period;
     } else {
       period.amount = 0;
-      return period;
     }
   });
   return blankDataArray;
@@ -510,9 +504,8 @@ export function calculateRevenue(startYear, yearsOut, milestone, percentComplete
 export function calculateHeadcountSpend(headcountEffort, programs) {
   let headcountSpend = headcountEffort.map((progEffort, progIndex) => {
     let copiedProgEffort = keepCloning(progEffort);
-    copiedProgEffort.map((copiedHcEffort) => { 
+    copiedProgEffort.forEach((copiedHcEffort) => { 
       copiedHcEffort.amount = rounding(copiedHcEffort.amount * programs[progIndex].fteRate, 100);
-      return copiedHcEffort;
     })
     return copiedProgEffort
   })
@@ -662,8 +655,8 @@ export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percen
   return blankDataArray;
 }
 
-export function calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeScenarioId) {
-  let currentVersion = scenarios[activeScenarioId];
+export function calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeVersionId) {
+  let currentVersion = scenarios[activeVersionId];
   let currentVersionQtr = Number(currentVersion.scenarioDate.slice(1, 2));
   let currentVersionYear = Number(currentVersion.scenarioDate.slice(3));
   let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
