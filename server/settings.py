@@ -27,7 +27,7 @@ SECRET_KEY = '=hid2qy11@0nhad*v+get&5cfoycy#nqbqw0tf35*-(9o1vp+!'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'app.pharmalrp.com',
+    'app.intheblksoftware.com',
     '127.0.0.1',
 ]
 
