@@ -1417,9 +1417,6 @@ function RevenueRecognizedModel(props) {
     scenarioID,
     activeVersionId
   } = props;
-
-  let selectedQtr = Number(scenarioDate[1]);
-  let selectedYear = Number(scenarioDate.slice(3));
   
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
     let currentPeriodRev = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCum);
@@ -1427,13 +1424,11 @@ function RevenueRecognizedModel(props) {
       let newPeriod = keepCloning(period);
       scenarios.forEach((scenario, scenarioIndex) => {
         if (scenarioID !== scenario.scenarioID) {
-          let scenarioQtr = Number(scenario.scenarioDate[1]);
-          let scenarioYear = Number(scenario.scenarioDate.slice(3));
-          if (newPeriod.quarter === scenarioQtr && newPeriod.year === scenarioYear) {
+          if (newPeriod.period === scenario.scenarioDate) {
             let currentPercentCompleteCumm = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs)
             let versionRevenue = calculateCurrentPeriodRev(startYear, yearsOut, milestone, currentPercentCompleteCumm);
             versionRevenue.forEach((versionPeriod) => {
-              if (versionPeriod.quarter === newPeriod.quarter && versionPeriod.year === newPeriod.year) {
+              if (versionPeriod.period === newPeriod.period) {
                 newPeriod.amount = versionPeriod.amount;
                 return newPeriod;
               };
@@ -1446,7 +1441,7 @@ function RevenueRecognizedModel(props) {
     })
 
     let totalCurrentPeriodRev = arrayTotal(modelPeriodRev);
-    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone,selectedYear, selectedQtr, startYear, yearsOut);
+    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, scenarioDate, startYear, yearsOut);
     let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
 
     return (
@@ -1496,8 +1491,8 @@ function RevenueRecognizedModel(props) {
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
   let grandTotalRevenue = arrayTotal(totalRevenueEarned);
 
-  let currentPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "QTD") 
-  let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, "YTD")
+  let currentPeriodRev = periodAmountCalc(totalRevenueEarned, scenarioDate, "QTD") 
+  let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, scenarioDate, "YTD")
 
   return (
     <section id="Revenue-Recognized">
@@ -1670,7 +1665,7 @@ class PeriodBridge extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedPeriod: "Q1 2018",
+      selectedPeriod: 2018,
       selectedComparisonIndex: 0,
       selectedPeriodType: "QTD"
     }
@@ -1708,8 +1703,7 @@ class PeriodBridge extends React.Component {
     let yearsOut = this.props.yearsOut;
     let percentComplete = this.props.percentComplete;
     let percentCompleteCum = this.props.percentCompleteCum;
-    let selectedQtr = Number(this.state.selectedPeriod[1]);
-    let selectedYear = Number(this.state.selectedPeriod.slice(3));
+    let selectedPeriod = this.state.selectedPeriod;
     let periodSelections = periodLabels(startYear, yearsOut)
     let scenarios = this.props.scenarios;
     let revenueMilestones = this.props.revenueMilestones;
@@ -1730,9 +1724,9 @@ class PeriodBridge extends React.Component {
     let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
     let grandTotalRevenue = arrayTotal(totalRevenueEarned);
  
-    let selectedRevenueEarned = periodAmountCalc(totalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
+    let selectedRevenueEarned = periodAmountCalc(totalRevenueEarned, selectedPeriod, selectedPeriodType);
 
-    let selectedPeriodSpend = periodAmountCalc(totalSpend, selectedQtr, selectedYear, selectedPeriodType);
+    let selectedPeriodSpend = periodAmountCalc(totalSpend, selectedPeriod, selectedPeriodType);
  
     //Comparison Period Variable//
     let comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
@@ -1751,15 +1745,15 @@ class PeriodBridge extends React.Component {
     })
 
     let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);
-    let compRevenueEarned = periodAmountCalc(compTotalRevenueEarned, selectedQtr, selectedYear, selectedPeriodType);
+    let compRevenueEarned = periodAmountCalc(compTotalRevenueEarned, selectedPeriod, selectedPeriodType);
 
-    let compSelectedPeriodSpend = periodAmountCalc(compTotalSpend, selectedQtr, selectedYear, selectedPeriodType);;
+    let compSelectedPeriodSpend = periodAmountCalc(compTotalSpend, selectedPeriod, selectedPeriodType);;
 
     //Program Change in Spend Rows//
     let periodBridgeRow = programs.map((program, programIndex) => {
-      let selectedProgSpendPeriod = periodAmountCalc(totalProgramSpend[programIndex], selectedQtr, selectedYear, selectedPeriodType);
+      let selectedProgSpendPeriod = periodAmountCalc(totalProgramSpend[programIndex], selectedPeriod, selectedPeriodType);
       let grandTotalProgramSpend = arrayTotal(totalProgramSpend[programIndex]);
-      let compProgSpendPeriod = periodAmountCalc(compTotalProgramSpend[programIndex], selectedQtr, selectedYear, selectedPeriodType);
+      let compProgSpendPeriod = periodAmountCalc(compTotalProgramSpend[programIndex], selectedPeriod, selectedPeriodType);
       let compGrandTotalProgramSpend = arrayTotal(compTotalProgramSpend[programIndex]);
       let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend)));
       return (
@@ -1971,12 +1965,9 @@ class PeriodAnalytic extends React.Component {
     let headcountEffort = this.props.headcountEffort;
     let startYear = this.props.startYear;
     let yearsOut = this.props.yearsOut;
-    let scenarioDate = this.props.scenarioDate;
-    let versionQtr = Number(scenarioDate[1]);
-    let versionYear = Number(scenarioDate.slice(3));
+    let versionPeriod = this.props.scenarioDate;
 
-    let selectedQtr = Number(this.state.selectedPeriod[1]);
-    let selectedYear = Number(this.state.selectedPeriod.slice(3));
+    let selectedPeriod = this.state.selectedPeriod;
     let scenarios = this.props.scenarios;
     let selectedPeriodType = this.state.selectedPeriodType;
     let periodSelections = periodLabels(startYear, yearsOut)
@@ -1989,9 +1980,9 @@ class PeriodAnalytic extends React.Component {
      
     let externalSpendAnalyticRows = programs.map((program, programIndex) => {
       let currentProgExtSpend = externalSpend[programIndex];
-      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionPeriod, selectedPeriodType);
       let compProgExtSpend = compExternalSpend[programIndex];
-      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType)
+      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedPeriod, selectedPeriodType)
       let diffDollar = currentPeriodSpend - compPeriodSpend;
       let diffPercent = rounding(diffDollar / compPeriodSpend, 10000);
       return (
@@ -2033,9 +2024,9 @@ class PeriodAnalytic extends React.Component {
 
     let headcountSpendAnalyticRows = programs.map((program, programIndex) => {
       let currentProgExtSpend = headcountSpend[programIndex];
-      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionPeriod, selectedPeriodType);
       let compProgExtSpend = compHeadcountSpend[programIndex];
-      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedPeriod, selectedPeriodType);
       let diffDollar = currentPeriodSpend - compPeriodSpend;
       let diffPercent = rounding(diffDollar / compPeriodSpend, 10000);
       return (
@@ -2077,9 +2068,9 @@ class PeriodAnalytic extends React.Component {
 
     let totalSpendAnalyticRows = programs.map((program, programIndex) => {
       let currentProgExtSpend = totalProgramSpend[programIndex];
-      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionQtr, versionYear, selectedPeriodType);
+      let currentPeriodSpend = periodAmountCalc(currentProgExtSpend, versionPeriod, selectedPeriodType);
       let compProgExtSpend = compTotalProgramSpend[programIndex];
-      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedQtr, selectedYear, selectedPeriodType);
+      let compPeriodSpend = periodAmountCalc(compProgExtSpend, selectedPeriod, selectedPeriodType);
       let diffDollar = currentPeriodSpend - compPeriodSpend;
       let diffPercent = rounding(diffDollar / compPeriodSpend, 10000);
       return (
