@@ -1584,9 +1584,7 @@ function DeferredRevenueRoll (props) {
   let milestoneReceived = addDataArray(startYear, yearsOut);
   milestoneReceived.map((period, periodIndex) => {
     revenueMilestones.forEach((milestone) => {
-      let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
-      let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
-      if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
+      if (period.period === milestone.dateEarned) {
         period.amount += milestone.amount
       }
     })
@@ -2371,10 +2369,10 @@ function CummulativeDataRows(props) {
     } else {
       displayAmount = rounding(cellCopy.amount, 1000);
     }
-    let cellYear = cell.year;
+    let cellYear = Math.floor(cell.period);
     let periodDisplayCheck = displaySelections.filter(year => year.year === cellYear)
     let periodDisplay = periodDisplayCheck[0];
-    if (periodDisplay.type === "Annual" && cell.quarter === 4) {
+    if (periodDisplay.type === "Annual" && (cell.period - cellYear === 0.75)) {
       return(
         <React.Fragment>
           <td className="numerical">
@@ -2425,14 +2423,14 @@ function CummulativeTotalRows(props) {
   let dataCells = calculatedData.map((cell, cellIndex) => {
     let begOrEnd = 0;
     if (startOrEnd === "start") {
-      begOrEnd = Number(1);
+      begOrEnd = Number(0);
     } else if (startOrEnd === "end") {
-      begOrEnd = Number(4);
+      begOrEnd = Number(0.75);
     };
-    let cellYear = cell.year;
+    let cellYear = Math.floor(cell.period);
     let periodDisplayCheck = displaySelections.filter(year => year.year === cellYear)
     let periodDisplay = periodDisplayCheck[0];
-    if (periodDisplay.type === "Annual" && cell.quarter === begOrEnd) {
+    if (periodDisplay.type === "Annual" && (cell.period - cellYear) === begOrEnd) {
       return(
         <React.Fragment>
           <td className="numerical">

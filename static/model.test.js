@@ -19,36 +19,32 @@ test("displaySelections", () => {
   const actual = model.displayArray(displaySelections);
   const expected = [
     {
-      year: 2020,
+      period: 2020,
       type: "Annual",
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.0,
       type: "Quarterly",
-      quarter: 1,
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.25,
       type: "Quarterly",
-      quarter: 2,
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.5,
       type: "Quarterly",
-      quarter: 3,
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.75,
       type: "Quarterly",
-      quarter: 4,
       amount: 0
     },
     {
-      year: 2022,
+      period: 2022,
       type: "Annual",
       amount: 0
     }
@@ -59,140 +55,119 @@ test("displaySelections", () => {
 test("dataToDisplay function", () => {
   const displayType = [
     {
-      year: 2020,
+      period: 2020,
       type: "Annual",
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.0,
       type: "Quarterly",
-      quarter: 1,
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.25,
       type: "Quarterly",
-      quarter: 2,
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.5,
       type: "Quarterly",
-      quarter: 3,
       amount: 0
     },
     {
-      year: 2021,
+      period: 2021.75,
       type: "Quarterly",
-      quarter: 4,
       amount: 0
     },
     {
-      year: 2022,
+      period: 2022,
       type: "Annual",
       amount: 0
     }
   ]
   const dataArray = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020.0,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021.0,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022.0,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     }
   ];
   const actual = model.dataToDisplay(displayType, dataArray);
   const expected = [
     {
-      year: 2020,
+      period: 2020,
       type: "Annual",
       amount: 800
     },
     {
-      year: 2021,
+      period: 2021.0,
       type: "Quarterly",
-      quarter: 1,
       amount: 400
     },
     {
-      year: 2021,
+      period: 2021.25,
       type: "Quarterly",
-      quarter: 2,
       amount: 400
     },
     {
-      year: 2021,
+      period: 2021.5,
       type: "Quarterly",
-      quarter: 3,
       amount: 400
     },
     {
-      year: 2021,
+      period: 2021.75,
       type: "Quarterly",
-      quarter: 4,
       amount: 400
     },
     {
-      year: 2022,
+      period: 2022,
       type: "Annual",
       amount: 400
     }
   ]
- 
   expect(actual).toEqual(expected);
 });
 
@@ -218,63 +193,51 @@ test("addDataArray - test", () => {
   const actual = model.addDataArray(startYear, yearsOut)
   const expected = [ 
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020.0,
       amount: 0
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021.0,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022.0,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 0
     }
   ]
@@ -284,63 +247,51 @@ test("addDataArray - test", () => {
 test("editDataArrayLength - add year", () => {
   const array = [ 
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     }
   ];
@@ -349,83 +300,67 @@ test("editDataArrayLength - add year", () => {
   const actual = model.editDataArrayLength(array, startYear, yearsOut)
   const expected =  [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     },
     {
-      year: 0,
-      quarter: 1,
+      period: 0,
       amount: 0
     },
     {
-      year: 0,
-      quarter: 2,
+      period: 0,
       amount: 0
     },
     {
-      year: 0,
-      quarter: 3,
+      period: 0,
       amount: 0
     },
     {
-      year: 0,
-      quarter: 4,
+      period: 0,
       amount: 0
     }
   ];
@@ -435,63 +370,51 @@ test("editDataArrayLength - add year", () => {
 test("remove year to editDataArrayLength", () => {
   const array = [ 
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     }
   ];
@@ -500,63 +423,51 @@ test("remove year to editDataArrayLength", () => {
   const actual = model.editDataArrayLength(array, startYear, yearsOut)
   const expected =  [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 0
     }
   ];
@@ -566,63 +477,51 @@ test("remove year to editDataArrayLength", () => {
 test("no change to editDataArrayLength", () => {
   const array = [ 
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     }
   ];
@@ -631,63 +530,51 @@ test("no change to editDataArrayLength", () => {
   const actual = model.editDataArrayLength(array, startYear, yearsOut)
   const expected = [ 
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     }
   ];
@@ -697,63 +584,51 @@ test("no change to editDataArrayLength", () => {
 test("arrayTotal test", () => {
   const array = [ 
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 200
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 400
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 100
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 100
     }
   ];
@@ -766,125 +641,101 @@ test("calculatePeriodTotal test", () => {
   const arrayOfArrays = [
     [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 200
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 400
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 100
       }
     ],
     [
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 200
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 400
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 100
       }
     ]
@@ -892,193 +743,156 @@ test("calculatePeriodTotal test", () => {
   const actual = model.calculatePeriodTotal(arrayOfArrays)
   const expected = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 800
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 200
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 200
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 200
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 200
     }
   ]
   expect(actual).toEqual(expected);
 })
 
-
 test("percentCompleteArray test", () => {
   const array = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 800
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 200
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 200
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 200
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 200
     }
   ]
   const actual = model.percentCompleteArray(array);
   const expected = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0.071428571428571424
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0.071428571428571424
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0.071428571428571424
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0.071428571428571424
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0.14285714285714285
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0.14285714285714285
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0.14285714285714285
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0.14285714285714285
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0.0357142857142857143
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0.0357142857142857143
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0.0357142857142857143
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 0.0357142857142857143
     }
   ]
@@ -1088,63 +902,51 @@ test("percentCompleteArray test", () => {
 test("dollarCompleteCummArray test", () => {
   const array = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 400
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 800
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 800
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 800
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 1600
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 800
     }
   ]
@@ -1152,63 +954,51 @@ test("dollarCompleteCummArray test", () => {
   const actual = model.dollarCompleteCummArray(array, grandTotalSpend);
   const expected = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 800
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 1200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 1600
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 2400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 3200
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 4000
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 4800
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 5600
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 7200
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 7200
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 8000
     }
   ]
@@ -1218,63 +1008,51 @@ test("dollarCompleteCummArray test", () => {
 test("percentCompleteCummArray test", () => {
   const array = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 400
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 800
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 1200
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 1600
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 2400
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 3200
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 4000
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 4800
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 5600
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 7200
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 7200
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 8000
     }
   ]
@@ -1282,63 +1060,51 @@ test("percentCompleteCummArray test", () => {
   const actual = model.percentCompleteCummArray(array, grandTotalSpend);
   const expected = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0.1
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0.15
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0.2
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0.3
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0.4
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0.5
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0.6
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0.7
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0.9
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0.9
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 1
     }
   ]
@@ -1351,194 +1117,157 @@ test("calculateRevenue - milestone at start", () => {
   const milestone = {
     id: 1000,
     name: "Upfront Payment",
-    dateEarned: "Q1 2020",
-    datePaid: "Q1 2018",
+    dateEarned: 2020.0,
     amount: 100000
   }
   const percentComplete = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0.05
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0.1
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0.1
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0.1
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0.1
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0.1
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0.2
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0.0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 0.1
     }
   ]
   const percentCompleteCumm = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0.1
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0.15
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0.2
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0.3
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0.4
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0.5
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0.6
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0.7
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0.9
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0.9
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 1
     }
   ]
   const actual = model.calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCumm);
   const expected = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 5000
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 20000
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 10000
     }
   ]
@@ -1551,194 +1280,157 @@ test("calculateRevenue - milestone at mid point", () => {
   const milestone = {
     id: 1000,
     name: "Upfront Payment",
-    dateEarned: "Q1 2022",
-    datePaid: "Q1 2018",
+    dateEarned: 2022,
     amount: 100000
   }
   const percentComplete = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0.05
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0.1
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0.1
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0.1
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0.1
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0.1
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0.2
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0.0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 0.1
     }
   ]
   const percentCompleteCumm = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0.05
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0.1
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0.15
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0.2
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0.3
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0.4
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0.5
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0.6
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 0.7
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 0.9
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0.9
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 1
     }
   ]
   const actual = model.calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCumm);
   const expected = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 0
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 0
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 0
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 0
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 70000
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 20000
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 10000
     }
   ]
@@ -1748,70 +1440,57 @@ test("calculateRevenue - milestone at mid point", () => {
 test("periodAmountCalc - QTD", () => {
   const array = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 5000
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 20000
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 10000
     }
   ]
-  const currentQtr = 3;
-  const currentYear = 2022;
+  const currentPeriod = 2022.5;
   const periodType = "QTD"
-  const actual = model.periodAmountCalc(array, currentQtr, currentYear, periodType);
+  const actual = model.periodAmountCalc(array, currentPeriod, periodType);
   const expected = 0;
   expect(actual).toEqual(expected);
 })
@@ -1819,70 +1498,57 @@ test("periodAmountCalc - QTD", () => {
 test("periodAmountCalc - YTD", () => {
   const array = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 5000
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 20000
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 10000
     }
   ]
-  const currentQtr = 3;
-  const currentYear = 2022;
+  const currentPeriod = 2022.5;
   const periodType = "YTD"
-  const actual = model.periodAmountCalc(array, currentQtr, currentYear, periodType);
+  const actual = model.periodAmountCalc(array, currentPeriod, periodType);
   const expected = 30000;
   expect(actual).toEqual(expected);
 })
@@ -1890,70 +1556,57 @@ test("periodAmountCalc - YTD", () => {
 test("periodAmountCalc - Full Year", () => {
   const array = [
     {
-      year: 2020,
-      quarter: 1,
+      period: 2020,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 2,
+      period: 2020.25,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 3,
+      period: 2020.5,
       amount: 5000
     },
     {
-      year: 2020,
-      quarter: 4,
+      period: 2020.75,
       amount: 5000
     },
     {
-      year: 2021,
-      quarter: 1,
+      period: 2021,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 2,
+      period: 2021.25,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 3,
+      period: 2021.5,
       amount: 10000
     },
     {
-      year: 2021,
-      quarter: 4,
+      period: 2021.75,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 1,
+      period: 2022,
       amount: 10000
     },
     {
-      year: 2022,
-      quarter: 2,
+      period: 2022.25,
       amount: 20000
     },
     {
-      year: 2022,
-      quarter: 3,
+      period: 2022.5,
       amount: 0
     },
     {
-      year: 2022,
-      quarter: 4,
+      period: 2022.75,
       amount: 10000
     }
   ]
-  const currentQtr = 3;
-  const currentYear = 2022;
+  const currentPeriod = 2022.5;
   const periodType = "Full Year"
-  const actual = model.periodAmountCalc(array, currentQtr, currentYear, periodType);
+  const actual = model.periodAmountCalc(array, currentPeriod, periodType);
   const expected = 40000;
   expect(actual).toEqual(expected);
 })
@@ -1962,125 +1615,101 @@ test("calculateTotalSpendArray test",() => {
   const externalSpend = [ 
     [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 200
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 400
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 100
       }
     ],
-    [
+    [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 200
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 400
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 100
       }
     ]
@@ -2088,252 +1717,204 @@ test("calculateTotalSpendArray test",() => {
   const headcountSpend = [ 
     [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 200
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 400
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 100
       }
     ],
-    [
+    [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 200
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 200
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 400
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 100
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 100
       }
     ]
-  ]
+  ];
   const actual = model.calculateTotalSpendArrays(externalSpend, headcountSpend);
   const expected = [
-    [
+    [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 400
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 400
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 400
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 800
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 800
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 800
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 800
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 200
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 200
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 200
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 200
       }
     ],
-    [
+    [ 
       {
-        year: 2020,
-        quarter: 1,
+        period: 2020,
         amount: 400
       },
       {
-        year: 2020,
-        quarter: 2,
+        period: 2020.25,
         amount: 400
       },
       {
-        year: 2020,
-        quarter: 3,
+        period: 2020.5,
         amount: 400
       },
       {
-        year: 2020,
-        quarter: 4,
+        period: 2020.75,
         amount: 400
       },
       {
-        year: 2021,
-        quarter: 1,
+        period: 2021,
         amount: 800
       },
       {
-        year: 2021,
-        quarter: 2,
+        period: 2021.25,
         amount: 800
       },
       {
-        year: 2021,
-        quarter: 3,
+        period: 2021.5,
         amount: 800
       },
       {
-        year: 2021,
-        quarter: 4,
+        period: 2021.75,
         amount: 800
       },
       {
-        year: 2022,
-        quarter: 1,
+        period: 2022,
         amount: 200
       },
       {
-        year: 2022,
-        quarter: 2,
+        period: 2022.25,
         amount: 200
       },
       {
-        year: 2022,
-        quarter: 3,
+        period: 2022.5,
         amount: 200
       },
       {
-        year: 2022,
-        quarter: 4,
+        period: 2022.75,
         amount: 200
       }
     ]
@@ -2352,23 +1933,19 @@ test("calculateModelRevenue - single milestone", () => {
   const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
   const expected = [
     {
-      year: 2018,
-      quarter: 1,
+      period: 2018,
       amount: 250
     },
     {
-      year: 2018,
-      quarter: 2,
+      period: 2018.25,
       amount: 350
     },
     {
-      year: 2018,
-      quarter: 3,
+      period: 2018.5,
       amount: 200
     },
     {
-      year: 2018,
-      quarter: 4,
+      period: 2018.75,
       amount: 200
     }
   ]
@@ -2406,31 +1983,26 @@ test("calculateModelRevenue - single milestone period 3", () => {
           {
             id: 1000,
             name: "Upfront Payment",
-            dateEarned: "Q3 2018",
-            datePaid: "Q3 2018",
+            dateEarned: 2018.5,
             amount: 1000
           }
         ],
         externalSpend: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018.0,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 100
             }
           ]
@@ -2438,24 +2010,20 @@ test("calculateModelRevenue - single milestone period 3", () => {
        headcountEffort: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018.0,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 3,
-              amount: 0
+              period: 2018.5,
+              amount: 875
             },
             {
-              year: 2018,
-              quarter: 4,
-              amount: 0
+              period: 2018.75,
+              amount: 125
             }
           ]
         ]
@@ -2475,31 +2043,26 @@ test("calculateModelRevenue - single milestone period 3", () => {
           {
             id: 1000,
             name: "Upfront Payment",
-            dateEarned: "Q3 2018",
-            datePaid: "Q3 2018",
+            dateEarned: 2018.5,
             amount: 1000
           }
         ],
         externalSpend: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018.0,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 50
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 50
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 50
             }
           ]
@@ -2507,24 +2070,20 @@ test("calculateModelRevenue - single milestone period 3", () => {
        headcountEffort: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018.0,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 3,
-              amount: 0
+              period: 2018.5,
+              amount: 875
             },
             {
-              year: 2018,
-              quarter: 4,
-              amount: 0
+              period: 2018.75,
+              amount: 125
             }
           ]
         ]
@@ -2544,31 +2103,26 @@ test("calculateModelRevenue - single milestone period 3", () => {
           {
             id: 1000,
             name: "Upfront Payment",
-            dateEarned: "Q3 2018",
-            datePaid: "Q3 2018",
+            dateEarned: 2018.5,
             amount: 1000
           }
         ],
         externalSpend: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018.0,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 50
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 25
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 25
             }
           ]
@@ -2576,24 +2130,20 @@ test("calculateModelRevenue - single milestone period 3", () => {
        headcountEffort: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018.0,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 3,
-              amount: 0
+              period: 2018.5,
+              amount: 875
             },
             {
-              year: 2018,
-              quarter: 4,
-              amount: 0
+              period: 2018.75,
+              amount: 125
             }
           ]
         ]
@@ -2610,29 +2160,24 @@ test("calculateModelRevenue - single milestone period 3", () => {
   const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId);
   const expected = [
     {
-      year: 2018,
-      quarter: 1,
+      period: 2018.0,
       amount: 0
     },
     {
-      year: 2018,
-      quarter: 2,
+      period: 2018.25,
       amount: 0
     },
     {
-      year: 2018,
-      quarter: 3,
+      period: 2018.5,
       amount: 875
     },
     {
-      year: 2018,
-      quarter: 4,
+      period: 2018.75,
       amount: 125
     }
   ]
   expect(actual).toEqual(expected);
 })
-
 
 test("calculatePriorVersionIndex - index = 0", () => {
   const simpleModel = fixtureSimpleModel();
@@ -2661,23 +2206,19 @@ test("percentCompleteCummArrayFromData - simpleModel", () => {
   const actual = model.percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs);
   const expected = [
     {
-      year: 2018,
-      quarter: 1,
+      period: 2018.0,
       amount: 0.25
     },
     {
-      year: 2018,
-      quarter: 2,
+      period: 2018.25,
       amount: 0.5
     },
     {
-      year: 2018,
-      quarter: 3,
+      period: 2018.5,
       amount: 0.75
     },
     {
-      year: 2018,
-      quarter: 4,
+      period: 2018.75,
       amount: 1
     },
   ];
@@ -2690,57 +2231,92 @@ test("calculateCurrentPeriodRev - milestone period 3", () => {
   const milestone = {
       id: 1000,
       name: "Upfront Payment",
-      dateEarned: "Q3 2018",
-      datePaid: "Q3 2018",
+      dateEarned: 2018.5,
       amount: 1000
     }
   const percentCompleteCumm = [
     {
-      year: 2018,
-      quarter: 1,
+      period: 2018.0,
       amount: 0.25
     },
     {
-      year: 2018,
-      quarter: 2,
+      period: 2018.25,
       amount: 0.5
     },
     {
-      year: 2018,
-      quarter: 3,
+      period: 2018.5,
       amount: 0.75
     },
     {
-      year: 2018,
-      quarter: 4,
+      period: 2018.75,
       amount: 1
     },
   ];
   const actual = model.calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm);
   const expected = [ 
     {
-      year: 2018,
-      quarter: 1,
+      period: 2018,
       amount: 0
     },
     {
-      year: 2018,
-      quarter: 2,
+      period: 2018.25,
       amount: 0
     },
     {
-      year: 2018,
-      quarter: 3,
+      period: 2018.5,
       amount: 750
     },
     {
-      year: 2018,
-      quarter: 4,
+      period: 2018.75,
       amount: 250
     },
   ];
   expect(actual).toEqual(expected);
 })
+
+test("editDataArrayYears", () => {
+  const array = [ 
+    {
+      period: 2018.0,
+      amount: 0
+    },
+    {
+      period: 2018.25,
+      amount: 0
+    },
+    {
+      period: 2018.5,
+      amount: 750
+    },
+    {
+      period: 2018.75,
+      amount: 250
+    },
+  ];
+  const startYear = 2019;
+  const actual = model.editDataArrayYears(array, startYear);
+  const expected = [
+    {
+      period: 2019.0,
+      amount: 0
+    },
+    {
+      period: 2019.25,
+      amount: 0
+    },
+    {
+      period: 2019.5,
+      amount: 750
+    },
+    {
+      period: 2019.75,
+      amount: 250
+    },
+  ];
+  expect(actual).toEqual(expected);
+})
+
+
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
@@ -2773,31 +2349,26 @@ function fixtureSimpleModel () {
           {
             id: 1000,
             name: "Upfront Payment",
-            dateEarned: "Q1 2018",
-            datePaid: "Q1 2018",
+            dateEarned: 2018,
             amount: 1000
           }
         ],
         externalSpend: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 100
             }
           ]
@@ -2805,23 +2376,19 @@ function fixtureSimpleModel () {
        headcountEffort: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 0
             }
           ]
@@ -2842,31 +2409,26 @@ function fixtureSimpleModel () {
           {
             id: 1000,
             name: "Upfront Payment",
-            dateEarned: "Q1 2018",
-            datePaid: "Q1 2018",
+            dateEarned: 2018, 
             amount: 1000
           }
         ],
         externalSpend: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018,
               amount: 100
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 50
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 50
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 50
             }
           ]
@@ -2874,23 +2436,19 @@ function fixtureSimpleModel () {
        headcountEffort: [
           [
             {
-              year: 2018,
-              quarter: 1,
+              period: 2018,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 2,
+              period: 2018.25,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 3,
+              period: 2018.5,
               amount: 0
             },
             {
-              year: 2018,
-              quarter: 4,
+              period: 2018.75,
               amount: 0
             }
           ]

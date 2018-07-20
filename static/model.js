@@ -1,29 +1,9 @@
 var math = require('math.js');
 
+// Periods are as follows: Q1 = 2018.0; Q2 = 2019.25; Q3 = 2018.5; Q4 = 2018.75 //
+
 export const displayOptions = ['Annual', 'Quarterly'];
 export const periodType = ['QTD', 'YTD', 'Full Year'];
-export const newAmounts = [
-  {
-    year: 0,
-    quarter: 1,
-    amount: 0
-  },
-  {
-    year: 0,
-    quarter: 2,
-    amount: 0
-  },
-  {
-    year: 0,
-    quarter: 3,
-    amount: 0
-  },
-  {
-    year: 0,
-    quarter: 4,
-    amount: 0
-  },
-];
 
 export const defaultState = {
   version: 0,
@@ -65,12 +45,10 @@ export const defaultState = {
         }
       ],
       revenueMilestones: [
-        // TODO: Change the date to an object with quarter and year amount
         {
           id: 1000,
           name: "Upfront Payment",
-          dateEarned: "Q1 2018",
-          datePaid: "Q1 2018",
+          dateEarned: 2018.0,
           amount: 100000
         }
       ],
@@ -78,252 +56,203 @@ export const defaultState = {
       externalSpend: [
         [
           {
-            year: 2018,
-            quarter: 1,
+            period: 2018.0,
             amount: 100
           },
           {
-            year: 2018,
-            quarter: 2,
+            period: 2018.25,
             amount: 100
           },
           {
-            year: 2018,
-            quarter: 3,
+            period: 2018.5,
             amount: 100
           },
           {
-            year: 2018,
-            quarter: 4,
+            period: 2018.75,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 1,
+            period: 2019.0,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 2,
+            period: 2019.25,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 3,
+            period: 2019.5,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 4,
+            period: 2019.75,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 1,
+            period: 2020.0,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 2,
+            period: 2020.25,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 3,
+            period: 2020.5,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 4,
+            period: 2020.75,
             amount: 100
           }
         ],
         [
           {
-            year: 2018,
-            quarter: 1,
+            period: 2018.0,
             amount: 100
           },
           {
-            year: 2018,
-            quarter: 2,
+            period: 2018.25,
             amount: 100
           },
           {
-            year: 2018,
-            quarter: 3,
+            period: 2018.5,
             amount: 100
           },
           {
-            year: 2018,
-            quarter: 4,
+            period: 2018.75,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 1,
+            period: 2019.0,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 2,
+            period: 2019.25,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 3,
+            period: 2019.5,
             amount: 100
           },
           {
-            year: 2019,
-            quarter: 4,
+            period: 2019.75,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 1,
+            period: 2020.0,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 2,
+            period: 2020.25,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 3,
+            period: 2020.5,
             amount: 100
           },
           {
-            year: 2020,
-            quarter: 4,
+            period: 2020.75,
             amount: 100
           }
         ]
       ],
      headcountEffort: [
-        [
-        // TODO Add the Program ID to the array associated with the appropriate program
+       [
           {
-            year: 2018,
-            quarter: 1,
+            period: 2018.0,
             amount: 2
           },
           {
-            year: 2018,
-            quarter: 2,
+            period: 2018.25,
             amount: 2
           },
           {
-            year: 2018,
-            quarter: 3,
+            period: 2018.5,
             amount: 2
           },
           {
-            year: 2018,
-            quarter: 4,
+            period: 2018.75,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 1,
+            period: 2019.0,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 2,
+            period: 2019.25,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 3,
+            period: 2019.5,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 4,
+            period: 2019.75,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 1,
+            period: 2020.0,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 2,
+            period: 2020.25,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 3,
+            period: 2020.5,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 4,
+            period: 2020.75,
             amount: 2
           }
         ],
         [
           {
-            year: 2018,
-            quarter: 1,
+            period: 2018.0,
             amount: 2
           },
           {
-            year: 2018,
-            quarter: 2,
+            period: 2018.25,
             amount: 2
           },
           {
-            year: 2018,
-            quarter: 3,
+            period: 2018.5,
             amount: 2
           },
           {
-            year: 2018,
-            quarter: 4,
+            period: 2018.75,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 1,
+            period: 2019.0,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 2,
+            period: 2019.25,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 3,
+            period: 2019.5,
             amount: 2
           },
           {
-            year: 2019,
-            quarter: 4,
+            period: 2019.75,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 1,
+            period: 2020.0,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 2,
+            period: 2020.25,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 3,
+            period: 2020.5,
             amount: 2
           },
           {
-            year: 2020,
-            quarter: 4,
+            period: 2020.75,
             amount: 2
           }
         ]
@@ -339,17 +268,16 @@ export function displayArray(displaySelections) {
 
   displaySelections.forEach((yearSelection) => {
     if (yearSelection.type === "Quarterly") {
-      for (let x = 1; x < 5; x++) {
+      for (let qtr = 0; qtr <= .75; qtr += .25) {
         let periodTotal = Object()
-        periodTotal.year = yearSelection.year;
-        periodTotal.quarter = x;
+        periodTotal.period = yearSelection.year + qtr;
         periodTotal.type = yearSelection.type;
         periodTotal.amount = 0;
         displayArray.push(periodTotal);
       }
     } else if (yearSelection.type === "Annual") {
       let periodTotal = Object()
-      periodTotal.year = yearSelection.year;
+      periodTotal.period = yearSelection.year;
       periodTotal.type = yearSelection.type;
       periodTotal.amount = 0;
       displayArray.push(periodTotal);
@@ -361,17 +289,14 @@ export function displayArray(displaySelections) {
 export function dataToDisplay(displayType, dataArray) {
   let dataRows = displayType.map((displayPeriod) => {
     dataArray.forEach((amount, amountIndex) => {
-      let amountYear = amount.year;
-      let amountQtr = amount.quarter;
-      if (displayPeriod.year === amountYear && displayPeriod.type === "Quarterly" && displayPeriod.quarter === amountQtr) {
+      if (displayPeriod.period === amount.period && displayPeriod.type === "Quarterly") {
         displayPeriod.amount += amount.amount;
-      } else if (displayPeriod.year === amountYear && displayPeriod.type === "Annual") {
+      } else if (displayPeriod.period <= amount.period && amount.period < (displayPeriod.period + 1) && displayPeriod.type === "Annual") {
         displayPeriod.amount += amount.amount;
       }
     })
     return displayPeriod;
   })
-
   return dataRows;
 }
 
@@ -395,10 +320,8 @@ export function yearsArray(startYear, yearsOut) {
 
 export function addDataArray(startYear, yearsOut) {
   let newDataArray = [];
-  for (let year = startYear; year < startYear + yearsOut; year++) {
-    for (let quarter = 1; quarter <= 4; quarter++) {
-      newDataArray.push({year, quarter, amount: 0});
-    }
+  for (let period = startYear; period < startYear + yearsOut; period += 0.25) {
+    newDataArray.push({period, amount: 0});
   }
   return newDataArray;
 }
@@ -407,18 +330,16 @@ export function editDataArrayLength(array, startYear, yearsOut) {
   if (array.length < yearsOut * 4) {
     let newPeriods = yearsOut - (array.length / 4);
     let newArray = keepCloning(array);
-    for (let x = 0; x < newPeriods; x++) {
-      newAmounts.forEach((amount) => {
-        newArray.push(keepCloning(amount));
-      })
+    for (let x = 0; x < newPeriods; x += .25) {
+      newArray.push({period: 0, amount: 0})
     }
     return newArray;
   } else if (array.length > yearsOut * 4) {
     let newArray = keepCloning(array);
-    for (let y = startYear + yearsOut; y < startYear + (array.length / 4); y++) {
+    for (let y = startYear + yearsOut; y < startYear + (array.length / 4); y += 0.25) {
       newArray.forEach((period) => {
-        if (period.year === y) {
-          return period.amount = 0;
+        if (period.period >= y && y + 1 > period.period) {
+          period.amount = 0;
         }
       })
     };
@@ -428,18 +349,15 @@ export function editDataArrayLength(array, startYear, yearsOut) {
   }
 }
 
-export function editDataArrayYears(array, startYear, yearsOut) {
-  let newYear = startYear;
+export function editDataArrayYears(array, startYear) {
   let newArray = array.map((cell, cellIndex) => {
-    if (cell.quarter !== 4) {
-      cell.year = startYear
+    if (cellIndex === 0) {
+      cell.period = startYear
     } else {
-      cell.year = startYear;
-      startYear += 1;
+      cell.period = startYear + (cellIndex * 0.25);
     }
     return cell;
   });
-
   return newArray;
 }
 
@@ -484,15 +402,11 @@ export function rounding(input, decimals) {
 }
 
 export function calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCum) {
-  let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
-  let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
   let blankDataArray = addDataArray(startYear, yearsOut);
   blankDataArray.forEach((period, periodIndex) => {
-    if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
+    if (period.period === milestone.dateEarned) {
       period.amount = percentCompleteCum[periodIndex].amount * milestone.amount;
-    } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr) {
-      period.amount = percentComplete[periodIndex].amount * milestone.amount;
-    } else if (period.year > milestoneEarnedYear) {
+    } else if (period.period > milestone.dateEarned) {
       period.amount = percentComplete[periodIndex].amount * milestone.amount;
     } else {
       period.amount = 0;
@@ -553,15 +467,15 @@ export function percentCompleteCummArrayFromData(headcountEffort, externalSpend,
   return percentCompleteCumm;
 }
 
-export function periodAmountCalc(array, currentQtr, currentYear, periodType) {
+export function periodAmountCalc(array, currentPeriod, periodType) {
   let periodAmount = 0;
   array.forEach((period) => {
-    if (periodType === "QTD" && period.quarter === currentQtr && period.year === currentYear) {
-      return periodAmount += period.amount;
-    } else if (periodType === "YTD" && period.quarter <= currentQtr && period.year === currentYear) { 
-      return periodAmount += period.amount;
-    } else if (periodType === "Full Year" && period.year === currentYear) {
-      return periodAmount += period.amount;
+    if (periodType === "QTD" && period.period === currentPeriod) {
+      periodAmount += period.amount;
+    } else if (periodType === "YTD" && Math.floor(currentPeriod) <= period.period && period.period <= currentPeriod) { 
+      periodAmount += period.amount;
+    } else if (periodType === "Full Year" && Math.floor(currentPeriod) <= period.period && period.period < Math.ceil(currentPeriod)) {
+      periodAmount += period.amount;
     }
   });
   return periodAmount;
@@ -604,8 +518,6 @@ export function calculateCummPercentDiff(programs, startYear, yearsOut, scenario
 export function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, currentYear, currentQtr, startYear, yearsOut) {
   let priorPeriodYear = 0;
   let priorPeriodQtr = 0;
-  let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
-  let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
   let priorRevArray = addDataArray(startYear, yearsOut);
   if (currentQtr - 1 === 0) {
     priorPeriodQtr = 4;
@@ -631,14 +543,11 @@ export function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, c
 }
     
 export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm) {
-  let milestoneEarnedQtr = Number(milestone.dateEarned.slice(1, 2));
-  let milestoneEarnedYear = Number(milestone.dateEarned.slice(3));
   let blankDataArray = addDataArray(startYear, yearsOut);
   blankDataArray.map((period, periodIndex) => {
-    if (period.year === milestoneEarnedYear && period.quarter === milestoneEarnedQtr) {
-      period.amount = percentCompleteCumm[periodIndex].amount * milestone.amount;
-      return period;
-    } else if (period.year === milestoneEarnedYear && period.quarter > milestoneEarnedQtr || period.year > milestoneEarnedYear) {
+    if (period.period === milestone.dateEarned) {
+      return period.amount = percentCompleteCumm[periodIndex].amount * milestone.amount;
+    } else if (period.period > milestone.dateEarned) {
       let priorPeriodAmount = 0;
       if (periodIndex - 1 === -1) {
         priorPeriodAmount = 0;
