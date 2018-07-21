@@ -2316,7 +2316,19 @@ test("editDataArrayYears", () => {
   expect(actual).toEqual(expected);
 })
 
+test("periodStringToNumber", () => {
+  const periodString = "Q3 2018"
+  const actual = model.periodStringToNumber(periodString);
+  const expected = 2018.5
+  expect(actual).toEqual(expected);
+})
 
+test("periodNumberToString", () => {
+  const periodNumber = 2018.5;
+  const actual = model.periodNumberToString(periodNumber);
+  const expected = "Q3 2018"
+  expect(actual).toEqual(expected);
+})
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
@@ -2336,7 +2348,7 @@ function fixtureSimpleModel () {
     scenarios: [
       {
         scenarioName: "Q1 2018 close",
-        scenarioDate: "Q1 2018",
+        scenarioDate: 2018,
         scenarioID: 1,
         priorScenarioID: 0,
         displaySelections: [
@@ -2396,7 +2408,7 @@ function fixtureSimpleModel () {
       },
       {
         scenarioName: "Q2 2018 close",
-        scenarioDate: "Q2 2018",
+        scenarioDate: 2018.25,
         scenarioID: 2,
         priorScenarioID: 1,
         displaySelections: [

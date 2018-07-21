@@ -10,7 +10,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
-  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, percentCompleteCummArrayFromData
+  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString
 
 } from './model'
 
@@ -25,20 +25,20 @@ export class PharmaRevRec extends React.Component {
       this.state = window.LRPModel.data;
     }
 
-    //Scenario
-    this.setScenarioState = this.setScenarioState.bind(this);
-    this.addScenario = this.addScenario.bind(this);
-    this.deleteScenario = this.deleteScenario.bind(this);
-    this.editScenarioName = this.editScenarioName.bind(this);
-    this.setActiveScenarioId = this.setActiveScenarioId.bind(this);
-    this.setPriorScenario = this.setPriorScenario.bind(this);
+    // Versions
+    this.setVersionState = this.setVersionState.bind(this);
+    this.addVersion = this.addVersion.bind(this);
+    this.deleteVersion = this.deleteVersion.bind(this);
+    this.editVersionName = this.editVersionName.bind(this);
+    this.setActiveVersionID = this.setActiveVersionID.bind(this);
+    this.setPriorVersion = this.setPriorVersion.bind(this);
+    this.setVersionDate = this.setVersionDate.bind(this);
 
     //Model Setup
     this.setModelName = this.setModelName.bind(this);
     this.setStartYear = this.setStartYear.bind(this);
     this.setEndYear = this.setEndYear.bind(this);
     this.setYearsOut = this.setYearsOut.bind(this);
-    this.setScenarioDate = this.setScenarioDate.bind(this);
 
     //Years Display
     this.setDisplayType = this.setDisplayType.bind(this);
@@ -54,7 +54,6 @@ export class PharmaRevRec extends React.Component {
     this.deleteMilestone = this.deleteMilestone.bind(this);
     this.editMilestoneName = this.editMilestoneName.bind(this);
     this.editMilestoneEarned = this.editMilestoneEarned.bind(this);
-    this.editMilestonePaid = this.editMilestonePaid.bind(this);
     this.editMilestoneAmount = this.editMilestoneAmount.bind(this);
 
     //External Spend
@@ -67,95 +66,95 @@ export class PharmaRevRec extends React.Component {
     this.setComparisonModel = this.setComparisonModel.bind(this);
   }
 
-  setScenarioState(scenarioChanges) {
+  setVersionState(versionChanges) {
     this.setState((prevState, props) => {
-      const activeVersionId = prevState.activeVersionId;
-      const currentScenario = prevState.scenarios[activeVersionId];
+      const activeVersionID = prevState.activeVersionID;
+      const currentScenario = prevState.versions[activeVersionID];
       let updatedCurrentScenario;
       let updatedAssumptions;
-      if (typeof scenarioChanges === "function") {
-        updatedAssumptions = scenarioChanges(currentScenario, props);
+      if (typeof versionChanges === "function") {
+        updatedAssumptions = versionChanges(currentScenario, props);
         updatedCurrentScenario = Object.assign({}, currentScenario, updatedAssumptions);
       } else {
-        updatedCurrentScenario = Object.assign({}, currentScenario, scenarioChanges);
+        updatedCurrentScenario = Object.assign({}, currentScenario, versionChanges);
       }
       const newState = prevState
-      newState.scenarios[activeVersionId] = updatedCurrentScenario;
+      newState.versions[activeVersionID] = updatedCurrentScenario;
       return newState;
     })
   }
 
-  addScenario() {
+  addVersion() {
     this.setState((prevState, props) => {
-      let scenarios = prevState.scenarios;
-      let copiedScenarioIndex = prevState.activeVersionId;
-      let copiedScenario = JSON.parse(JSON.stringify(scenarios[copiedScenarioIndex])); 
-      copiedScenario.scenarioName = "New scenario";
-      let lastID = scenarios[scenarios.length - 1].scenarioID;
-      copiedScenario.scenarioID = lastID + 1;
-      scenarios.push(copiedScenario);
+      let versions = prevState.versions;
+      let copiedScenarioIndex = prevState.activeVersionID;
+      let copiedScenario = JSON.parse(JSON.stringify(versions[copiedScenarioIndex])); 
+      copiedScenario.versionName = "New version";
+      let lastID = versions[versions.length - 1].versionID;
+      copiedScenario.versionID = lastID + 1;
+      versions.push(copiedScenario);
       return {
-        scenarios: scenarios
+        versions: versions
       }
     })
   }
   
-  deleteScenario(scenarioIndex) {
+  deleteVersion(versionIndex) {
     this.setState(function(prevState, props) {
-      let scenarios = prevState.scenarios;
-      scenarios.splice(scenarioIndex, 1);
+      let versions = prevState.versions;
+      versions.splice(versionIndex, 1);
       return {
-        scenarios: scenarios
+        versions: versions
       }
     })
   }
 
-  editScenarioName(newName, scenarioIndex) {
+  editVersionName(newName, versionIndex) {
     this.setState(function(prevState, props) {
-      let scenarios = prevState.scenarios;
-      let currentScenario = scenarios[scenarioIndex];
-      currentScenario.scenarioName = newName;
+      let versions = prevState.versions;
+      let currentScenario = versions[versionIndex];
+      currentScenario.versionName = newName;
       return {
-        scenarios: scenarios
+        versions: versions
       }
     })
   }
   
-  setScenarioDate(newScenarioDate, scenarioIndex) {
+  setVersionDate(newScenarioDate, versionIndex) {
     this.setState(function(prevState, props) {
-      let scenarios = prevState.scenarios;
-      let currentScenario = scenarios[scenarioIndex];
-      currentScenario.scenarioDate = newScenarioDate;
+      let versions = prevState.versions;
+      let currentScenario = versions[versionIndex];
+      currentScenario.versionPeriod = periodStringToNumber(newScenarioDate);
       return {
-        scenarios: scenarios
+        versions: versions
       }
     })
   }
 
-  setActiveScenarioId(newScenario) {
+  setActiveVersionID(newScenario) {
     this.setState(function(prevState, props) {
-      let scenarios = prevState.scenarios;
-      let newScenarioIndex = scenarios.findIndex(x => x.scenarioName === newScenario);
+      let versions = prevState.versions;
+      let newScenarioIndex = versions.findIndex(x => x.versionName === newScenario);
       return {
-        activeVersionId: newScenarioIndex 
+        activeVersionID: newScenarioIndex 
       }
     })
   }
 
-  setPriorScenario(priorScenario, scenarioIndex) {
+  setPriorVersion(priorScenario, versionIndex) {
     this.setState(function(prevState, props) {
-      let scenarios = prevState.scenarios;
+      let versions = prevState.versions;
       let newPriorScenarioID = 0;
-      scenarios.forEach((scenario, scenarioIndex) => {
-        if (priorScenario === scenario.scenarioName) {
-          return newPriorScenarioID = scenario.scenarioID
+      versions.forEach((version, versionIndex) => {
+        if (priorScenario === version.versionName) {
+          return newPriorScenarioID = version.versionID
         }
         return newPriorScenarioID;
       })
-      let currentScenario = scenarios[scenarioIndex];
-      currentScenario.priorScenarioID = newPriorScenarioID;
+      let currentScenario = versions[versionIndex];
+      currentScenario.priorVersionID = newPriorScenarioID;
       return {
-        scenarios: scenarios
+        versions: versions
       }
     });
   }
@@ -193,7 +192,7 @@ export class PharmaRevRec extends React.Component {
   }
 
   setDisplayType(display, displayIndex) {
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let newDisplaySelections = prevState.displaySelections;
       newDisplaySelections[displayIndex].type = display; 
       return {
@@ -217,9 +216,9 @@ export class PharmaRevRec extends React.Component {
       }
       programArray.push(newProgram);
       
-      let scenarios = prevState.scenarios;
-      let newScenarios = scenarios.map((scenario, scenarioIndex) => {
-        let newScenario = keepCloning(scenario);
+      let versions = prevState.versions;
+      let newScenarios = versions.map((version, versionIndex) => {
+        let newScenario = keepCloning(version);
         
         //add external spend array//
         let newExtSpend = newScenario.externalSpend;
@@ -236,7 +235,7 @@ export class PharmaRevRec extends React.Component {
         
       return {
         programs: programArray,
-        scenarios: newScenarios
+        versions: newScenarios
       } 
     })
   }
@@ -245,9 +244,9 @@ export class PharmaRevRec extends React.Component {
     this.setState((prevState, props) => {
       let programArray = prevState.programs;
       programArray.splice(programIndex, 1);
-      let scenarios = prevState.scenarios;
-      let newScenarios = scenarios.map((scenario, scenarioIndex) => {
-        let newScenario = keepCloning(scenario);
+      let versions = prevState.versions;
+      let newScenarios = versions.map((version, versionIndex) => {
+        let newScenario = keepCloning(version);
         let externalSpendArray = newScenario.externalSpend;
         externalSpendArray.splice(programIndex, 1);
 
@@ -258,7 +257,7 @@ export class PharmaRevRec extends React.Component {
         
       return {
         programs: programArray,
-        scenarios: newScenarios
+        versions: newScenarios
       }
     });
   }
@@ -284,7 +283,7 @@ export class PharmaRevRec extends React.Component {
   }
 
   addMilestone() {
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let revMilestones = prevState.revenueMilestones;
       let lastId = revMilestones[revMilestones.length - 1].id;
       let newId = lastId + 1;
@@ -304,7 +303,7 @@ export class PharmaRevRec extends React.Component {
   }
 
   deleteMilestone(milestoneIndex) {
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let revMilestones = prevState.revenueMilestones;
       revMilestones.splice(milestoneIndex, 1);
       return {
@@ -314,7 +313,7 @@ export class PharmaRevRec extends React.Component {
   }
 
   editMilestoneName(milestoneIndex, newName) {
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let revMilestones = prevState.revenueMilestones.slice();
       revMilestones[milestoneIndex].name = newName;
       return {
@@ -324,19 +323,9 @@ export class PharmaRevRec extends React.Component {
   }
 
   editMilestoneEarned(milestoneIndex, newDate) {
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let revMilestones = prevState.revenueMilestones.slice();
-      revMilestones[milestoneIndex].dateEarned = newDate;
-      return {
-        revenueMilestones: revMilestones
-      }
-    })
-  }
-
-  editMilestonePaid(milestoneIndex, newDate) {
-    this.setScenarioState((prevState, props) => {
-      let revMilestones = prevState.revenueMilestones.slice();
-      revMilestones[milestoneIndex].datePaid = newDate;
+      revMilestones[milestoneIndex].dateEarned = periodStringToNumber(newDate);
       return {
         revenueMilestones: revMilestones
       }
@@ -344,7 +333,7 @@ export class PharmaRevRec extends React.Component {
   }
 
   editMilestoneAmount(milestoneIndex, newAmount) {
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let revMilestones = prevState.revenueMilestones.slice();
       revMilestones[milestoneIndex].amount = Number(newAmount);
       return {
@@ -353,18 +342,18 @@ export class PharmaRevRec extends React.Component {
     })
   }
 
-  editExtSpendAmount(displayType, quarter, year, newAmount, programIndex) {
+  editExtSpendAmount(displayType, period, newAmount, programIndex) {
     let quarterAmount = 0;
     if (displayType === "Annual") {
       quarterAmount = rounding(newAmount / 4, 1000);
     } 
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let extSpend = keepCloning(prevState.externalSpend);
       let programExtSpend = extSpend[programIndex];
       let newExtSpend = programExtSpend.map((amount) => {
-        if (displayType === "Annual" && amount.year === year) {
+        if (displayType === "Annual" && amount.period === period) {
           amount.amount = quarterAmount
-        } else if (displayType === "Quarterly" && amount.year === year && amount.quarter === quarter) {
+        } else if (displayType === "Quarterly" && amount.period === period) {
           amount.amount = newAmount;
         }
         return amount;
@@ -375,18 +364,18 @@ export class PharmaRevRec extends React.Component {
     })
   }
 
-  editHeadcountEffort(displayType, quarter, year, newAmount, programIndex) {
+  editHeadcountEffort(displayType, period, newAmount, programIndex) {
     let quarterAmount = 0;
     if (displayType === "Annual") {
       quarterAmount = rounding(newAmount / 4, 1000);
     } 
-    this.setScenarioState((prevState, props) => {
+    this.setVersionState((prevState, props) => {
       let hcEffort = keepCloning(prevState.headcountEffort);
       let programHcEffort = hcEffort[programIndex];
       let newHcEffort = programHcEffort.map((amount) => {
-        if (displayType === "Annual" && amount.year === year) {
+        if (displayType === "Annual" && amount.period === period) {
           amount.amount = quarterAmount;
-        } else if (displayType === "Quarterly" && amount.year === year && amount.quarter === quarter) {
+        } else if (displayType === "Quarterly" && amount.period === period) {
           amount.amount = newAmount;
         }
         return amount;
@@ -399,9 +388,8 @@ export class PharmaRevRec extends React.Component {
 
   setComparisonModel(newModelIndex) {
     let newComparisonModel = newModelIndex;
-    this.setScenarioState({comparisonModelIndex: newComparisonModel});
+    this.setVersionState({comparisonModelIndex: newComparisonModel});
   }
-
 
   render() {
     const {
@@ -409,18 +397,18 @@ export class PharmaRevRec extends React.Component {
       externalSpend,
       displaySelections,
       revenueMilestones,
-      scenarioDate,
-      priorScenarioID,
-      scenarioID
-    } = this.state.scenarios[this.state.activeVersionId];
+      versionPeriod,
+      priorVersionID,
+      versionID
+    } = this.state.versions[this.state.activeVersionID];
  
     const {
       modelName,
       startYear,
       programs,
-      scenarios,
+      versions,
       endYear,
-      activeVersionId
+      activeVersionID
     } = this.state;
    
     let yearsOut = endYear - startYear + 1;
@@ -435,24 +423,24 @@ export class PharmaRevRec extends React.Component {
     let percentCompleteCum = percentCompleteCummArray(dollarCompleteCum, grandTotalSpend);
     let percentTotalCum = rounding(arrayTotal(percentComplete), 1000000);
 
-    let scenarioNames = scenarios.map((scenario) => {
-      return scenario.scenarioName
+    let versionNames = versions.map((version) => {
+      return version.versionName
     })
 
-    let priorVersionIndex = calculatePriorVersionIndex(scenarios, priorScenarioID);
-    let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, scenarios, activeVersionId, priorVersionIndex);
+    let priorVersionIndex = calculatePriorVersionIndex(versions, priorVersionID);
+    let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, versions, activeVersionID, priorVersionIndex);
 
 
     return (
       <div id="grid">
         <HeaderBar
           modelName={this.state.modelName}
-          versionName={scenarios[activeVersionId].scenarioName}
+          versionName={versions[activeVersionID].versionName}
         />
         <SideNavigation
-          scenarios={this.state.scenarios}
-          activeVersionId={this.state.activeVersionId}
-          setActiveScenarioId={this.setActiveScenarioId}
+          versions={this.state.versions}
+          activeVersionID={this.state.activeVersionID}
+          setActiveVersionID={this.setActiveVersionID}
         />
         <div id="content">
           <ModelSetup
@@ -466,17 +454,17 @@ export class PharmaRevRec extends React.Component {
             setEndYear={this.setEndYear}
           />
           <ScenarioManager
-            scenarios={this.state.scenarios}
-            addScenario={this.addScenario}
-            deleteScenario={this.deleteScenario}
-            editScenarioName={this.editScenarioName}
-            setActiveScenarioId={this.setActiveScenarioId}
-            activeVersionId={this.state.activeVersionId}
-            setScenarioDate={this.setScenarioDate}
+            versions={this.state.versions}
+            addVersion={this.addVersion}
+            deleteVersion={this.deleteVersion}
+            editVersionName={this.editVersionName}
+            setActiveVersionID={this.setActiveVersionID}
+            activeVersionID={this.state.activeVersionID}
+            setVersionDate={this.setVersionDate}
             startYear={startYear}
             yearsOut={yearsOut}
-            setPriorScenario={this.setPriorScenario}
-            scenarioNames = {scenarioNames}
+            setPriorVersion={this.setPriorVersion}
+            versionNames = {versionNames}
           />
           <YearDisplay
             startYear={startYear}
@@ -550,12 +538,12 @@ export class PharmaRevRec extends React.Component {
             percentComplete={percentComplete}
             percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
-            scenarioDate={scenarioDate}
+            versionPeriod={versionPeriod}
             cummPercentDiff={cummPercentDiff}
-            scenarios={scenarios}
+            versions={versions}
             programs={programs}
-            scenarioID={scenarioID}
-            activeVersionId={this.state.activeVersionId}
+            versionID={versionID}
+            activeVersionID={this.state.activeVersionID}
           /> 
           <DeferredRevenueRoll
             startYear={startYear}
@@ -565,8 +553,8 @@ export class PharmaRevRec extends React.Component {
             percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
             programs={programs}
-            scenarios={scenarios}
-            activeVersionId={activeVersionId}
+            versions={versions}
+            activeVersionID={activeVersionID}
           />
           <PeriodBridge
             startYear={startYear}
@@ -580,10 +568,10 @@ export class PharmaRevRec extends React.Component {
             headcountSpend={headcountSpend}
             grandTotalSpend={grandTotalSpend}
             revenueMilestones={revenueMilestones}
-            scenarios={scenarios}
-            scenarioNames={scenarioNames}
+            versions={versions}
+            versionNames={versionNames}
             totalSpend={totalSpend}
-            activeVersionId={activeVersionId}
+            activeVersionID={activeVersionID}
           />
           <PeriodAnalytic
             startYear={startYear}
@@ -593,9 +581,9 @@ export class PharmaRevRec extends React.Component {
             headcountSpend={headcountSpend}
             programs={programs}
             totalProgramSpend={totalProgramSpend}
-            scenarios={scenarios}
-            scenarioNames={scenarioNames}
-            scenarioDate={scenarioDate}
+            versions={versions}
+            versionNames={versionNames}
+            versionPeriod={versionPeriod}
           /> 
         </div>
       </div>
@@ -617,16 +605,16 @@ function HeaderBar({modelName, versionName}) {
 
 function SideNavigation(props) {
   const {
-    scenarios,
-    activeVersionId,
-    setActiveScenarioId,
+    versions,
+    activeVersionID,
+    setActiveVersionID,
   } = props;
 
-  let scenarioNames = scenarios.map((scenario) => {
-    return(scenario.scenarioName);
+  let versionNames = versions.map((version) => {
+    return(version.versionName);
   })
 
-  let activeScenarioName = scenarios[activeVersionId].scenarioName;
+  let activeScenarioName = versions[activeVersionID].versionName;
 
   return(
     <div id="sidebar">
@@ -643,10 +631,10 @@ function SideNavigation(props) {
         <tr>
           <td>
             <select
-              value={scenarios[activeVersionId].scenarioName}
-              onChange={(e) => setActiveScenarioId(e.target.value)}
+              value={versions[activeVersionID].versionName}
+              onChange={(e) => setActiveVersionID(e.target.value)}
             >
-              <Dropdown options={scenarioNames}/>
+              <Dropdown options={versionNames}/>
             </select>
           </td>
         </tr>
@@ -746,47 +734,47 @@ class ModelSetup extends React.Component {
 
 function ScenarioManager(props) { 
   const {
-    scenarios,
-    addScenario,
-    deleteScenario,
-    editScenarioName,
-    activeVersionId,
-    setScenarioDate,
+    versions,
+    addVersion,
+    deleteVersion,
+    editVersionName,
+    activeVersionID,
+    setVersionDate,
     startYear,
     yearsOut,
-    setPriorScenario,
-    scenarioNames
+    setPriorVersion,
+    versionNames
   } = props;
     
   let periodSelections = periodLabels(startYear, yearsOut);
-  let priorPeriodSelections = scenarioNames;
+  let priorPeriodSelections = versionNames;
   priorPeriodSelections.unshift("N/A - Initial Version");
 
-  let scenarioRows = scenarios.map((scenario, index) => {
-    let scenarioName = scenario.scenarioName;
-    let scenarioDate = scenario.scenarioDate;
-    let priorScenarioName = scenarios.forEach((priorScenario) => {
-      if (scenario.priorScenarioID === priorScenario.scenarioID) {
-        return priorScenario.scenarioName;
+  let versionRows = versions.map((version, index) => {
+    let versionName = version.versionName;
+    let versionPeriod = periodNumberToString(version.versionPeriod);
+    let priorScenarioName = versions.forEach((priorScenario) => {
+      if (version.priorVersionID === priorScenario.versionID) {
+        return priorScenario.versionName;
       }
     });
     let priorModelSelections = priorPeriodSelections.slice();
-    let currentModelName = priorModelSelections.indexOf(scenarioName)
+    let currentModelName = priorModelSelections.indexOf(versionName)
     priorModelSelections.splice(currentModelName, 1);
-    if (index === 0 || index <= activeVersionId) {
+    if (index === 0 || index <= activeVersionID) {
       return (
         <React.Fragment>
           <tr>
             <td>
               <input
-                value={scenarioName}
-                onChange={(e) => editScenarioName(e.target.value, index)}
+                value={versionName}
+                onChange={(e) => editVersionName(e.target.value, index)}
               />
             </td>
             <td> 
               <select
-                value={scenarioDate}
-                onChange={(e) => setScenarioDate(e.target.value, index)}
+                value={versionPeriod}
+                onChange={(e) => setVersionDate(e.target.value, index)}
               >
                 <Dropdown options={periodSelections}/>
               </select>
@@ -794,7 +782,7 @@ function ScenarioManager(props) {
             <td> 
               <select
                 value={priorScenarioName}
-                onChange={(e) => setPriorScenario(e.target.value, index)}
+                onChange={(e) => setPriorVersion(e.target.value, index)}
               >
                 <Dropdown options={priorModelSelections}/>
               </select>
@@ -809,14 +797,14 @@ function ScenarioManager(props) {
           <tr>
             <td>
               <input
-                value={scenarioName}
-                onChange={(e) => editScenarioName(e.target.value, index)}
+                value={versionName}
+                onChange={(e) => editVersionName(e.target.value, index)}
               />
             </td>
             <td> 
               <select
-                value={scenarioDate}
-                onChange={(e) => setScenarioDate(e.target.value, index)}
+                value={versionPeriod}
+                onChange={(e) => setVersionDate(e.target.value, index)}
               >
                 <Dropdown options={periodSelections}/>
               </select>
@@ -824,12 +812,12 @@ function ScenarioManager(props) {
             <td> 
               <select
                 value={priorScenarioName}
-                onChange={(e) => setPriorScenario(e.target.value, index)}
+                onChange={(e) => setPriorVersion(e.target.value, index)}
               >
                 <Dropdown options={priorModelSelections}/>
               </select>
             </td>
-            <DeleteItem index={index} removeItem={deleteScenario} />
+            <DeleteItem index={index} removeItem={deleteVersion} />
           </tr>
         </React.Fragment>
       )
@@ -849,10 +837,10 @@ function ScenarioManager(props) {
           </tr>
         </thead>
         <tbody>
-          {scenarioRows}
+          {versionRows}
         </tbody>
       </table>
-      <AddItem addItem={addScenario} label={'Version'}/>
+      <AddItem addItem={addVersion} label={'Version'}/>
     </section>
   )
 }
@@ -977,6 +965,7 @@ function RevenueMilestones(props) {
   let periodSelections = periodLabels(startYear, yearsOut)
 
   let revenueRows = revenueMilestones.map((milestone, milestoneIndex) => {
+    let dateEarnedLabel = periodNumberToString(milestone.dateEarned);
     return (
       <React.Fragment>
         <tr>
@@ -988,7 +977,7 @@ function RevenueMilestones(props) {
           </td>
           <td>
             <select
-              value={milestone.dateEarned}
+              value={milestone.dateEarnedLabel}
               onChange={(e) => editMilestoneEarned(milestoneIndex, e.target.value)}
             >
               <Dropdown options={periodSelections}/>
@@ -1410,22 +1399,22 @@ function RevenueRecognizedModel(props) {
     revenueMilestones,
     percentComplete,
     percentCompleteCum,
-    scenarioDate,
+    versionPeriod,
     cummPercentDiff,
-    scenarios,
+    versions,
     programs,
-    scenarioID,
-    activeVersionId
+    versionID,
+    activeVersionID
   } = props;
   
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
     let currentPeriodRev = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCum);
     let modelPeriodRev = currentPeriodRev.map((period) => {
       let newPeriod = keepCloning(period);
-      scenarios.forEach((scenario, scenarioIndex) => {
-        if (scenarioID !== scenario.scenarioID) {
-          if (newPeriod.period === scenario.scenarioDate) {
-            let currentPercentCompleteCumm = percentCompleteCummArrayFromData(scenario.headcountEffort, scenario.externalSpend, programs)
+      versions.forEach((version, versionIndex) => {
+        if (versionID !== version.versionID) {
+          if (newPeriod.period === version.versionPeriod) {
+            let currentPercentCompleteCumm = percentCompleteCummArrayFromData(version.headcountEffort, version.externalSpend, programs)
             let versionRevenue = calculateCurrentPeriodRev(startYear, yearsOut, milestone, currentPercentCompleteCumm);
             versionRevenue.forEach((versionPeriod) => {
               if (versionPeriod.period === newPeriod.period) {
@@ -1441,7 +1430,7 @@ function RevenueRecognizedModel(props) {
     })
 
     let totalCurrentPeriodRev = arrayTotal(modelPeriodRev);
-    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, scenarioDate, startYear, yearsOut);
+    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, versionPeriod, startYear, yearsOut);
     let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
 
     return (
@@ -1485,14 +1474,15 @@ function RevenueRecognizedModel(props) {
   })
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeVersionId)
+    return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID)
   })
 
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
   let grandTotalRevenue = arrayTotal(totalRevenueEarned);
 
-  let currentPeriodRev = periodAmountCalc(totalRevenueEarned, scenarioDate, "QTD") 
-  let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, scenarioDate, "YTD")
+  let currentPeriodRev = periodAmountCalc(totalRevenueEarned, versionPeriod, "QTD") 
+  let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, versionPeriod, "YTD")
+  let versionPeriodLabel = periodNumberToString(versionPeriod);
 
   return (
     <section id="Revenue-Recognized">
@@ -1531,7 +1521,7 @@ function RevenueRecognizedModel(props) {
       <table>
         <tbody>
           <tr>
-            <td>{scenarioDate} QTD revenue</td>
+            <td>{versionPeriodLabel} QTD revenue</td>
             <td className="numerical">
               <NumberFormat
                 displayType="text"
@@ -1541,7 +1531,7 @@ function RevenueRecognizedModel(props) {
             </td>
           </tr>
           <tr>
-            <td>{scenarioDate} YTD revenue</td>
+            <td>{versionPeriodLabel} YTD revenue</td>
             <td className="numerical">
               <NumberFormat
                 displayType="text"
@@ -1565,13 +1555,13 @@ function DeferredRevenueRoll (props) {
     revenueMilestones,
     percentComplete,
     percentCompleteCum,
-    scenarios,
+    versions,
     programs,
-    activeVersionId
+    activeVersionID
   } = props;
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, activeVersionId)
+    return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID)
   })
 
   let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1681,11 +1671,11 @@ class PeriodBridge extends React.Component {
   }
 
   setSelectedComparisonIndex(newComparison) {
-    let scenarios = this.props.scenarios;
+    let versions = this.props.versions;
     let newIndex = 0;
-    scenarios.forEach((scenario, scenarioIndex) => {
-      if (scenario.scenarioName === newComparison) {
-        newIndex = scenarioIndex
+    versions.forEach((version, versionIndex) => {
+      if (version.versionName === newComparison) {
+        newIndex = versionIndex
         return newIndex;
       }
     });
@@ -1705,7 +1695,7 @@ class PeriodBridge extends React.Component {
     let percentCompleteCum = this.props.percentCompleteCum;
     let selectedPeriod = this.state.selectedPeriod;
     let periodSelections = periodLabels(startYear, yearsOut)
-    let scenarios = this.props.scenarios;
+    let versions = this.props.versions;
     let revenueMilestones = this.props.revenueMilestones;
     let selectedPeriodType = this.state.selectedPeriodType;
     
@@ -1718,7 +1708,7 @@ class PeriodBridge extends React.Component {
     let grandTotalSpend = this.props.grandTotalSpend;
     
     let milestoneRevEarned = revenueMilestones.map((milestone) => {
-      return calculateModelRevenue(startYear, yearsOut, milestone, scenarios, programs, this.props.activeVersionId)
+      return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, this.props.activeVersionID)
     })
 
     let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1729,7 +1719,7 @@ class PeriodBridge extends React.Component {
     let selectedPeriodSpend = periodAmountCalc(totalSpend, selectedPeriod, selectedPeriodType);
  
     //Comparison Period Variable//
-    let comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
+    let comparisonModel = this.props.versions[this.state.selectedComparisonIndex];
     let compRevenueMilestones = comparisonModel.revenueMilestones;
     let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.headcountEffort;
@@ -1815,10 +1805,10 @@ class PeriodBridge extends React.Component {
               <td>Selected Comparison Model</td>
               <td>
                 <select
-                  value={scenarios[this.state.selectedComparisonIndex].scenarioName}
+                  value={versions[this.state.selectedComparisonIndex].versionName}
                   onChange={(e) => this.setSelectedComparisonIndex(e.target.value)}
                 >
-                  <Dropdown options={this.props.scenarioNames}/>
+                  <Dropdown options={this.props.versionNames}/>
                 </select>
               </td>
             </tr>
@@ -1925,7 +1915,7 @@ class PeriodAnalytic extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedPeriod: this.props.scenarioDate, 
+      selectedPeriod: this.props.versionPeriod, 
       selectedComparisonIndex: 0,
       selectedPeriodType: "QTD"
     }
@@ -1941,11 +1931,11 @@ class PeriodAnalytic extends React.Component {
   }
 
   setSelectedComparisonIndex(newComparison) {
-    let scenarios = this.props.scenarios;
+    let versions = this.props.versions;
     let newIndex = 0;
-    scenarios.forEach((scenario, scenarioIndex) => {
-      if (scenario.scenarioName === newComparison) {
-        newIndex = scenarioIndex
+    versions.forEach((version, versionIndex) => {
+      if (version.versionName === newComparison) {
+        newIndex = versionIndex
         return newIndex;
       }
     });
@@ -1965,14 +1955,14 @@ class PeriodAnalytic extends React.Component {
     let headcountEffort = this.props.headcountEffort;
     let startYear = this.props.startYear;
     let yearsOut = this.props.yearsOut;
-    let versionPeriod = this.props.scenarioDate;
+    let versionPeriod = this.props.versionPeriod;
 
     let selectedPeriod = this.state.selectedPeriod;
-    let scenarios = this.props.scenarios;
+    let versions = this.props.versions;
     let selectedPeriodType = this.state.selectedPeriodType;
     let periodSelections = periodLabels(startYear, yearsOut)
 
-    let comparisonModel = this.props.scenarios[this.state.selectedComparisonIndex];
+    let comparisonModel = this.props.versions[this.state.selectedComparisonIndex];
     let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.headcountEffort;
     let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs); 
@@ -2130,10 +2120,10 @@ class PeriodAnalytic extends React.Component {
               <td>Selected Comparison Model</td>
               <td>
                 <select
-                  value={scenarios[this.state.selectedComparisonIndex].scenarioName}
+                  value={versions[this.state.selectedComparisonIndex].versionName}
                   onChange={(e) => this.setSelectedComparisonIndex(e.target.value)}
                 >
-                  <Dropdown options={this.props.scenarioNames}/>
+                  <Dropdown options={this.props.versionNames}/>
                 </select>
               </td>
             </tr>
@@ -2275,7 +2265,7 @@ function DataRows(props) {
             <NumberFormat
               value={cell.amount}
               className="numerical"
-              onValueChange={(values, e) => editAmount(cell.type, cell.quarter, cell.year, Number(values.value), programIndex)}
+              onValueChange={(values, e) => editAmount(cell.type, cell.period, Number(values.value), programIndex)}
               thousandSeparator={true}
               isNumericString={true}
               decimalScale={2}
