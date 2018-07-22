@@ -164,27 +164,19 @@ export class PharmaRevRec extends React.Component {
   }
 
   setStartYear(startYear) {
-    this.setState((prevState, props) => {
-      let startYearNum = Number(startYear);
-      return {
-        startYear: startYearNum
-      };
-    })
+    this.setState({startYear: startYear})
     let yearsOut = this.state.endYear - startYear + 1;
     this.setYearsOut(yearsOut);
   }
 
   setEndYear(endYear) {
-    this.setState((prevState, props) => {
-      let endYearNum = Number(endYear);
-      return {
-        endYear: endYearNum
-      };
-    })
+    this.setState({endYear: endYear})
     let yearsOut = endYear - this.state.startYear + 1;
     this.setYearsOut(yearsOut);
   }
 
+
+  //TODO: needs to be fixed - currently not running if startYear changes//
   setYearsOut(yearsOut) {
     let newYearsOut = Number(yearsOut); 
     let startYear = this.state.startYear; 
@@ -351,7 +343,7 @@ export class PharmaRevRec extends React.Component {
       let extSpend = keepCloning(prevState.externalSpend);
       let programExtSpend = extSpend[programIndex];
       let newExtSpend = programExtSpend.map((amount) => {
-        if (displayType === "Annual" && amount.period === period) {
+        if (displayType === "Annual" && Math.floor(amount.period) === period) {
           amount.amount = quarterAmount
         } else if (displayType === "Quarterly" && amount.period === period) {
           amount.amount = newAmount;
@@ -373,7 +365,7 @@ export class PharmaRevRec extends React.Component {
       let hcEffort = keepCloning(prevState.headcountEffort);
       let programHcEffort = hcEffort[programIndex];
       let newHcEffort = programHcEffort.map((amount) => {
-        if (displayType === "Annual" && amount.period === period) {
+        if (displayType === "Annual" && Math.floor(amount.period) === period) {
           amount.amount = quarterAmount;
         } else if (displayType === "Quarterly" && amount.period === period) {
           amount.amount = newAmount;
@@ -934,7 +926,7 @@ function Programs(props) {
         <thead>
           <tr>
             <th>Name</th>
-            <th>FTE Rate</th>
+            <th>Annual FTE Rate</th>
             <th></th>
           </tr>
           <tr>
@@ -1096,7 +1088,6 @@ function ExternalSpend (props) {
   )
 }
 
-// TODO: Adjust the way the headcount rate is displayed
 function HeadcountEffort (props) {
   const {
     startYear,
@@ -1151,7 +1142,7 @@ function HeadcountEffort (props) {
         <thead>
           <tr>
             <th>Program</th>
-            <th>FTE Rate</th>
+            <th>Annual FTE Rate</th>
             <TablePeriodHeaders
               startYear={startYear}
               yearsOut={yearsOut}
@@ -1236,7 +1227,7 @@ function HeadcountSpend (props) {
         <thead>
           <tr>
             <th>Program</th>
-            <th className="numerical">FTE Rate</th>
+            <th className="numerical"> Annual FTE Rate</th>
             <TablePeriodHeaders
               startYear={startYear}
               yearsOut={yearsOut}
@@ -1409,68 +1400,72 @@ function RevenueRecognizedModel(props) {
   
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
     let currentPeriodRev = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCum);
-    let modelPeriodRev = currentPeriodRev.map((period) => {
-      let newPeriod = keepCloning(period);
-      versions.forEach((version, versionIndex) => {
-        if (versionID !== version.versionID) {
-          if (newPeriod.period === version.versionPeriod) {
-            let currentPercentCompleteCumm = percentCompleteCummArrayFromData(version.headcountEffort, version.externalSpend, programs)
-            let versionRevenue = calculateCurrentPeriodRev(startYear, yearsOut, milestone, currentPercentCompleteCumm);
-            versionRevenue.forEach((versionPeriod) => {
-              if (versionPeriod.period === newPeriod.period) {
-                newPeriod.amount = versionPeriod.amount;
-                return newPeriod;
-              };
-            })
-          }
-          return newPeriod;
-        }
-      })
-      return newPeriod;
-    })
-
-    let totalCurrentPeriodRev = arrayTotal(modelPeriodRev);
-    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, versionPeriod, startYear, yearsOut);
+    let totalCurrentPeriodRev = arrayTotal(currentPeriodRev);
+    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID);
     let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
 
-    return (
-      <React.Fragment>
-        <tr>
-          <td>{milestone.name} - Current Revenue</td>
-          <DataRows
-            startYear={startYear}
-            displaySelections={displaySelections}
-            dataArray={modelPeriodRev}
-            yearsOut={yearsOut}
-            input="No"
-          />
-          <td className="numerical">
-            <NumberFormat
-              displayType="text"
-              value={rounding(totalCurrentPeriodRev,1)}
-              thousandSeparator={true}
-            /> 
-          </td>
-        </tr>
-        <tr>
-          <td>{milestone.name} - Prior Period True Up</td>
-          <DataRows
-            startYear={startYear}
-            displaySelections={displaySelections}
-            dataArray={priorPeriodRevTrueup}
-            yearsOut={yearsOut}
-            input="No"
-          />
-          <td className="numerical">
-            <NumberFormat
-              displayType="text"
-              value={rounding(totalPriorPeriodRevTrueup,1)}
-              thousandSeparator={true}
-            /> 
-          </td>
-        </tr>
-      </React.Fragment>
-    );
+    if (totalPriorPeriodRevTrueup !== 0) {
+      return (
+        <React.Fragment>
+          <tr>
+            <td>{milestone.name} - Current Revenue</td>
+            <DataRows
+              startYear={startYear}
+              displaySelections={displaySelections}
+              dataArray={currentPeriodRev}
+              yearsOut={yearsOut}
+              input="No"
+            />
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(totalCurrentPeriodRev,1)}
+                thousandSeparator={true}
+              /> 
+            </td>
+          </tr>
+          <tr>
+            <td>{milestone.name} - Prior Period True Up</td>
+            <DataRows
+              startYear={startYear}
+              displaySelections={displaySelections}
+              dataArray={priorPeriodRevTrueup}
+              yearsOut={yearsOut}
+              input="No"
+            />
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(totalPriorPeriodRevTrueup,1)}
+                thousandSeparator={true}
+              /> 
+            </td>
+          </tr>
+        </React.Fragment>
+      );
+    } else {
+      return (
+        <React.Fragment>
+          <tr>
+            <td>{milestone.name} - Current Revenue</td>
+            <DataRows
+              startYear={startYear}
+              displaySelections={displaySelections}
+              dataArray={currentPeriodRev}
+              yearsOut={yearsOut}
+              input="No"
+            />
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(totalCurrentPeriodRev,1)}
+                thousandSeparator={true}
+              /> 
+            </td>
+          </tr>
+        </React.Fragment>
+      )
+    }
   })
 
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
@@ -2269,6 +2264,8 @@ function DataRows(props) {
               thousandSeparator={true}
               isNumericString={true}
               decimalScale={2}
+              fixedDecimalScale={false}
+              decimalSeparator={"."}
             />
           </td>
         </React.Fragment>

@@ -536,25 +536,31 @@ export function calculateCummPercentDiff(programs, startYear, yearsOut, versions
   }
 }
 
-export function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, currentPeriod, startYear, yearsOut) {
-  let priorPeriod = currentPeriod - 0.25;
+export function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, currentPeriod, startYear, yearsOut, versions, activeVersionID) {
+  let currentVersion = versions[activeVersionID];
+  let priorVersionIndex = calculatePriorVersionIndex(versions, currentVersion.priorVersionID);
   let blankArray = addDataArray(startYear, yearsOut);
-  let priorPeriodCummPercent = 0;
-  cummPercentDiffArray.forEach((period) => {
-    if (period.period === priorPeriod) {
-      priorPeriodCummPercent = period.amount;
-    }
-  });
-  let priorRevArray = blankArray.map((period) => {
-    let newPeriod = keepCloning(period);
-    if (newPeriod.period === currentPeriod && milestone.dateEarned <= newPeriod.period) {
-      newPeriod.amount = priorPeriodCummPercent * milestone.amount;
-    } else {
-      newPeriod.amount = 0
-    }
-    return newPeriod;
-  })
-  return priorRevArray;
+  if (priorVersionIndex !== "Initial Model") {
+    let priorPeriod = currentPeriod - 0.25;
+    let priorPeriodCummPercent = 0;
+    cummPercentDiffArray.forEach((period) => {
+      if (period.period === priorPeriod) {
+        priorPeriodCummPercent = period.amount;
+      }
+    });
+    let priorRevArray = blankArray.map((period) => {
+      let newPeriod = keepCloning(period);
+      if (newPeriod.period === currentPeriod && milestone.dateEarned <= newPeriod.period) {
+        newPeriod.amount = priorPeriodCummPercent * milestone.amount;
+      } else {
+        newPeriod.amount = 0
+      }
+      return newPeriod;
+    })
+    return priorRevArray;
+  } else if (priorVersionIndex === "Initial Model") {
+    return blankArray
+  }
 }
     
 export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm) {
@@ -588,14 +594,16 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, versions, 
       let priorVersionIndex = calculatePriorVersionIndex(versions, version.priorVersionID);
       if (version.versionPeriod === period.period && priorVersionIndex === "Initial Model") {
         let curVerCummPercentCompl = periodCummPercentComp(version.headcountEffort, version.externalSpend, programs, version.versionPeriod);
-        let milestoneAmount = milestonePeriodRevenue(milestone, version.versionPeriod, curVerCummPercentCompl)
+        let milestoneAmount = milestonePeriodRevenue(milestone, version.versionPeriod, curVerCummPercentCompl, null, period.period)
         return period.amount = milestoneAmount
       } else if (version.versionPeriod === period.period && priorVersionIndex !== "Initial Model") {
         let curVerCummPercentCompl = periodCummPercentComp(version.headcountEffort, version.externalSpend, programs, version.versionPeriod);
         let priorVersion = versions[priorVersionIndex];
         let priorVerCummPercentCompl = periodCummPercentComp(priorVersion.headcountEffort, priorVersion.externalSpend, programs, priorVersion.versionPeriod)
-        let milestoneAmount = milestonePeriodRevenue(milestone, version.versionPeriod, curVerCummPercentCompl, priorVerCummPercentCompl)
+        let milestoneAmount = milestonePeriodRevenue(milestone, version.versionPeriod, curVerCummPercentCompl, priorVerCummPercentCompl, period.period)
         return period.amount = milestoneAmount
+      } else if (priorVersionIndex === "Initial Model") {
+        return period.amount
       }
     })
     return period;
@@ -664,15 +672,25 @@ export function periodCummPercentComp(headcountEffort, externalSpend, programs, 
   return cummPercentComplete;
 }
 
-export function milestonePeriodRevenue(milestone, versionPeriod, curVerCummPercentCompl, priorVerCummPercentCompl) {
-  let milestoneAmount = 0;
+export function milestonePeriodRevenue(milestone, versionPeriod, curVerCummPercentCompl, priorVerCummPercentCompl, period) {
+  let milestoneAmount = milestonePeriodCheck(milestone, period)
+  let milestoneEarned = 0;
   if (versionPeriod === milestone.dateEarned) {
-    milestoneAmount = curVerCummPercentCompl * milestone.amount;
+    milestoneEarned = curVerCummPercentCompl * milestone.amount;
   } else if (versionPeriod > milestone.dateEarned) {
-    milestoneAmount = (curVerCummPercentCompl - priorVerCummPercentCompl) * milestone.amount;
+    milestoneEarned = (curVerCummPercentCompl - priorVerCummPercentCompl) * milestone.amount;
+  }
+  return milestoneEarned;
+}
+
+export function milestonePeriodCheck(milestone, period) {
+  let milestoneAmount = 0;
+  if (period >= milestone.dateEarned) {
+    milestoneAmount = milestone.amount;
   }
   return milestoneAmount;
 }
+
 
 export function periodStringToNumber(periodString) {
   let periodQtr = Number(periodString.slice(1, 2)) 
