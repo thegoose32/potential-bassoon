@@ -25,6 +25,9 @@ export class PharmaRevRec extends React.Component {
       this.state = window.LRPModel.data;
     }
 
+    // Header and Sidebar
+    this.handleSaveClick = this.handleSaveClick.bind(this);
+    
     // Versions
     this.setVersionState = this.setVersionState.bind(this);
     this.addVersion = this.addVersion.bind(this);
@@ -383,6 +386,31 @@ export class PharmaRevRec extends React.Component {
     this.setVersionState({comparisonModelIndex: newComparisonModel});
   }
 
+  handleSaveClick() {
+    const saveErrorMessage = "We were unable to save your changes.  We apologize " +
+          "about the inconvenience."
+    fetch('/api/save_lrp_model', {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify({
+            data: this.state,
+        }),
+    })
+    .then((response) => {
+      if (response.ok) {
+        this.setState((prevState) => ({version: prevState.version + 1}))
+      } else if (response.status === 409) {
+        window.alert("It appears that this model was saved from another computer " +
+            "since you last loaded your copy.  Unfortunately, this means we were " +
+            "unable to save your changes.");
+      } else {
+        window.alert(saveErrorMessage);
+      }
+    }, () => {
+        window.alert(saveErrorMessage);
+    });
+  }
+
   render() {
     const {
       headcountEffort,
@@ -428,6 +456,7 @@ export class PharmaRevRec extends React.Component {
         <HeaderBar
           modelName={this.state.modelName}
           versionName={versions[activeVersionID].versionName}
+          handleSaveClick={this.handleSaveClick}
         />
         <SideNavigation
           versions={this.state.versions}
@@ -583,17 +612,25 @@ export class PharmaRevRec extends React.Component {
   }
 }
 
-function HeaderBar({modelName, versionName}) {
+function HeaderBar({modelName, versionName, handleSaveClick}) {
   return(
     <div id="header">
       <h2>pharmaRevRec</h2>
       <h1 className="title">{modelName} - {versionName}</h1>
       <span>
+        <SaveButton onClick={(e) => handleSaveClick()} />
         <a href="/logout/">Logout</a>
       </span>
     </div>
   )
 }
+
+function SaveButton({onClick}) {
+  return (
+    <a onClick={onClick}>Save</a>
+  )
+}
+
 
 function SideNavigation(props) {
   const {
