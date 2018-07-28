@@ -10,7 +10,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
-  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString
+  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue, 
 
 } from './model'
 
@@ -167,9 +167,13 @@ export class PharmaRevRec extends React.Component {
   }
 
   setStartYear(startYear) {
-    this.setState({startYear: startYear})
-    let yearsOut = this.state.endYear - startYear + 1;
-    this.setYearsOut(yearsOut);
+    this.setState((prevState, props) => {
+      let yearsOut = this.state.endYear - startYear + 1;
+      return {
+        startYear: startYear,
+      }
+      this.setYearsOut(startYear, yearsOut);
+    })
   }
 
   setEndYear(endYear) {
@@ -177,7 +181,6 @@ export class PharmaRevRec extends React.Component {
     let yearsOut = endYear - this.state.startYear + 1;
     this.setYearsOut(yearsOut);
   }
-
 
   //TODO: needs to be fixed - currently not running if startYear changes//
   setYearsOut(yearsOut) {
@@ -1436,9 +1439,10 @@ function RevenueRecognizedModel(props) {
   } = props;
   
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
-    let currentPeriodRev = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCum);
+    let totalMilestoneRevenue = calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID);
+    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID);
+    let currentPeriodRev = currentPeriodRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID, versionPeriod); 
     let totalCurrentPeriodRev = arrayTotal(currentPeriodRev);
-    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(cummPercentDiff, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID);
     let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
 
     if (totalPriorPeriodRevTrueup !== 0) {
@@ -1698,8 +1702,8 @@ class PeriodBridge extends React.Component {
   }
 
   setSelectedPeriod(newPeriod) {
-    let newSelectedPeriod = newPeriod;
-    this.setState({selectedPeriod: newPeriod});
+    let newSelectedPeriod = periodStringToNumber(newPeriod);
+    this.setState({selectedPeriod: newSelectedPeriod});
   }
 
   setSelectedComparisonIndex(newComparison) {
@@ -1723,8 +1727,6 @@ class PeriodBridge extends React.Component {
     let programs = this.props.programs;
     let startYear = this.props.startYear;
     let yearsOut = this.props.yearsOut;
-    let percentComplete = this.props.percentComplete;
-    let percentCompleteCum = this.props.percentCompleteCum;
     let selectedPeriod = this.state.selectedPeriod;
     let periodSelections = periodLabels(startYear, yearsOut)
     let versions = this.props.versions;
@@ -1732,11 +1734,8 @@ class PeriodBridge extends React.Component {
     let selectedPeriodType = this.state.selectedPeriodType;
     
     //Selected Period Variables//
-    let externalSpend = this.props.externalSpend;
-    let headcountSpend = this.props.headcountSpend;
     let totalProgramSpend = this.props.totalProgramSpend;
     let totalSpend = this.props.totalSpend;
-    let headcountEffort = this.props.headcountEffort;
     let grandTotalSpend = this.props.grandTotalSpend;
     
     let milestoneRevEarned = revenueMilestones.map((milestone) => {
@@ -1753,8 +1752,8 @@ class PeriodBridge extends React.Component {
     //Comparison Period Variable//
     let comparisonModel = this.props.versions[this.state.selectedComparisonIndex];
     let compRevenueMilestones = comparisonModel.revenueMilestones;
-    let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountEffort = comparisonModel.headcountEffort;
+    let compExternalSpend = comparisonModel.externalSpend;
     let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs)
     let compTotalProgramSpend = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
      
@@ -1777,7 +1776,7 @@ class PeriodBridge extends React.Component {
       let grandTotalProgramSpend = arrayTotal(totalProgramSpend[programIndex]);
       let compProgSpendPeriod = periodAmountCalc(compTotalProgramSpend[programIndex], selectedPeriod, selectedPeriodType);
       let compGrandTotalProgramSpend = arrayTotal(compTotalProgramSpend[programIndex]);
-      let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend)));
+      let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / grandTotalSpend)));
       return (
         <React.Fragment>
           <tr>
@@ -1806,7 +1805,7 @@ class PeriodBridge extends React.Component {
             <td className="numerical">
               <NumberFormat
                 displayType="text"
-                value={rounding((((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / this.props.grandTotalSpend))) * 100, 1000)}
+                value={rounding((((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / grandTotalSpend))) * 100, 1000)}
                 thousandSeparator={true}
                 suffix={"%"}
               />
@@ -1817,6 +1816,7 @@ class PeriodBridge extends React.Component {
       )
     });
 
+    let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
     return (
       <section id="Period-Bridge">
         <h2>Revenue Bridge</h2>
@@ -1826,7 +1826,7 @@ class PeriodBridge extends React.Component {
               <td>Selected Period</td>
               <td>
                 <select
-                  value={this.state.selectedPeriod}
+                  value={selectedPeriodLabel}
                   onChange={(e) => this.setSelectedPeriod(e.target.value)}
                 >
                   <Dropdown options={periodSelections}/>
@@ -1889,14 +1889,14 @@ class PeriodBridge extends React.Component {
               <td className="numerical">
                 <NumberFormat
                   displayType="text"
-                  value={rounding(this.props.grandTotalSpend,1)}
+                  value={rounding(grandTotalSpend,1)}
                   thousandSeparator={true}
                 />
               </td>
               <td className="numerical">
                 <NumberFormat
                   displayType="text"
-                  value={rounding((selectedPeriodSpend / this.props.grandTotalSpend)*100,1000)}
+                  value={rounding((selectedPeriodSpend / grandTotalSpend)*100,1000)}
                   thousandSeparator={true}
                   suffix={"%"}
                 />
@@ -1958,8 +1958,8 @@ class PeriodAnalytic extends React.Component {
   }
 
   setSelectedPeriod(newPeriod) {
-    let newSelectedPeriod = newPeriod;
-    this.setState({selectedPeriod: newPeriod});
+    let newSelectedPeriod = periodStringToNumber(newPeriod);
+    this.setState({selectedPeriod: newSelectedPeriod});
   }
 
   setSelectedComparisonIndex(newComparison) {
@@ -2132,6 +2132,7 @@ class PeriodAnalytic extends React.Component {
       )
     });
 
+    let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
     return (
       <section id="Analytics">
         <h2>Analytic Engine</h2>
@@ -2141,7 +2142,7 @@ class PeriodAnalytic extends React.Component {
               <td>Selected Comparison Period</td>
               <td>
                 <select
-                  value={this.state.selectedPeriod}
+                  value={selectedPeriodLabel}
                   onChange={(e) => this.setSelectedPeriod(e.target.value)}
                 >
                   <Dropdown options={periodSelections}/>

@@ -536,18 +536,13 @@ export function calculateCummPercentDiff(programs, startYear, yearsOut, versions
   }
 }
 
-export function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, currentPeriod, startYear, yearsOut, versions, activeVersionID) {
+export function calculatePriorPeriodRevTrueup(programs, milestone, currentPeriod, startYear, yearsOut, versions, activeVersionID) {
   let currentVersion = versions[activeVersionID];
   let priorVersionIndex = calculatePriorVersionIndex(versions, currentVersion.priorVersionID);
   let blankArray = addDataArray(startYear, yearsOut);
   if (priorVersionIndex !== "Initial Model") {
     let priorPeriod = currentPeriod - 0.25;
-    let priorPeriodCummPercent = 0;
-    cummPercentDiffArray.forEach((period) => {
-      if (period.period === priorPeriod) {
-        priorPeriodCummPercent = period.amount;
-      }
-    });
+    let priorPeriodCummPercent = periodCummPercentComp(currentVersion.headcountEffort, currentVersion.externalSpend, programs, priorPeriod);
     let priorRevArray = blankArray.map((period) => {
       let newPeriod = keepCloning(period);
       if (newPeriod.period === currentPeriod && milestone.dateEarned <= newPeriod.period) {
@@ -562,7 +557,7 @@ export function calculatePriorPeriodRevTrueup(cummPercentDiffArray, milestone, c
     return blankArray
   }
 }
-    
+
 export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm) {
   let blankDataArray = addDataArray(startYear, yearsOut);
   blankDataArray.map((period, periodIndex) => {
@@ -589,8 +584,8 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, versions, 
   let currentVersion = versions[activeVersionID];
   let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
   let initialModelRevenueArray = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm)
-  let adjModelRevenueArray = initialModelRevenueArray.map((period, periodIndex) => {
-    versions.forEach((version, versionIndex) => {
+  let adjModelRevenueArray = initialModelRevenueArray.map((period) => {
+    versions.forEach((version) => {
       let priorVersionIndex = calculatePriorVersionIndex(versions, version.priorVersionID);
       if (version.versionPeriod === period.period && priorVersionIndex === "Initial Model") {
         let curVerCummPercentCompl = periodCummPercentComp(version.headcountEffort, version.externalSpend, programs, version.versionPeriod);
@@ -611,6 +606,17 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, versions, 
   return adjModelRevenueArray;
 }
 
+export function currentPeriodRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID, versionPeriod) {
+  let totalMilestoneRevArray = calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID);
+  let priorPeriodTrueupArray = calculatePriorPeriodRevTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID) 
+  let blankDataArray = addDataArray(startYear, yearsOut);
+  let currentPeriodRevenue = blankDataArray.map((period, periodIndex) => {
+    period.amount = totalMilestoneRevArray[periodIndex].amount - priorPeriodTrueupArray[periodIndex].amount;
+    return period;
+  })
+  return currentPeriodRevenue;
+}
+
 export function setYearsOut(startYear, yearsOut) {
   return (prevState, props) => {
 
@@ -618,8 +624,8 @@ export function setYearsOut(startYear, yearsOut) {
     let hcSpend = prevState.headcountEffort;
     
     let versions = prevState.versions;
-    let newScenarios = versions.map((version, versionIndex) => {
-      let newScenario = keepCloning(version);
+    let newVersions = versions.map((version, versionIndex) => {
+      let newVersion = keepCloning(version);
       let displaySelections = []; 
       for (let x = 0; x < yearsOut; x++) {
         let currentYear = startYear + x;
@@ -630,25 +636,25 @@ export function setYearsOut(startYear, yearsOut) {
           }
         );
       }
-      newScenario.displaySelections = displaySelections;
+      newVersion.displaySelections = displaySelections;
 
-      let newExtSpend = newScenario.externalSpend.map((array) => {
+      let newExtSpend = newVersion.externalSpend.map((array) => {
         let arrayLength = editDataArrayLength(array, startYear, yearsOut);
         return editDataArrayYears(arrayLength, startYear, yearsOut);
       })
 
-      let newHCEffort = newScenario.headcountEffort.map((array) => {
+      let newHCEffort = newVersion.headcountEffort.map((array) => {
         let arrayLength = editDataArrayLength(array, startYear, yearsOut);
         return editDataArrayYears(arrayLength, startYear, yearsOut);
       })
-      newScenario.externalSpend = newExtSpend;
-      newScenario.headcountEffort = newHCEffort;
-      return newScenario;
+      newVersion.externalSpend = newExtSpend;
+      newVersion.headcountEffort = newHCEffort;
+      return newVersion;
     })
 
     return {
       yearsOut: yearsOut,
-      versions: newScenarios
+      versions: newVersions
     }
   }
 }

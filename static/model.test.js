@@ -1172,12 +1172,10 @@ test("calculateRevenue - milestone at start", () => {
   ]
   const percentCompleteCumm = [
     {
-      period: 2020,
-      amount: 0.05
+      period: 2020, amount: 0.05
     },
     {
-      period: 2020.25,
-      amount: 0.1
+      period: 2020.25, amount: 0.1
     },
     {
       period: 2020.5,
@@ -2336,7 +2334,7 @@ function fixtureSimpleModel () {
     modelName: "Example Collaboration 606 Model",
     startYear: 2018,
     endYear: 2018,
-    activeScenarioId: 1,
+    activeScenarioId: 2,
     programs: [
       {
         name: "Program A", 
