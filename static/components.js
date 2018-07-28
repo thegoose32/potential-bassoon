@@ -6,10 +6,10 @@ var math = require('math.js');
 
 import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels,
   yearsArray, addDataArray, editDataArrayLength, editDataArrayYears,
-  arrayTotal, calculatePeriodTotal, keepCloning, rounding, calculateRevenue, 
+  arrayTotal, calculatePeriodTotal, keepCloning, rounding, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
-  calculateCummPercentDiff, calculatePriorPeriodRevTrueup, calculateCurrentPeriodRev,
+  priorPeriodTrueup, calculateCurrentPeriodRev,
   setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue, 
 
 } from './model'
@@ -451,8 +451,6 @@ export class PharmaRevRec extends React.Component {
     })
 
     let priorVersionIndex = calculatePriorVersionIndex(versions, priorVersionID);
-    let cummPercentDiff = calculateCummPercentDiff(programs, startYear, yearsOut, versions, activeVersionID, priorVersionIndex);
-
 
     return (
       <div id="grid">
@@ -563,7 +561,6 @@ export class PharmaRevRec extends React.Component {
             percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
             versionPeriod={versionPeriod}
-            cummPercentDiff={cummPercentDiff}
             versions={versions}
             programs={programs}
             versionID={versionID}
@@ -1440,7 +1437,7 @@ function RevenueRecognizedModel(props) {
   
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
     let totalMilestoneRevenue = calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID);
-    let priorPeriodRevTrueup = calculatePriorPeriodRevTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID);
+    let priorPeriodRevTrueup = priorPeriodTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID);
     let currentPeriodRev = currentPeriodRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID, versionPeriod); 
     let totalCurrentPeriodRev = arrayTotal(currentPeriodRev);
     let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);

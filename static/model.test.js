@@ -1111,330 +1111,6 @@ test("percentCompleteCummArray test", () => {
   expect(actual).toEqual(expected);
 })
 
-test("calculateRevenue - milestone at start", () => {
-  const startYear = 2020;
-  const yearsOut = 3;
-  const milestone = {
-    id: 1000,
-    name: "Upfront Payment",
-    dateEarned: 2020.0,
-    amount: 100000
-  }
-  const percentComplete = [
-    {
-      period: 2020,
-      amount: 0.05
-    },
-    {
-      period: 2020.25,
-      amount: 0.05
-    },
-    {
-      period: 2020.5,
-      amount: 0.05
-    },
-    {
-      period: 2020.75,
-      amount: 0.05
-    },
-    {
-      period: 2021,
-      amount: 0.1
-    },
-    {
-      period: 2021.25,
-      amount: 0.1
-    },
-    {
-      period: 2021.5,
-      amount: 0.1
-    },
-    {
-      period: 2021.75,
-      amount: 0.1
-    },
-    {
-      period: 2022,
-      amount: 0.1
-    },
-    {
-      period: 2022.25,
-      amount: 0.2
-    },
-    {
-      period: 2022.5,
-      amount: 0.0
-    },
-    {
-      period: 2022.75,
-      amount: 0.1
-    }
-  ]
-  const percentCompleteCumm = [
-    {
-      period: 2020, amount: 0.05
-    },
-    {
-      period: 2020.25, amount: 0.1
-    },
-    {
-      period: 2020.5,
-      amount: 0.15
-    },
-    {
-      period: 2020.75,
-      amount: 0.2
-    },
-    {
-      period: 2021,
-      amount: 0.3
-    },
-    {
-      period: 2021.25,
-      amount: 0.4
-    },
-    {
-      period: 2021.5,
-      amount: 0.5
-    },
-    {
-      period: 2021.75,
-      amount: 0.6
-    },
-    {
-      period: 2022,
-      amount: 0.7
-    },
-    {
-      period: 2022.25,
-      amount: 0.9
-    },
-    {
-      period: 2022.5,
-      amount: 0.9
-    },
-    {
-      period: 2022.75,
-      amount: 1
-    }
-  ]
-  const actual = model.calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCumm);
-  const expected = [
-    {
-      period: 2020,
-      amount: 5000
-    },
-    {
-      period: 2020.25,
-      amount: 5000
-    },
-    {
-      period: 2020.5,
-      amount: 5000
-    },
-    {
-      period: 2020.75,
-      amount: 5000
-    },
-    {
-      period: 2021,
-      amount: 10000
-    },
-    {
-      period: 2021.25,
-      amount: 10000
-    },
-    {
-      period: 2021.5,
-      amount: 10000
-    },
-    {
-      period: 2021.75,
-      amount: 10000
-    },
-    {
-      period: 2022,
-      amount: 10000
-    },
-    {
-      period: 2022.25,
-      amount: 20000
-    },
-    {
-      period: 2022.5,
-      amount: 0
-    },
-    {
-      period: 2022.75,
-      amount: 10000
-    }
-  ]
-  expect(actual).toEqual(expected);
-})
-
-test("calculateRevenue - milestone at mid point", () => {
-  const startYear = 2020;
-  const yearsOut = 3;
-  const milestone = {
-    id: 1000,
-    name: "Upfront Payment",
-    dateEarned: 2022,
-    amount: 100000
-  }
-  const percentComplete = [
-    {
-      period: 2020,
-      amount: 0.05
-    },
-    {
-      period: 2020.25,
-      amount: 0.05
-    },
-    {
-      period: 2020.5,
-      amount: 0.05
-    },
-    {
-      period: 2020.75,
-      amount: 0.05
-    },
-    {
-      period: 2021,
-      amount: 0.1
-    },
-    {
-      period: 2021.25,
-      amount: 0.1
-    },
-    {
-      period: 2021.5,
-      amount: 0.1
-    },
-    {
-      period: 2021.75,
-      amount: 0.1
-    },
-    {
-      period: 2022,
-      amount: 0.1
-    },
-    {
-      period: 2022.25,
-      amount: 0.2
-    },
-    {
-      period: 2022.5,
-      amount: 0.0
-    },
-    {
-      period: 2022.75,
-      amount: 0.1
-    }
-  ]
-  const percentCompleteCumm = [
-    {
-      period: 2020,
-      amount: 0.05
-    },
-    {
-      period: 2020.25,
-      amount: 0.1
-    },
-    {
-      period: 2020.5,
-      amount: 0.15
-    },
-    {
-      period: 2020.75,
-      amount: 0.2
-    },
-    {
-      period: 2021,
-      amount: 0.3
-    },
-    {
-      period: 2021.25,
-      amount: 0.4
-    },
-    {
-      period: 2021.5,
-      amount: 0.5
-    },
-    {
-      period: 2021.75,
-      amount: 0.6
-    },
-    {
-      period: 2022,
-      amount: 0.7
-    },
-    {
-      period: 2022.25,
-      amount: 0.9
-    },
-    {
-      period: 2022.5,
-      amount: 0.9
-    },
-    {
-      period: 2022.75,
-      amount: 1
-    }
-  ]
-  const actual = model.calculateRevenue(startYear, yearsOut, milestone, percentComplete, percentCompleteCumm);
-  const expected = [
-    {
-      period: 2020,
-      amount: 0
-    },
-    {
-      period: 2020.25,
-      amount: 0
-    },
-    {
-      period: 2020.5,
-      amount: 0
-    },
-    {
-      period: 2020.75,
-      amount: 0
-    },
-    {
-      period: 2021,
-      amount: 0
-    },
-    {
-      period: 2021.25,
-      amount: 0
-    },
-    {
-      period: 2021.5,
-      amount: 0
-    },
-    {
-      period: 2021.75,
-      amount: 0
-    },
-    {
-      period: 2022,
-      amount: 70000
-    },
-    {
-      period: 2022.25,
-      amount: 20000
-    },
-    {
-      period: 2022.5,
-      amount: 0
-    },
-    {
-      period: 2022.75,
-      amount: 10000
-    }
-  ]
-  expect(actual).toEqual(expected);
-})
-
 test("periodAmountCalc - QTD", () => {
   const array = [
     {
@@ -2327,6 +2003,159 @@ test("periodNumberToString", () => {
   const expected = "Q3 2018"
   expect(actual).toEqual(expected);
 })
+
+test("priorPeriodTrueup", () => {
+  const simpleModel = {
+    version: 1,
+    modelName: "Example Collaboration 606 Model",
+    startYear: 2018,
+    endYear: 2018,
+    activeVersionID: 1,
+    programs: [
+      {
+        name: "Program A", 
+        id: 1001,
+        fteRate: 0
+      }
+    ],
+    activityLog: [],
+    versions: [
+      {
+        versionName: "Q1 2018 close",
+        versionPeriod: 2018,
+        versionID: 1,
+        priorVersionID: 0,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Quarterly"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: 2018,
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              period: 2018.0,
+              amount: 100
+            },
+            {
+              period: 2018.25,
+              amount: 100
+            },
+            {
+              period: 2018.5,
+              amount: 100
+            },
+            {
+              period: 2018.75,
+              amount: 100
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              period: 2018.0,
+              amount: 0
+            },
+            {
+              period: 2018.25,
+              amount: 0
+            },
+            {
+              period: 2018.5,
+              amount: 0
+            },
+            {
+              period: 2018.75,
+              amount: 0
+            }
+          ]
+        ]
+      },
+      {
+        versionName: "Q2 2018 close",
+        versionPeriod: 2018.25,
+        versionID: 2,
+        priorVersionID: 1,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Quarterly"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: 2018,
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {
+              period: 2018.0,
+              amount: 100
+            },
+            {
+              period: 2018.25,
+              amount: 50
+            },
+            {
+              period: 2018.5,
+              amount: 50
+            },
+            {
+              period: 2018.75,
+              amount: 50
+            }
+          ]
+        ],
+       headcountEffort: [
+          [
+            {
+              period: 2018.0,
+              amount: 0
+            },
+            {
+              period: 2018.25,
+              amount: 0
+            },
+            {
+              period: 2018.5,
+              amount: 0
+            },
+            {period: 2018.75, amount: 0}
+          ]
+        ]
+      }
+    ]  
+  }
+  const programs = simpleModel.programs
+  const milestone = simpleModel.versions[1].revenueMilestones[0];
+  const currentPeriod = 2018.25;
+  const startYear = simpleModel.startYear;
+  const yearsOut = simpleModel.endYear - startYear + 1;
+  const versions = simpleModel.versions;
+  const activeVersionID = simpleModel.activeVersionID;
+  const actual = model.priorPeriodTrueup(programs, milestone, currentPeriod, startYear, yearsOut, versions, activeVersionID);
+  const expected = [
+    {period: 2018, amount: 0},
+    {period: 2018.25, amount: 150},
+    {period: 2018.5, amount: 0},
+    {period: 2018.75, amount: 0}
+  ];
+  expect(actual).toEqual(expected);
+})
+
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
