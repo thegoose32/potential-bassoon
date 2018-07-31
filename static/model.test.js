@@ -1110,13 +1110,9 @@ test("percentCompleteCummArray test", () => {
   ]
   expect(actual).toEqual(expected);
 })
-
 test("periodAmountCalc - QTD", () => {
   const array = [
-    {
-      period: 2020,
-      amount: 5000
-    },
+    {period: 2020,amount: 5000},
     {
       period: 2020.25,
       amount: 5000
@@ -1600,11 +1596,11 @@ test("calculateModelRevenue - single milestone", () => {
   const simpleModel = fixtureSimpleModel();
   const startYear = simpleModel.startYear;
   const yearsOut = simpleModel.endYear - startYear + 1;
-  const scenarios = simpleModel.scenarios;
-  const milestone = scenarios[1].revenueMilestones[0];
+  const versions = simpleModel.versions;
+  const milestone = versions[1].revenueMilestones[0];
   const programs = simpleModel.programs;
-  const activeScenarioId = simpleModel.activeScenarioId;
-  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId); 
+  const activeVersionID = simpleModel.activeVersionID;
+  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, versions,programs, activeVersionID); 
   const expected = [
     {
       period: 2018,
@@ -1632,7 +1628,7 @@ test("calculateModelRevenue - single milestone period 3", () => {
     modelName: "Example Collaboration 606 Model",
     startYear: 2018,
     endYear: 2018,
-    activeScenarioId: 2,
+    activeVersionID: 2,
     programs: [
       {
         name: "Program A", 
@@ -1641,12 +1637,12 @@ test("calculateModelRevenue - single milestone period 3", () => {
       }
     ],
     activityLog: [],
-    scenarios: [
+    versions: [
       {
-        scenarioName: "Q1 2018 close",
-        scenarioDate: "Q1 2018",
-        scenarioID: 1,
-        priorScenarioID: 0,
+        versionName: "Q1 2018 close",
+        versionPeriod: "Q1 2018",
+        versionID: 1,
+        priorVersionID: 0,
         displaySelections: [
           {
             year: 2018,
@@ -1703,10 +1699,10 @@ test("calculateModelRevenue - single milestone period 3", () => {
         ]
       },
       {
-        scenarioName: "Q2 2018 close",
-        scenarioDate: "Q2 2018",
-        scenarioID: 2,
-        priorScenarioID: 1,
+        versionName: "Q2 2018 close",
+        versionPeriod: "Q2 2018",
+        versionID: 2,
+        priorVersionID: 1,
         displaySelections: [
           {
             year: 2018,
@@ -1763,10 +1759,10 @@ test("calculateModelRevenue - single milestone period 3", () => {
         ]
       },
       {
-        scenarioName: "Q3 2018 close",
-        scenarioDate: "Q3 2018",
-        scenarioID: 3,
-        priorScenarioID: 2,
+        versionName: "Q3 2018 close",
+        versionPeriod: "Q3 2018",
+        versionID: 3,
+        priorVersionID: 2,
         displaySelections: [
           {
             year: 2018,
@@ -1827,11 +1823,11 @@ test("calculateModelRevenue - single milestone period 3", () => {
 
   const startYear = simpleModel.startYear;
   const yearsOut = simpleModel.endYear - startYear + 1;
-  const scenarios = simpleModel.scenarios;
+  const versions = simpleModel.versions;
   const programs = simpleModel.programs;
-  const activeScenarioId = simpleModel.activeScenarioId;
-  const milestone = simpleModel.scenarios[activeScenarioId].revenueMilestones[0];
-  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, scenarios,programs, activeScenarioId);
+  const activeVersionID = simpleModel.activeVersionID;
+  const milestone = simpleModel.versions[activeVersionID].revenueMilestones[0];
+  const actual = model.calculateModelRevenue(startYear, yearsOut, milestone, versions,programs, activeVersionID);
   const expected = [
     {
       period: 2018.0,
@@ -1855,27 +1851,27 @@ test("calculateModelRevenue - single milestone period 3", () => {
 
 test("calculatePriorVersionIndex - index = 0", () => {
   const simpleModel = fixtureSimpleModel();
-  const scenarios = simpleModel.scenarios;
-  const priorScenarioID = scenarios[0].priorScenarioID;
-  const actual = model.calculatePriorVersionIndex(scenarios, priorScenarioID);
+  const versions = simpleModel.versions;
+  const priorVersionID = versions[0].priorVersionID;
+  const actual = model.calculatePriorVersionIndex(versions, priorVersionID);
   const expected = "Initial Model";
   expect(actual).toEqual(expected);
 })
 
 test("calculatePriorVersionIndex - index = 1", () => {
   const simpleModel = fixtureSimpleModel();
-  const scenarios = simpleModel.scenarios;
-  const priorScenarioID = scenarios[1].priorScenarioID;
-  const actual = model.calculatePriorVersionIndex(scenarios, priorScenarioID);
+  const versions = simpleModel.versions;
+  const priorVersionID = versions[1].priorVersionID;
+  const actual = model.calculatePriorVersionIndex(versions, priorVersionID);
   const expected = 0;
   expect(actual).toEqual(expected);
 })
 
 test("percentCompleteCummArrayFromData - simpleModel", () => {
   const simpleModel = fixtureSimpleModel();
-  const scenario = simpleModel.scenarios[0];
-  const externalSpend = scenario.externalSpend;
-  const headcountEffort = scenario.headcountEffort;
+  const version = simpleModel.versions[0];
+  const externalSpend = version.externalSpend;
+  const headcountEffort = version.headcountEffort;
   const programs = simpleModel.programs;
   const actual = model.percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs);
   const expected = [
@@ -2156,6 +2152,24 @@ test("priorPeriodTrueup", () => {
   expect(actual).toEqual(expected);
 })
 
+test("currentPeriodRevenue", () => {
+  const simpleModel = fixtureSimpleModel();
+  const startYear = simpleModel.startYear;
+  const yearsOut = simpleModel.endYear - startYear + 1;
+  const versions = simpleModel.versions;
+  const milestone = versions[1].revenueMilestones[0];
+  const programs = simpleModel.programs;
+  const activeVersionID = 1;
+  const versionPeriod = 2018.25 
+  const actual = model.currentPeriodRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID, versionPeriod)
+  const expected = [
+    {period: 2018, amount: 250},
+    {period: 2018.25, amount: 200},
+    {period: 2018.5, amount: 200},
+    {period: 2018.75, amount: 200}
+  ]
+  expect(actual).toEqual(expected);
+})
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
@@ -2163,7 +2177,7 @@ function fixtureSimpleModel () {
     modelName: "Example Collaboration 606 Model",
     startYear: 2018,
     endYear: 2018,
-    activeScenarioId: 2,
+    activeVersionID: 2,
     programs: [
       {
         name: "Program A", 
@@ -2172,12 +2186,12 @@ function fixtureSimpleModel () {
       }
     ],
     activityLog: [],
-    scenarios: [
+    versions: [
       {
-        scenarioName: "Q1 2018 close",
-        scenarioDate: 2018,
-        scenarioID: 1,
-        priorScenarioID: 0,
+        versionName: "Q1 2018 close",
+        versionPeriod: 2018,
+        versionID: 1,
+        priorVersionID: 0,
         displaySelections: [
           {
             year: 2018,
@@ -2194,50 +2208,26 @@ function fixtureSimpleModel () {
         ],
         externalSpend: [
           [
-            {
-              period: 2018,
-              amount: 100
-            },
-            {
-              period: 2018.25,
-              amount: 100
-            },
-            {
-              period: 2018.5,
-              amount: 100
-            },
-            {
-              period: 2018.75,
-              amount: 100
-            }
+            {period: 2018, amount: 100},
+            {period: 2018.25, amount: 100},
+            {period: 2018.5, amount: 100},
+            {period: 2018.75, amount: 100}
           ]
         ],
        headcountEffort: [
           [
-            {
-              period: 2018,
-              amount: 0
-            },
-            {
-              period: 2018.25,
-              amount: 0
-            },
-            {
-              period: 2018.5,
-              amount: 0
-            },
-            {
-              period: 2018.75,
-              amount: 0
-            }
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
           ]
         ]
       },
       {
-        scenarioName: "Q2 2018 close",
-        scenarioDate: 2018.25,
-        scenarioID: 2,
-        priorScenarioID: 1,
+        versionName: "Q2 2018 close",
+        versionPeriod: 2018.25,
+        versionID: 2,
+        priorVersionID: 1,
         displaySelections: [
           {
             year: 2018,
@@ -2254,42 +2244,18 @@ function fixtureSimpleModel () {
         ],
         externalSpend: [
           [
-            {
-              period: 2018,
-              amount: 100
-            },
-            {
-              period: 2018.25,
-              amount: 50
-            },
-            {
-              period: 2018.5,
-              amount: 50
-            },
-            {
-              period: 2018.75,
-              amount: 50
-            }
+            {period: 2018, amount: 100},
+            {period: 2018.25, amount: 50},
+            {period: 2018.5, amount: 50},
+            {period: 2018.75, amount: 50}
           ]
         ],
        headcountEffort: [
           [
-            {
-              period: 2018,
-              amount: 0
-            },
-            {
-              period: 2018.25,
-              amount: 0
-            },
-            {
-              period: 2018.5,
-              amount: 0
-            },
-            {
-              period: 2018.75,
-              amount: 0
-            }
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
           ]
         ]
       }

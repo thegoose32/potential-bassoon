@@ -9,7 +9,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
-  priorPeriodTrueup, calculateCurrentPeriodRev,
+  priorPeriodTrueup, calculateCurrentPeriodRev, 
   setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue, 
 
 } from './model'
@@ -1736,7 +1736,7 @@ class PeriodBridge extends React.Component {
     let grandTotalSpend = this.props.grandTotalSpend;
     
     let milestoneRevEarned = revenueMilestones.map((milestone) => {
-      return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, this.props.activeVersionID)
+      return calculateCurrentPeriodRev(startYear, yearsOut, milestone, this.props.percentCompleteCum)
     })
 
     let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
@@ -1758,8 +1758,7 @@ class PeriodBridge extends React.Component {
     let compGrandTotal = arrayTotal(compTotalSpend);
     let compPercentCompleteCumm = percentCompleteCummArrayFromData(compHeadcountEffort, compExternalSpend, programs)
     let compMilestoneRevEarned = compRevenueMilestones.map((milestone) => {
-      let milestoneRev = calculateCurrentPeriodRev(startYear, yearsOut, milestone, compPercentCompleteCumm); 
-      return milestoneRev;
+      return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, this.state.selectedComparisonIndex); 
     })
 
     let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);

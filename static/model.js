@@ -55,22 +55,10 @@ export const defaultState = {
       // TODO: Add the Program ID to the array associated with the appropriate program
       externalSpend: [
         [
-          {
-            period: 2018.0,
-            amount: 100
-          },
-          {
-            period: 2018.25,
-            amount: 100
-          },
-          {
-            period: 2018.5,
-            amount: 100
-          },
-          {
-            period: 2018.75,
-            amount: 100
-          },
+          {period: 2018.0, amount: 100},
+          {period: 2018.25, amount: 100},
+          {period: 2018.5, amount: 100},
+          {period: 2018.75, amount: 100},
           {
             period: 2019.0,
             amount: 100
@@ -525,8 +513,8 @@ export function priorPeriodTrueup(programs, milestone, currentPeriod, startYear,
 }
 
 export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm) {
-  let blankDataArray = addDataArray(startYear, yearsOut);
-  blankDataArray.map((period, periodIndex) => {
+  let curPerRevArray = addDataArray(startYear, yearsOut);
+  curPerRevArray.map((period, periodIndex) => {
     if (period.period === milestone.dateEarned) {
       return period.amount = percentCompleteCumm[periodIndex].amount * milestone.amount;
     } else if (period.period > milestone.dateEarned) {
@@ -543,7 +531,7 @@ export function calculateCurrentPeriodRev(startYear, yearsOut, milestone, percen
       return period;
     }
   });
-  return blankDataArray;
+  return curPerRevArray;
 }
 
 export function calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID) {
@@ -574,7 +562,7 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, versions, 
 
 export function currentPeriodRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID, versionPeriod) {
   let totalMilestoneRevArray = calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID);
-  let priorPeriodTrueupArray = priorPeriodTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID) 
+  let priorPeriodTrueupArray = priorPeriodTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID)
   let blankDataArray = addDataArray(startYear, yearsOut);
   let currentPeriodRevenue = blankDataArray.map((period, periodIndex) => {
     period.amount = totalMilestoneRevArray[periodIndex].amount - priorPeriodTrueupArray[periodIndex].amount;
@@ -640,8 +628,12 @@ export function calculatePriorVersionIndex(versions, priorVersionID) {
 export function periodCummPercentComp(headcountEffort, externalSpend, programs, currentPeriod) {
   let cummPercentComplArray = percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs);
   let cummPercentCompl = cummPercentComplArray.filter(curVerPeriod => curVerPeriod.period === currentPeriod);
-  let cummPercentComplete = cummPercentCompl[0].amount;
-  return cummPercentComplete;
+  if (cummPercentCompl.length === 0) {
+    return 0;
+  } else {
+    let cummPercentComplete = cummPercentCompl[0].amount;
+    return cummPercentComplete;
+  }
 }
 
 export function milestonePeriodRevenue(milestone, versionPeriod, curVerCummPercentCompl, priorVerCummPercentCompl, period) {
@@ -662,7 +654,6 @@ export function milestonePeriodCheck(milestone, period) {
   }
   return milestoneAmount;
 }
-
 
 export function periodStringToNumber(periodString) {
   let periodQtr = Number(periodString.slice(1, 2)) 
