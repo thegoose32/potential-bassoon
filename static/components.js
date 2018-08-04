@@ -92,9 +92,13 @@ export class PharmaRevRec extends React.Component {
       let versions = prevState.versions;
       let copiedScenarioIndex = prevState.activeVersionID;
       let copiedScenario = JSON.parse(JSON.stringify(versions[copiedScenarioIndex])); 
-      copiedScenario.versionName = "New version";
       let lastID = versions[versions.length - 1].versionID;
+      let lastPeriod = versions[versions.length - 1].versionPeriod;
       copiedScenario.versionID = lastID + 1;
+      copiedScenario.versionPeriod = lastPeriod + 0.25;
+      copiedScenario.priorVersionID = lastID;
+      let newPeriodString = periodNumberToString(copiedScenario.versionPeriod);
+      copiedScenario.versionName = newPeriodString + " close";
       versions.push(copiedScenario);
       return {
         versions: versions
@@ -127,9 +131,18 @@ export class PharmaRevRec extends React.Component {
     this.setState(function(prevState, props) {
       let versions = prevState.versions;
       let currentScenario = versions[versionIndex];
-      currentScenario.versionPeriod = periodStringToNumber(newScenarioDate);
+      let newPeriod = periodStringToNumber(newScenarioDate);
+      currentScenario.versionPeriod = newPeriod; 
+      let newVersions = versions.map((version, verIndex) => {
+        if (verIndex === 0) {
+          return version
+        } else if (verIndex !== versionIndex) {
+          version.versionPeriod = newPeriod + (0.25 * verIndex);
+          return version;
+        }
+      })
       return {
-        versions: versions
+        versions: newVersions
       }
     })
   }
@@ -486,7 +499,6 @@ export class PharmaRevRec extends React.Component {
             startYear={startYear}
             yearsOut={yearsOut}
             setPriorVersion={this.setPriorVersion}
-            versionNames = {versionNames}
           />
           <YearDisplay
             startYear={startYear}
@@ -594,7 +606,7 @@ export class PharmaRevRec extends React.Component {
             totalSpend={totalSpend}
             activeVersionID={activeVersionID}
           />
-          <PeriodAnalytic
+          <ExpenseAnalytics
             startYear={startYear}
             yearsOut={yearsOut}
             externalSpend={externalSpend}
@@ -605,6 +617,7 @@ export class PharmaRevRec extends React.Component {
             versions={versions}
             versionNames={versionNames}
             versionPeriod={versionPeriod}
+            activeVersionID={activeVersionID}
           /> 
         </div>
       </div>
@@ -772,24 +785,19 @@ function ScenarioManager(props) {
     startYear,
     yearsOut,
     setPriorVersion,
-    versionNames
   } = props;
     
   let periodSelections = periodLabels(startYear, yearsOut);
-  let priorPeriodSelections = versionNames;
-  priorPeriodSelections.unshift("N/A - Initial Version");
 
   let versionRows = versions.map((version, index) => {
     let versionName = version.versionName;
     let versionPeriod = periodNumberToString(version.versionPeriod);
-    let priorScenarioName = versions.forEach((priorScenario) => {
+    let priorScenarioName;
+    versions.forEach((priorScenario) => {
       if (version.priorVersionID === priorScenario.versionID) {
-        return priorScenario.versionName;
+        priorScenarioName = priorScenario.versionName;
       }
     });
-    let priorModelSelections = priorPeriodSelections.slice();
-    let currentModelName = priorModelSelections.indexOf(versionName)
-    priorModelSelections.splice(currentModelName, 1);
     if (index === 0 || index <= activeVersionID) {
       return (
         <React.Fragment>
@@ -808,14 +816,7 @@ function ScenarioManager(props) {
                 <Dropdown options={periodSelections}/>
               </select>
             </td>
-            <td> 
-              <select
-                value={priorScenarioName}
-                onChange={(e) => setPriorVersion(e.target.value, index)}
-              >
-                <Dropdown options={priorModelSelections}/>
-              </select>
-            </td>
+            <td>N/A - Initial Model</td>
             <td></td>
           </tr>
         </React.Fragment>
@@ -830,22 +831,8 @@ function ScenarioManager(props) {
                 onChange={(e) => editVersionName(e.target.value, index)}
               />
             </td>
-            <td> 
-              <select
-                value={versionPeriod}
-                onChange={(e) => setVersionDate(e.target.value, index)}
-              >
-                <Dropdown options={periodSelections}/>
-              </select>
-            </td>
-            <td> 
-              <select
-                value={priorScenarioName}
-                onChange={(e) => setPriorVersion(e.target.value, index)}
-              >
-                <Dropdown options={priorModelSelections}/>
-              </select>
-            </td>
+            <td>{versionPeriod}</td>
+            <td>{priorScenarioName}</td>
             <DeleteItem index={index} removeItem={deleteVersion} />
           </tr>
         </React.Fragment>
@@ -1939,7 +1926,7 @@ class PeriodBridge extends React.Component {
   }
 }
 
-class PeriodAnalytic extends React.Component {
+class ExpenseAnalytics extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -1984,9 +1971,11 @@ class PeriodAnalytic extends React.Component {
     let startYear = this.props.startYear;
     let yearsOut = this.props.yearsOut;
     let versionPeriod = this.props.versionPeriod;
+    let activeVersionID = this.props.activeVersionID;
 
     let selectedPeriod = this.state.selectedPeriod;
     let versions = this.props.versions;
+    let versionName = versions[activeVersionID].versionName; 
     let selectedPeriodType = this.state.selectedPeriodType;
     let periodSelections = periodLabels(startYear, yearsOut)
 
@@ -2131,11 +2120,11 @@ class PeriodAnalytic extends React.Component {
     let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
     return (
       <section id="Analytics">
-        <h2>Analytic Engine</h2>
+        <h2>Expense Analytics</h2>
         <table>
           <tbody>
             <tr>
-              <td>Selected Comparison Period</td>
+              <td>Comparison Period</td>
               <td>
                 <select
                   value={selectedPeriodLabel}
@@ -2146,7 +2135,7 @@ class PeriodAnalytic extends React.Component {
               </td>
             </tr>
             <tr>
-              <td>Selected Comparison Model</td>
+              <td>Comparison Version</td>
               <td>
                 <select
                   value={versions[this.state.selectedComparisonIndex].versionName}
@@ -2173,9 +2162,9 @@ class PeriodAnalytic extends React.Component {
         <table>
           <thead>
             <tr>
-              <th>External Costs</th>
-              <th>Current Period</th>
-              <th>Comparison Period</th>
+              <th>External Costs - {this.state.selectedPeriod} {this.state.selectedPeriodType}</th>
+              <th>{versionName} version</th>
+              <th>{comparisonModel.versionName} version</th>
               <th>Change - $</th>
               <th>Change - %</th>
             </tr>
@@ -2188,9 +2177,9 @@ class PeriodAnalytic extends React.Component {
         <table>
           <thead>
             <tr>
-              <th>Headcount Costs</th>
-              <th>Current Period</th>
-              <th>Comparison Period</th>
+              <th>Headcount Costs - {this.state.selectedPeriod} {this.state.selectedPeriodType}</th>
+              <th>{versionName} version</th>
+              <th>{comparisonModel.versionName} version</th>
               <th>Change - $</th>
               <th>Change - %</th>
             </tr>
@@ -2203,9 +2192,9 @@ class PeriodAnalytic extends React.Component {
         <table>
           <thead>
             <tr>
-              <th>Total Costs</th>
-              <th>Current Period</th>
-              <th>Comparison Period</th>
+              <th>Total Costs - {this.state.selectedPeriod} {this.state.selectedPeriodType}</th>
+              <th>{versionName} version</th>
+              <th>{comparisonModel.versionName} version</th>
               <th>Change - $</th>
               <th>Change - %</th>
             </tr>

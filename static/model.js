@@ -33,7 +33,7 @@ export const defaultState = {
       displaySelections: [
         {
           year: 2018,
-          type: "Annual"
+          type: "Quarterly"
         }, 
         {
           year: 2019,
