@@ -671,3 +671,17 @@ export function periodStringToNumber(periodString) {
   let periodNumber = periodYear + quarter;
   return periodNumber;
 }
+
+export function incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex) {
+  let currentVersion = versions[activeVersionID];
+  let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
+  let curVerTotalSpend = calculateTotalSpendArrays(currentVersion.externalSpend, curVerHCSpend);
+  let curVerPeriodTotalSpend = curVerTotalSpend[programIndex].filter(period => period.period === selectedPeriod);
+  let compVersion = versions[compVersionIndex];
+  let compVerHCSpend = calculateHeadcountSpend(compVersion.headcountEffort, programs);
+  let compVerTotalSpend = calculateTotalSpendArrays(compVersion.externalSpend, compVerHCSpend);
+  let compVerPeriodTotalSpend = compVerTotalSpend[programIndex].filter(period => period.period === selectedPeriod);
+  let incurredSpendVariance = curVerPeriodTotalSpend[0].amount - compVerPeriodTotalSpend[0].amount;
+  let totalCompVerSpend = arrayTotal(compVerTotalSpend[programIndex]);
+  return incurredSpendVariance / totalCompVerSpend;
+}

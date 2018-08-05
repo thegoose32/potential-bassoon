@@ -2171,6 +2171,19 @@ test("currentPeriodRevenue", () => {
   expect(actual).toEqual(expected);
 })
 
+test("incurredSpendVariance", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = revenueBridgeModel.activeVersionID;
+  const compVersionIndex = 0;
+  const selectedPeriod = 2018;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const actual = model.incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
+  const expected = -0.1250;
+  expect(actual).toEqual(expected);
+})
+
 function fixtureSimpleModel () {
   const simpleModelFixture = {
     version: 0,
@@ -2263,4 +2276,128 @@ function fixtureSimpleModel () {
   }
   return simpleModelFixture;
 }
+
+function bridgeModel() {
+  const bridgeModel = {
+    version: 0,
+    modelName: "Example Collaboration 606 Model",
+    startYear: 2018,
+    endYear: 2018,
+    activeVersionID: 1,
+    programs: [
+      {
+        name: "Program A", 
+        id: 1001,
+        fteRate: 250000
+      },
+      {
+        name: "Program B", 
+        id: 1001,
+        fteRate: 250000
+      }
+    ],
+    activityLog: [],
+    versions: [
+      {
+        versionName: "Q1 2018 close",
+        versionPeriod: 2018,
+        versionID: 1,
+        priorVersionID: 0,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: 2018,
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {period: 2018, amount: 100},
+            {period: 2018.25, amount: 100},
+            {period: 2018.5, amount: 100},
+            {period: 2018.75, amount: 100}
+          ],
+          [
+            {period: 2018, amount: 50},
+            {period: 2018.25, amount: 50},
+            {period: 2018.5, amount: 50},
+            {period: 2018.75, amount: 50}
+          ]
+        ],
+       headcountEffort: [
+          [
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ],
+          [
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ]
+        ]
+      },
+      {
+        versionName: "Q2 2018 close",
+        versionPeriod: 2018.25,
+        versionID: 2,
+        priorVersionID: 1,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: 2018, 
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {period: 2018, amount: 100},
+            {period: 2018.25, amount: 100},
+            {period: 2018.5, amount: 100},
+            {period: 2018.75, amount: 0}
+          ],
+          [
+            {period: 2018, amount: 25},
+            {period: 2018.25, amount: 100},
+            {period: 2018.5, amount: 300},
+            {period: 2018.75, amount: 275}
+          ]
+        ],
+        headcountEffort: [
+          [
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ],
+          [
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ]
+        ]
+      }
+    ]  
+  }
+  return bridgeModel;
+}
+
+
 
