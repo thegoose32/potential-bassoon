@@ -2180,7 +2180,57 @@ test("incurredSpendVariance", () => {
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
   const actual = model.incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
-  const expected = -0.1250;
+  const expected = -25;
+  expect(actual).toEqual(expected);
+})
+
+test("totalProgSpend", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = 0;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const actual = model.totalProgSpend(versions, activeVersionID, programs, programIndex);
+  const expected = 200;
+  expect(actual).toEqual(expected);
+})
+
+test("programWeightedAvg", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const currentVersion = 0;
+  const selectedPeriod = 2018;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const actual = model.programWeightedAvg(versions, currentVersion, selectedPeriod, programs, programIndex);
+  const expected = 0.3333333333333333;
+  expect(actual).toEqual(expected);
+})
+
+test("incurredSpendRevenue", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = 1;
+  const compVersionIndex = 0;
+  const selectedPeriod = 2018;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const milestone = versions[activeVersionID].revenueMilestones[0];
+  const actual = model.incurredSpendRevenue(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex, milestone);
+  const expected = -41.666666666666667;
+  expect(actual).toEqual(expected);
+})
+
+test("totalSpendVariance", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = 1;
+  const compVersionIndex = 0;
+  const selectedPeriod = 2018;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const actual = model.totalSpendVariance(versions, activeVersionID, compVersionIndex, programs, programIndex)
+  const expected = 500;
   expect(actual).toEqual(expected);
 })
 
