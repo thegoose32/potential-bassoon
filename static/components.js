@@ -9,8 +9,10 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, incurredSpendVariance, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
-  priorPeriodTrueup, calculateCurrentPeriodRev, 
-  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue, 
+  priorPeriodTrueup, calculateCurrentPeriodRev, totalMilestones, progWtdAvgVariance, 
+  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue,
+  totalVarPercComplete, totalSpendVariance, incurredSpendRevenue, programWeightedAvg,
+  totalProgSpend
 
 } from './model'
 
@@ -588,6 +590,14 @@ export class PharmaRevRec extends React.Component {
             programs={programs}
             versions={versions}
             activeVersionID={activeVersionID}
+          />
+          <PeriodBridgeV2
+            startYear={startYear}
+            yearsOut={yearsOut}
+            programs={programs}
+            versions={versions}
+            activeVersionID={activeVersionID}
+            versionNames={versionNames}
           />
           <PeriodBridge
             startYear={startYear}
@@ -1671,6 +1681,142 @@ function DeferredRevenueRoll (props) {
   )
 }
 
+class PeriodBridgeV2 extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      selectedPeriod: 2018,
+      selectedComparisonIndex: 0,
+      selectedPeriodType: "QTD"
+    }
+
+    this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
+    this.setSelectedComparisonIndex = this.setSelectedComparisonIndex.bind(this);
+    this.setSelectedPeriodType = this.setSelectedPeriodType.bind(this);
+  }
+
+  setSelectedPeriod(newPeriod) {
+    let newSelectedPeriod = periodStringToNumber(newPeriod);
+    this.setState({selectedPeriod: newSelectedPeriod});
+  }
+
+  setSelectedComparisonIndex(newComparison) {
+    let versions = this.props.versions;
+    let newIndex = 0;
+    versions.forEach((version, versionIndex) => {
+      if (version.versionName === newComparison) {
+        newIndex = versionIndex
+        return newIndex;
+      }
+    });
+    this.setState({selectedComparisonIndex: newIndex});
+  }
+
+  setSelectedPeriodType(newType) {
+    let newSelectedPeriodType = newType;
+    this.setState({selectedPeriodType: newSelectedPeriodType})
+  }
+
+  render() {
+    let programs = this.props.programs;
+    let startYear = this.props.startYear;
+    let yearsOut = this.props.yearsOut;
+    let selectedPeriod = this.state.selectedPeriod;
+    let periodSelections = periodLabels(startYear, yearsOut)
+    let versions = this.props.versions;
+    let activeVersionID = this.props.activeVersionID;
+    let compVersionIndex = this.state.selectedComparisonIndex;
+    let selectedPeriodType = this.state.selectedPeriodType;
+    let versionName = versions[activeVersionID].versionName; 
+    let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
+    let curVerMilestones = totalMilestones(versions[activeVersionID].revenueMilestones)
+    let compVerMilestones = totalMilestones(versions[compVersionIndex].revenueMilestones)
+    
+   
+    let incurredVarianceRows = programs.map((program, programIndex) => {
+      let incurredProgSpendVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
+      let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
+      let percentComplete = incurredProgSpendVariance / totalProgramSpend;
+      let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
+      let incurredVarRev = compVerMilestones * percentComplete * progWtdAvg 
+      return(
+        <React.Fragment>
+          <VarianceRows
+            programName={program.name}
+            label={"Incurred Variance"}
+            periodSpend={incurredProgSpendVariance}
+            revenue={incurredVarRev}
+          />
+        </React.Fragment>
+      )
+    })
+
+    let totalIncurredVariance = 0;
+    programs.forEach((program, programIndex) => {
+      totalIncurredVariance +=  incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
+    });
+    
+    return (
+      <section id="Period-Bridge">
+        <h2>Revenue Bridge</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Period</td>
+              <td>
+                <select
+                  value={selectedPeriodLabel}
+                  onChange={(e) => this.setSelectedPeriod(e.target.value)}
+                >
+                  <Dropdown options={periodSelections}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Comparison Model</td>
+              <td>
+                <select
+                  value={versions[this.state.selectedComparisonIndex].versionName}
+                  onChange={(e) => this.setSelectedComparisonIndex(e.target.value)}
+                >
+                  <Dropdown options={this.props.versionNames}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Period Type</td>
+              <td>
+                <select
+                  value={this.state.setSelectedPeriodType}
+                  onChange={(e) => this.setSelectedPeriodType(e.target.value)}
+                >
+                  <Dropdown options={periodType}/>
+                </select>
+              </td>
+            </tr> 
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Milestones</th>
+              <th>Incurred</th>
+              <th>Total Spend</th>
+              <th>Program WA</th>
+              <th>Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {incurredVarianceRows}
+          </tbody>
+        </table>
+      </section>
+    )
+  }
+}
+
 class PeriodBridge extends React.Component {
   constructor(props) {
     super(props)
@@ -2408,6 +2554,66 @@ function CummulativeDataRows(props) {
     }
   })
   return dataCells;
+}
+
+function VarianceRows(props) {
+  const {
+    periodSpend,
+    totalSpend,
+    programWtdAvg,
+    revenue,
+    programName,
+    milestones,
+    label
+  } = props;
+
+  let programWtdAvgDisplay; 
+  if (typeof(programWtdAvg) === "number") {
+    programWtdAvgDisplay = programWtdAvg * 100
+  }
+  return(
+    <React.Fragment>
+      <tr>
+        <td>{programName} - {label}</td>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={milestones}
+            thousandSeparator={true}
+          /> 
+        </td>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={periodSpend}
+            thousandSeparator={true}
+          /> 
+        </td>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={totalSpend}
+            thousandSeparator={true}
+          /> 
+        </td>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={programWtdAvgDisplay}
+            thousandSeparator={true}
+            suffix={"%"}
+          /> 
+        </td>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={revenue}
+            thousandSeparator={true}
+          /> 
+        </td>
+      </tr>
+    </React.Fragment>
+  )
 }
 
 function CummulativeTotalRows(props) {

@@ -685,14 +685,14 @@ export function incurredSpendVariance(versions, activeVersionID, compVersionInde
   return incurredSpendVariance;
 }
 
-export function totalProgSpend(versions, activeVersionID, programs, programIndex) { 
-  let currentVersion = versions[activeVersionID];
+export function totalProgSpend(versions, curVer, programs, programIndex) { 
+  let currentVersion = versions[curVer];
   let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
   let curVerTotalProg = arrayTotal(currentVersion.externalSpend[programIndex]) + arrayTotal(curVerHCSpend[programIndex]);
   return curVerTotalProg;
 }
 
-export function programWeightedAvg(versions, curVer, selectedPeriod, programs, programIndex) {
+export function programWeightedAvg(versions, curVer, programs, programIndex) {
   let currentVersion = versions[curVer];
   let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
   let curVerTotalSpendArray = calculateTotalSpendArrays(currentVersion.externalSpend, curVerHCSpend);
@@ -706,7 +706,7 @@ export function incurredSpendRevenue(versions, activeVersionID, compVersionIndex
   let incurredVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
   let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
   let percentComplete = incurredVariance / totalProgramSpend;
-  let programWtdAvg = programWeightedAvg(versions, compVersionIndex, selectedPeriod, programs, programIndex);
+  let programWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
   let incurredSpendRevenue = milestone.amount * percentComplete * programWtdAvg
   return incurredSpendRevenue
 }
@@ -717,4 +717,30 @@ export function totalSpendVariance(versions, activeVersionID, compVersionIndex, 
   let compVerTotalSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex); 
   let totalSpendVariance = curVerTotalSpend - compVerTotalSpend;
   return totalSpendVariance;
+}
+
+export function totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod) {
+  let currentVersion = versions[activeVersionID];
+  let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
+  let curVerTotalSpend = calculateTotalSpendArrays(currentVersion.externalSpend, curVerHCSpend);
+  let curVerPrdTotalSpendArray = curVerTotalSpend[programIndex].filter(period => period.period <= selectedPeriod);
+  let curVerPrdTotalSpend = arrayTotal(curVerPrdTotalSpendArray);
+  let curVerProgTotalSpend = totalProgSpend(versions, activeVersionID, programs, programIndex);
+  let compVerProgTotalSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
+  let totalVarPercComplete = (curVerPrdTotalSpend / curVerProgTotalSpend) - (curVerPrdTotalSpend / compVerProgTotalSpend);
+  return totalVarPercComplete;
+}
+
+export function progWtdAvgVariance(versions, activeVersionID, compVersionIndex, programs, programIndex) {
+  let curVerProgWtdAvg = programWeightedAvg(versions, activeVersionID, programs, programIndex); 
+  let compVerProgWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
+  return curVerProgWtdAvg - compVerProgWtdAvg;
+}
+
+export function totalMilestones(milestones) {
+  let totalMilestones = 0;
+  milestones.forEach((milestone) => {
+    totalMilestones += milestone.amount
+  })
+  return totalMilestones;
 }

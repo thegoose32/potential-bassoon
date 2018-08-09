@@ -2187,10 +2187,10 @@ test("incurredSpendVariance", () => {
 test("totalProgSpend", () => {
   const revenueBridgeModel = bridgeModel();
   const versions = revenueBridgeModel.versions;
-  const activeVersionID = 0;
+  const curVer = 0;
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
-  const actual = model.totalProgSpend(versions, activeVersionID, programs, programIndex);
+  const actual = model.totalProgSpend(versions, curVer, programs, programIndex);
   const expected = 200;
   expect(actual).toEqual(expected);
 })
@@ -2199,10 +2199,9 @@ test("programWeightedAvg", () => {
   const revenueBridgeModel = bridgeModel();
   const versions = revenueBridgeModel.versions;
   const currentVersion = 0;
-  const selectedPeriod = 2018;
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
-  const actual = model.programWeightedAvg(versions, currentVersion, selectedPeriod, programs, programIndex);
+  const actual = model.programWeightedAvg(versions, currentVersion, programs, programIndex);
   const expected = 0.3333333333333333;
   expect(actual).toEqual(expected);
 })
@@ -2233,6 +2232,32 @@ test("totalSpendVariance", () => {
   const expected = 500;
   expect(actual).toEqual(expected);
 })
+
+test("totalVarPercComplete", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = 1;
+  const compVersionIndex = 0;
+  const selectedPeriod = 2018;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const actual = model.totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod)
+  const expected = -0.08928571428571429;
+  expect(actual).toEqual(expected);
+})
+
+test("progWtdAvgVariance", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = 1;
+  const compVersionIndex = 0;
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const actual = model.progWtdAvgVariance(versions, activeVersionID, compVersionIndex, programs, programIndex);
+  const expected = 0.36666666666666664;
+  expect(actual).toEqual(expected);
+})
+
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
