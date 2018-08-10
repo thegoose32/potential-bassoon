@@ -465,7 +465,7 @@ export function percentCompleteCummArrayFromData(headcountEffort, externalSpend,
 export function periodAmountCalc(array, currentPeriod, periodType) {
   let periodAmount = 0;
   array.forEach((period) => {
-    if (periodType === "QTD" && period.period === currentPeriod) {
+    if (periodType === "QTD" && period.period === currentPeriod) { 
       periodAmount += period.amount;
     } else if (periodType === "YTD" && Math.floor(currentPeriod) <= period.period && period.period <= currentPeriod) { 
       periodAmount += period.amount;
@@ -744,3 +744,13 @@ export function totalMilestones(milestones) {
   })
   return totalMilestones;
 }
+
+export function incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod) { 
+  let currentVersion = versions[curVer];
+  let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
+  let incurredHCSpend = curVerHCSpend[programIndex].filter(period => period.period <= selectedPeriod);
+  let incurredExtSpend = currentVersion.externalSpend[programIndex].filter(period => period.period <= selectedPeriod); 
+  let incurredTotalSpend = arrayTotal(incurredHCSpend) + arrayTotal(incurredExtSpend);
+  return incurredTotalSpend;
+}
+

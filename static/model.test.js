@@ -2258,6 +2258,19 @@ test("progWtdAvgVariance", () => {
   expect(actual).toEqual(expected);
 })
 
+test("incurredTotalSpend", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const curVer = 1; 
+  const programs = revenueBridgeModel.programs;
+  const programIndex = 1;
+  const selectedPeriod = 2018.25;
+  const actual = model.incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod);
+  const expected = 125;
+  expect(actual).toEqual(expected);
+})
+
+
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {

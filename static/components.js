@@ -12,7 +12,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   priorPeriodTrueup, calculateCurrentPeriodRev, totalMilestones, progWtdAvgVariance, 
   setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue,
   totalVarPercComplete, totalSpendVariance, incurredSpendRevenue, programWeightedAvg,
-  totalProgSpend
+  totalProgSpend, incurredTotalSpend
 
 } from './model'
 
@@ -1730,15 +1730,49 @@ class PeriodBridgeV2 extends React.Component {
     let versionName = versions[activeVersionID].versionName; 
     let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
     let curVerMilestones = totalMilestones(versions[activeVersionID].revenueMilestones)
-    let compVerMilestones = totalMilestones(versions[compVersionIndex].revenueMilestones)
+    let curVersion = versions[activeVersionID]
+    let curHeadcountEffort = curVersion.headcountEffort;
+    let curExternalSpend = curVersion.externalSpend;
+    let curHeadcountSpend = calculateHeadcountSpend(curHeadcountEffort, programs)
+    let curTotalProgSpendArray = calculateTotalSpendArrays(curExternalSpend, curHeadcountSpend);
+    let curTotalIncurredSpend = arrayTotal(calculatePeriodTotal(curTotalProgSpendArray).filter(period => period.period <= selectedPeriod))
+    let curTotalSpend = arrayTotal(calculatePeriodTotal(curTotalProgSpendArray)); 
+
+
+    let compVersion = versions[compVersionIndex]
+    let compVerMilestones = totalMilestones(compVersion.revenueMilestones)
+    let compHeadcountEffort = compVersion.headcountEffort;
+    let compExternalSpend = compVersion.externalSpend;
+    let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs)
+    let compTotalProgSpendArray = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
+    let compTotalIncurredSpend = arrayTotal(calculatePeriodTotal(compTotalProgSpendArray).filter(period => period.period <= selectedPeriod))
+    let compTotalSpend = arrayTotal(calculatePeriodTotal(compTotalProgSpendArray)); 
+
+    let milestoneVarianceRows = programs.map((program, programIndex) => {
+      let milestoneVariance = curVerMilestones - compVerMilestones;
+      let totalIncurredSpend = incurredTotalSpend(versions, compVersionIndex, programs, programIndex, selectedPeriod);
+      let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
+      let percentComplete = totalIncurredSpend / totalProgramSpend;
+      let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
+      let milestoneRev = milestoneVariance * percentComplete * progWtdAvg; 
+      return(
+        <React.Fragment>
+          <VarianceRows
+            programName={program.name}
+            label={"Milestone Variance"}
+            milestones={milestoneVariance}
+            revenue={milestoneRev}
+          />
+        </React.Fragment>
+      )
+    })
     
-   
     let incurredVarianceRows = programs.map((program, programIndex) => {
       let incurredProgSpendVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
       let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
       let percentComplete = incurredProgSpendVariance / totalProgramSpend;
       let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
-      let incurredVarRev = compVerMilestones * percentComplete * progWtdAvg 
+      let incurredVarRev = curVerMilestones * percentComplete * progWtdAvg 
       return(
         <React.Fragment>
           <VarianceRows
@@ -1746,6 +1780,41 @@ class PeriodBridgeV2 extends React.Component {
             label={"Incurred Variance"}
             periodSpend={incurredProgSpendVariance}
             revenue={incurredVarRev}
+          />
+        </React.Fragment>
+      )
+    })
+
+    let totalVarianceRows = programs.map((program, programIndex) => {
+      let totalProgSpendVariance = totalSpendVariance(versions, activeVersionID, compVersionIndex, programs, programIndex)
+      let totalVarPercentComplete = totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod);
+      let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
+      let totalVarRev = curVerMilestones * totalVarPercentComplete * progWtdAvg;
+      return(
+        <React.Fragment>
+          <VarianceRows
+            programName={program.name}
+            label={"Total Spend Variance"}
+            totalSpend={totalProgSpendVariance} 
+            revenue={totalVarRev}
+          />
+        </React.Fragment>
+      )
+    })
+
+    let wtdAvgVarianceRows = programs.map((program, programIndex) => {
+      let wtdAvgVariance = progWtdAvgVariance(versions, activeVersionID, compVersionIndex, programs, programIndex)
+      let totalProgramSpend = totalProgSpend(versions, activeVersionID, programs, programIndex);
+      let totalIncurredSpend = incurredTotalSpend(versions, activeVersionID, programs, programIndex, selectedPeriod);
+      let percentComplete = totalIncurredSpend / totalProgramSpend;
+      let totalWtdAvgVarRev = curVerMilestones * percentComplete * wtdAvgVariance;
+      return(
+        <React.Fragment>
+          <VarianceRows
+            programName={program.name}
+            label={"Total WA Variance"}
+            programWtdAvg={wtdAvgVariance}
+            revenue={totalWtdAvgVarRev}
           />
         </React.Fragment>
       )
@@ -1809,7 +1878,28 @@ class PeriodBridgeV2 extends React.Component {
             </tr>
           </thead>
           <tbody>
+            <VarianceRows
+              periodSpend={compTotalIncurredSpend}
+              totalSpend={compTotalSpend}
+              programWtdAvg={1}
+              revenue={(compTotalIncurredSpend/compTotalSpend)*compVerMilestones}
+              milestones={compVerMilestones}
+              programName={compVersion.versionName}
+              label={"total"}
+            />
+            {milestoneVarianceRows}
             {incurredVarianceRows}
+            {totalVarianceRows}
+            {wtdAvgVarianceRows}
+            <VarianceRows
+              periodSpend={curTotalIncurredSpend}
+              totalSpend={curTotalSpend}
+              programWtdAvg={1}
+              revenue={(curTotalIncurredSpend/curTotalSpend)*curVerMilestones}
+              milestones={curVerMilestones}
+              programName={curVersion.versionName}
+              label={"total"}
+            />
           </tbody>
         </table>
       </section>
@@ -2569,7 +2659,7 @@ function VarianceRows(props) {
 
   let programWtdAvgDisplay; 
   if (typeof(programWtdAvg) === "number") {
-    programWtdAvgDisplay = programWtdAvg * 100
+    programWtdAvgDisplay = rounding(programWtdAvg * 100,100)
   }
   return(
     <React.Fragment>
@@ -2607,7 +2697,7 @@ function VarianceRows(props) {
         <td className="numerical">
           <NumberFormat
             displayType="text"
-            value={revenue}
+            value={rounding(revenue,1)}
             thousandSeparator={true}
           /> 
         </td>
