@@ -469,7 +469,7 @@ export function periodAmountCalc(array, currentPeriod, periodType) {
       periodAmount += period.amount;
     } else if (periodType === "YTD" && Math.floor(currentPeriod) <= period.period && period.period <= currentPeriod) { 
       periodAmount += period.amount;
-    } else if (periodType === "Full Year" && Math.floor(currentPeriod) <= period.period && period.period < Math.ceil(currentPeriod)) {
+    } else if (periodType === "Full Year" && Math.floor(currentPeriod) <= period.period && period.period <= Math.ceil(currentPeriod)) {
       periodAmount += period.amount;
     }
   });
@@ -672,16 +672,16 @@ export function periodStringToNumber(periodString) {
   return periodNumber;
 }
 
-export function incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex) {
+export function incurredSpendVariance(versions, activeVersionID, compVersionIndex, curPeriod, selectedCompPeriod, programs, programIndex, periodType) {
   let currentVersion = versions[activeVersionID];
   let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
   let curVerTotalSpend = calculateTotalSpendArrays(currentVersion.externalSpend, curVerHCSpend);
-  let curVerPeriodTotalSpend = curVerTotalSpend[programIndex].filter(period => period.period === selectedPeriod);
+  let curVerPeriodTotalSpend = periodAmountCalc(curVerTotalSpend[programIndex], curPeriod, periodType); 
   let compVersion = versions[compVersionIndex];
   let compVerHCSpend = calculateHeadcountSpend(compVersion.headcountEffort, programs);
   let compVerTotalSpend = calculateTotalSpendArrays(compVersion.externalSpend, compVerHCSpend);
-  let compVerPeriodTotalSpend = compVerTotalSpend[programIndex].filter(period => period.period === selectedPeriod);
-  let incurredSpendVariance = curVerPeriodTotalSpend[0].amount - compVerPeriodTotalSpend[0].amount;
+  let compVerPeriodTotalSpend = periodAmountCalc(compVerTotalSpend[programIndex], selectedCompPeriod, periodType);
+  let incurredSpendVariance = curVerPeriodTotalSpend - compVerPeriodTotalSpend;
   return incurredSpendVariance;
 }
 
@@ -702,15 +702,6 @@ export function programWeightedAvg(versions, curVer, programs, programIndex) {
   return weightedAvg;
 }
 
-export function incurredSpendRevenue(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex, milestone) {
-  let incurredVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
-  let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
-  let percentComplete = incurredVariance / totalProgramSpend;
-  let programWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
-  let incurredSpendRevenue = milestone.amount * percentComplete * programWtdAvg
-  return incurredSpendRevenue
-}
-
 export function totalSpendVariance(versions, activeVersionID, compVersionIndex, programs, programIndex) {
   let currentVersion = versions[activeVersionID];
   let curVerTotalSpend = totalProgSpend(versions, activeVersionID, programs, programIndex); 
@@ -719,12 +710,11 @@ export function totalSpendVariance(versions, activeVersionID, compVersionIndex, 
   return totalSpendVariance;
 }
 
-export function totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod) {
+export function totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod, selectedPeriodType) {
   let currentVersion = versions[activeVersionID];
   let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
   let curVerTotalSpend = calculateTotalSpendArrays(currentVersion.externalSpend, curVerHCSpend);
-  let curVerPrdTotalSpendArray = curVerTotalSpend[programIndex].filter(period => period.period <= selectedPeriod);
-  let curVerPrdTotalSpend = arrayTotal(curVerPrdTotalSpendArray);
+  let curVerPrdTotalSpend = periodAmountCalc(curVerTotalSpend[programIndex], selectedPeriod, selectedPeriodType);
   let curVerProgTotalSpend = totalProgSpend(versions, activeVersionID, programs, programIndex);
   let compVerProgTotalSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
   let totalVarPercComplete = (curVerPrdTotalSpend / curVerProgTotalSpend) - (curVerPrdTotalSpend / compVerProgTotalSpend);
@@ -745,12 +735,12 @@ export function totalMilestones(milestones) {
   return totalMilestones;
 }
 
-export function incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod) { 
+export function incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod, selectedPeriodType) { 
   let currentVersion = versions[curVer];
   let curVerHCSpend = calculateHeadcountSpend(currentVersion.headcountEffort, programs);
-  let incurredHCSpend = curVerHCSpend[programIndex].filter(period => period.period <= selectedPeriod);
-  let incurredExtSpend = currentVersion.externalSpend[programIndex].filter(period => period.period <= selectedPeriod); 
-  let incurredTotalSpend = arrayTotal(incurredHCSpend) + arrayTotal(incurredExtSpend);
+  let incurredHCSpend = periodAmountCalc(curVerHCSpend[programIndex], selectedPeriod, selectedPeriodType)
+  let incurredExtSpend = periodAmountCalc(currentVersion.externalSpend[programIndex], selectedPeriod, selectedPeriodType); 
+  let incurredTotalSpend = incurredHCSpend + incurredExtSpend;
   return incurredTotalSpend;
 }
 

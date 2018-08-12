@@ -11,7 +11,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   priorPeriodTrueup, calculateCurrentPeriodRev, totalMilestones, progWtdAvgVariance, 
   setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue,
-  totalVarPercComplete, totalSpendVariance, incurredSpendRevenue, programWeightedAvg,
+  totalVarPercComplete, totalSpendVariance, programWeightedAvg,
   totalProgSpend, incurredTotalSpend
 
 } from './model'
@@ -598,23 +598,6 @@ export class PharmaRevRec extends React.Component {
             versions={versions}
             activeVersionID={activeVersionID}
             versionNames={versionNames}
-          />
-          <PeriodBridge
-            startYear={startYear}
-            yearsOut={yearsOut}
-            externalSpend={externalSpend}
-            headcountEffort={headcountEffort}
-            programs={programs}
-            percentCompleteCum={percentCompleteCum}
-            percentComplete={percentComplete}
-            totalProgramSpend={totalProgramSpend}
-            headcountSpend={headcountSpend}
-            grandTotalSpend={grandTotalSpend}
-            revenueMilestones={revenueMilestones}
-            versions={versions}
-            versionNames={versionNames}
-            totalSpend={totalSpend}
-            activeVersionID={activeVersionID}
           />
           <ExpenseAnalytics
             startYear={startYear}
@@ -1685,7 +1668,7 @@ class PeriodBridgeV2 extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedPeriod: 2018,
+      selectedCompPeriod: 2018,
       selectedComparisonIndex: 0,
       selectedPeriodType: "QTD"
     }
@@ -1697,7 +1680,7 @@ class PeriodBridgeV2 extends React.Component {
 
   setSelectedPeriod(newPeriod) {
     let newSelectedPeriod = periodStringToNumber(newPeriod);
-    this.setState({selectedPeriod: newSelectedPeriod});
+    this.setState({selectedCompPeriod: newSelectedPeriod});
   }
 
   setSelectedComparisonIndex(newComparison) {
@@ -1721,21 +1704,22 @@ class PeriodBridgeV2 extends React.Component {
     let programs = this.props.programs;
     let startYear = this.props.startYear;
     let yearsOut = this.props.yearsOut;
-    let selectedPeriod = this.state.selectedPeriod;
+    let selectedCompPeriod = this.state.selectedCompPeriod;
     let periodSelections = periodLabels(startYear, yearsOut)
     let versions = this.props.versions;
     let activeVersionID = this.props.activeVersionID;
     let compVersionIndex = this.state.selectedComparisonIndex;
     let selectedPeriodType = this.state.selectedPeriodType;
     let versionName = versions[activeVersionID].versionName; 
-    let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
+    let selectedPeriodLabel = periodNumberToString(this.state.selectedCompPeriod);
     let curVerMilestones = totalMilestones(versions[activeVersionID].revenueMilestones)
     let curVersion = versions[activeVersionID]
+    let curPeriod = curVersion.versionPeriod; 
     let curHeadcountEffort = curVersion.headcountEffort;
     let curExternalSpend = curVersion.externalSpend;
     let curHeadcountSpend = calculateHeadcountSpend(curHeadcountEffort, programs)
     let curTotalProgSpendArray = calculateTotalSpendArrays(curExternalSpend, curHeadcountSpend);
-    let curTotalIncurredSpend = arrayTotal(calculatePeriodTotal(curTotalProgSpendArray).filter(period => period.period <= selectedPeriod))
+    let curTotalIncurredSpend = periodAmountCalc(calculatePeriodTotal(curTotalProgSpendArray), curPeriod, selectedPeriodType);
     let curTotalSpend = arrayTotal(calculatePeriodTotal(curTotalProgSpendArray)); 
 
 
@@ -1745,12 +1729,12 @@ class PeriodBridgeV2 extends React.Component {
     let compExternalSpend = compVersion.externalSpend;
     let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs)
     let compTotalProgSpendArray = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
-    let compTotalIncurredSpend = arrayTotal(calculatePeriodTotal(compTotalProgSpendArray).filter(period => period.period <= selectedPeriod))
+    let compTotalIncurredSpend = periodAmountCalc(calculatePeriodTotal(compTotalProgSpendArray), selectedCompPeriod, selectedPeriodType); 
     let compTotalSpend = arrayTotal(calculatePeriodTotal(compTotalProgSpendArray)); 
 
     let milestoneVarianceRows = programs.map((program, programIndex) => {
       let milestoneVariance = curVerMilestones - compVerMilestones;
-      let totalIncurredSpend = incurredTotalSpend(versions, compVersionIndex, programs, programIndex, selectedPeriod);
+      let totalIncurredSpend = incurredTotalSpend(versions, compVersionIndex, programs, programIndex, selectedCompPeriod, selectedPeriodType);
       let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
       let percentComplete = totalIncurredSpend / totalProgramSpend;
       let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
@@ -1768,7 +1752,7 @@ class PeriodBridgeV2 extends React.Component {
     })
     
     let incurredVarianceRows = programs.map((program, programIndex) => {
-      let incurredProgSpendVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
+      let incurredProgSpendVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, curPeriod, selectedCompPeriod, programs, programIndex, selectedPeriodType);
       let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
       let percentComplete = incurredProgSpendVariance / totalProgramSpend;
       let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
@@ -1787,7 +1771,7 @@ class PeriodBridgeV2 extends React.Component {
 
     let totalVarianceRows = programs.map((program, programIndex) => {
       let totalProgSpendVariance = totalSpendVariance(versions, activeVersionID, compVersionIndex, programs, programIndex)
-      let totalVarPercentComplete = totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod);
+      let totalVarPercentComplete = totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, curPeriod, selectedPeriodType);
       let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
       let totalVarRev = curVerMilestones * totalVarPercentComplete * progWtdAvg;
       return(
@@ -1805,7 +1789,7 @@ class PeriodBridgeV2 extends React.Component {
     let wtdAvgVarianceRows = programs.map((program, programIndex) => {
       let wtdAvgVariance = progWtdAvgVariance(versions, activeVersionID, compVersionIndex, programs, programIndex)
       let totalProgramSpend = totalProgSpend(versions, activeVersionID, programs, programIndex);
-      let totalIncurredSpend = incurredTotalSpend(versions, activeVersionID, programs, programIndex, selectedPeriod);
+      let totalIncurredSpend = incurredTotalSpend(versions, activeVersionID, programs, programIndex, curPeriod, selectedPeriodType);
       let percentComplete = totalIncurredSpend / totalProgramSpend;
       let totalWtdAvgVarRev = curVerMilestones * percentComplete * wtdAvgVariance;
       return(
@@ -1820,11 +1804,9 @@ class PeriodBridgeV2 extends React.Component {
       )
     })
 
-    let totalIncurredVariance = 0;
-    programs.forEach((program, programIndex) => {
-      totalIncurredVariance +=  incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
-    });
-    
+    let compVersionLabel = selectedPeriodLabel + " " + selectedPeriodType;
+    let curVersionLabel = periodNumberToString(curVersion.versionPeriod) + " " + selectedPeriodType;
+
     return (
       <section id="Period-Bridge">
         <h2>Revenue Bridge</h2>
@@ -1885,7 +1867,7 @@ class PeriodBridgeV2 extends React.Component {
               revenue={(compTotalIncurredSpend/compTotalSpend)*compVerMilestones}
               milestones={compVerMilestones}
               programName={compVersion.versionName}
-              label={"total"}
+              label={compVersionLabel}
             />
             {milestoneVarianceRows}
             {incurredVarianceRows}
@@ -1898,267 +1880,8 @@ class PeriodBridgeV2 extends React.Component {
               revenue={(curTotalIncurredSpend/curTotalSpend)*curVerMilestones}
               milestones={curVerMilestones}
               programName={curVersion.versionName}
-              label={"total"}
+              label={curVersionLabel}
             />
-          </tbody>
-        </table>
-      </section>
-    )
-  }
-}
-
-class PeriodBridge extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      selectedPeriod: 2018,
-      selectedComparisonIndex: 0,
-      selectedPeriodType: "QTD"
-    }
-
-    this.setSelectedPeriod = this.setSelectedPeriod.bind(this);
-    this.setSelectedComparisonIndex = this.setSelectedComparisonIndex.bind(this);
-    this.setSelectedPeriodType = this.setSelectedPeriodType.bind(this);
-  }
-
-  setSelectedPeriod(newPeriod) {
-    let newSelectedPeriod = periodStringToNumber(newPeriod);
-    this.setState({selectedPeriod: newSelectedPeriod});
-  }
-
-  setSelectedComparisonIndex(newComparison) {
-    let versions = this.props.versions;
-    let newIndex = 0;
-    versions.forEach((version, versionIndex) => {
-      if (version.versionName === newComparison) {
-        newIndex = versionIndex
-        return newIndex;
-      }
-    });
-    this.setState({selectedComparisonIndex: newIndex});
-  }
-
-  setSelectedPeriodType(newType) {
-    let newSelectedPeriodType = newType;
-    this.setState({selectedPeriodType: newSelectedPeriodType})
-  }
-
-  render() {
-    let programs = this.props.programs;
-    let startYear = this.props.startYear;
-    let yearsOut = this.props.yearsOut;
-    let selectedPeriod = this.state.selectedPeriod;
-    let periodSelections = periodLabels(startYear, yearsOut)
-    let versions = this.props.versions;
-    let activeVersionID = this.props.activeVersionID;
-    let revenueMilestones = this.props.revenueMilestones;
-    let selectedPeriodType = this.state.selectedPeriodType;
-    let versionName = versions[activeVersionID].versionName; 
-   
-    let test = incurredSpendVariance(versions, activeVersionID, this.state.selectedComparisonIndex, this.state.selectedPeriod, programs, 0);
-
-    //Selected Period Variables//
-    let totalProgramSpend = this.props.totalProgramSpend;
-    let totalSpend = this.props.totalSpend;
-    let grandTotalSpend = this.props.grandTotalSpend;
-    
-    let milestoneRevEarned = revenueMilestones.map((milestone) => {
-      return calculateCurrentPeriodRev(startYear, yearsOut, milestone, this.props.percentCompleteCum)
-    })
-
-    let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
-    let grandTotalRevenue = arrayTotal(totalRevenueEarned);
- 
-    let selectedRevenueEarned = periodAmountCalc(totalRevenueEarned, selectedPeriod, selectedPeriodType);
-
-    let selectedPeriodSpend = periodAmountCalc(totalSpend, selectedPeriod, selectedPeriodType);
- 
-    //Comparison Period Variable//
-    let comparisonModel = this.props.versions[this.state.selectedComparisonIndex];
-    let compRevenueMilestones = comparisonModel.revenueMilestones;
-    let compHeadcountEffort = comparisonModel.headcountEffort;
-    let compExternalSpend = comparisonModel.externalSpend;
-    let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs)
-    let compTotalProgramSpend = calculateTotalSpendArrays(compExternalSpend, compHeadcountSpend);
-     
-    let compTotalSpend = calculatePeriodTotal(compTotalProgramSpend);
-    let compGrandTotal = arrayTotal(compTotalSpend);
-    let compPercentCompleteCumm = percentCompleteCummArrayFromData(compHeadcountEffort, compExternalSpend, programs)
-    let compMilestoneRevEarned = compRevenueMilestones.map((milestone) => {
-      return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, this.state.selectedComparisonIndex); 
-    })
-
-    let compTotalRevenueEarned = calculatePeriodTotal(compMilestoneRevEarned);
-    let compRevenueEarned = periodAmountCalc(compTotalRevenueEarned, selectedPeriod, selectedPeriodType);
-
-    let compSelectedPeriodSpend = periodAmountCalc(compTotalSpend, selectedPeriod, selectedPeriodType);;
-
-    //Program Change in Spend Rows//
-    let periodBridgeRow = programs.map((program, programIndex) => {
-      let selectedProgSpendPeriod = periodAmountCalc(totalProgramSpend[programIndex], selectedPeriod, selectedPeriodType);
-      let grandTotalProgramSpend = arrayTotal(totalProgramSpend[programIndex]);
-      let compProgSpendPeriod = periodAmountCalc(compTotalProgramSpend[programIndex], selectedPeriod, selectedPeriodType);
-      let compGrandTotalProgramSpend = arrayTotal(compTotalProgramSpend[programIndex]);
-      let periodDifference = grandTotalRevenue * (((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / grandTotalSpend)));
-      return (
-        <React.Fragment>
-          <tr>
-            <td>{program.name} changes</td>
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(periodDifference,1)}
-                thousandSeparator={true}
-              />
-            </td>
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(compProgSpendPeriod - selectedProgSpendPeriod,1)}
-                thousandSeparator={true}
-              />
-            </td>
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(compGrandTotalProgramSpend - grandTotalProgramSpend,1)}
-                thousandSeparator={true}
-              />
-            </td>
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding((((compProgSpendPeriod / compGrandTotalProgramSpend)*(compGrandTotalProgramSpend / compGrandTotal)) - ((selectedProgSpendPeriod / grandTotalProgramSpend) * (grandTotalProgramSpend / grandTotalSpend))) * 100, 1000)}
-                thousandSeparator={true}
-                suffix={"%"}
-              />
-            </td>
- 
-          </tr>
-        </React.Fragment>
-      )
-    });
-
-    let selectedPeriodLabel = periodNumberToString(this.state.selectedPeriod);
-    return (
-      <section id="Period-Bridge">
-        <h2>Revenue Bridge</h2>
-        <table>
-          <tbody>
-            <tr>
-              <td>Period</td>
-              <td>
-                <select
-                  value={selectedPeriodLabel}
-                  onChange={(e) => this.setSelectedPeriod(e.target.value)}
-                >
-                  <Dropdown options={periodSelections}/>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>Comparison Model</td>
-              <td>
-                <select
-                  value={versions[this.state.selectedComparisonIndex].versionName}
-                  onChange={(e) => this.setSelectedComparisonIndex(e.target.value)}
-                >
-                  <Dropdown options={this.props.versionNames}/>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>Period Type</td>
-              <td>
-                <select
-                  value={this.state.setSelectedPeriodType}
-                  onChange={(e) => this.setSelectedPeriodType(e.target.value)}
-                >
-                  <Dropdown options={periodType}/>
-                </select>
-              </td>
-            </tr> 
-          </tbody>
-        </table>
-        <br></br>
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Revenue</th>
-              <th>Period Cost</th>
-              <th>Total Cost</th>
-              <th>% of Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{versionName} version</td>
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding(selectedRevenueEarned,1)}
-                  thousandSeparator={true}
-                />
-              </td>
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding(selectedPeriodSpend,1)}
-                  thousandSeparator={true}
-                />
-              </td>
- 
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding(grandTotalSpend,1)}
-                  thousandSeparator={true}
-                />
-              </td>
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding((selectedPeriodSpend / grandTotalSpend)*100,1000)}
-                  thousandSeparator={true}
-                  suffix={"%"}
-                />
-              </td>
-            </tr>
-            {periodBridgeRow}
-            <tr>
-              <td>{comparisonModel.versionName} version</td>
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding(compRevenueEarned,1)}
-                  thousandSeparator={true}
-                />
-              </td>
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding(compSelectedPeriodSpend,1)}
-                  thousandSeparator={true}
-                />
-              </td>
- 
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding(compGrandTotal,1)}
-                  thousandSeparator={true}
-                />
-              </td>
-              <td className="numerical">
-                <NumberFormat
-                  displayType="text"
-                  value={rounding((compSelectedPeriodSpend / compGrandTotal)*100,1000)}
-                  thousandSeparator={true}
-                  suffix={"%"}
-                />
-              </td>
-            </tr>
           </tbody>
         </table>
       </section>

@@ -2176,10 +2176,12 @@ test("incurredSpendVariance", () => {
   const versions = revenueBridgeModel.versions;
   const activeVersionID = revenueBridgeModel.activeVersionID;
   const compVersionIndex = 0;
-  const selectedPeriod = 2018;
+  const curPeriod = 2018; 
+  const selectedCompPeriod = 2018;
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
-  const actual = model.incurredSpendVariance(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex);
+  const periodType = "QTD"
+  const actual = model.incurredSpendVariance(versions, activeVersionID, compVersionIndex, curPeriod, selectedCompPeriod, programs, programIndex, periodType);
   const expected = -25;
   expect(actual).toEqual(expected);
 })
@@ -2206,20 +2208,6 @@ test("programWeightedAvg", () => {
   expect(actual).toEqual(expected);
 })
 
-test("incurredSpendRevenue", () => {
-  const revenueBridgeModel = bridgeModel();
-  const versions = revenueBridgeModel.versions;
-  const activeVersionID = 1;
-  const compVersionIndex = 0;
-  const selectedPeriod = 2018;
-  const programs = revenueBridgeModel.programs;
-  const programIndex = 1;
-  const milestone = versions[activeVersionID].revenueMilestones[0];
-  const actual = model.incurredSpendRevenue(versions, activeVersionID, compVersionIndex, selectedPeriod, programs, programIndex, milestone);
-  const expected = -41.666666666666667;
-  expect(actual).toEqual(expected);
-})
-
 test("totalSpendVariance", () => {
   const revenueBridgeModel = bridgeModel();
   const versions = revenueBridgeModel.versions;
@@ -2241,7 +2229,8 @@ test("totalVarPercComplete", () => {
   const selectedPeriod = 2018;
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
-  const actual = model.totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod)
+  const selectedPeriodType = "QTD"
+  const actual = model.totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod, selectedPeriodType)
   const expected = -0.08928571428571429;
   expect(actual).toEqual(expected);
 })
@@ -2265,8 +2254,9 @@ test("incurredTotalSpend", () => {
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
   const selectedPeriod = 2018.25;
-  const actual = model.incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod);
-  const expected = 125;
+  const selectedPeriodType = "QTD";
+  const actual = model.incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod, selectedPeriodType);
+  const expected = 100;
   expect(actual).toEqual(expected);
 })
 
