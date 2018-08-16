@@ -1223,6 +1223,65 @@ test("periodAmountCalc - YTD", () => {
   expect(actual).toEqual(expected);
 })
 
+test("periodAmountCalc - Since Inception", () => {
+  const array = [
+    {
+      period: 2020,
+      amount: 5000
+    },
+    {
+      period: 2020.25,
+      amount: 5000
+    },
+    {
+      period: 2020.5,
+      amount: 5000
+    },
+    {
+      period: 2020.75,
+      amount: 5000
+    },
+    {
+      period: 2021,
+      amount: 10000
+    },
+    {
+      period: 2021.25,
+      amount: 10000
+    },
+    {
+      period: 2021.5,
+      amount: 10000
+    },
+    {
+      period: 2021.75,
+      amount: 10000
+    },
+    {
+      period: 2022,
+      amount: 10000
+    },
+    {
+      period: 2022.25,
+      amount: 20000
+    },
+    {
+      period: 2022.5,
+      amount: 0
+    },
+    {
+      period: 2022.75,
+      amount: 10000
+    }
+  ]
+  const currentPeriod = 2022.5;
+  const periodType = "Since Inception"
+  const actual = model.periodAmountCalc(array, currentPeriod, periodType);
+  const expected = 90000;
+  expect(actual).toEqual(expected);
+})
+
+
 test("periodAmountCalc - Full Year", () => {
   const array = [
     {

@@ -1,7 +1,10 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
+import React from 'react';
+import ReactDOM from 'react-dom';
 import NumberFormat from 'react-number-format';
-import {CSVLink} from 'react-csv'
+import {CSVLink} from 'react-csv';
+import NumericInput from 'react-numeric-input';
+NumericInput.style = null;
+
 var math = require('math.js');
 
 import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, periodLabels,
@@ -300,7 +303,7 @@ export class PharmaRevRec extends React.Component {
       let revMilestones = prevState.revenueMilestones;
       let lastId = revMilestones[revMilestones.length - 1].id;
       let newId = lastId + 1;
-      let period = "Q1 " + prevState.startYear;
+      let period = prevState.versionPeriod; 
       let newMilestone = {
         id: newId,
         name: "New Milestone",
@@ -358,7 +361,7 @@ export class PharmaRevRec extends React.Component {
   editExtSpendAmount(displayType, period, newAmount, programIndex) {
     let quarterAmount = 0;
     if (displayType === "Annual") {
-      quarterAmount = rounding(newAmount / 4, 1000);
+      quarterAmount = rounding(newAmount / 4, 100000);
     } 
     this.setVersionState((prevState, props) => {
       let extSpend = keepCloning(prevState.externalSpend);
@@ -380,7 +383,7 @@ export class PharmaRevRec extends React.Component {
   editHeadcountEffort(displayType, period, newAmount, programIndex) {
     let quarterAmount = 0;
     if (displayType === "Annual") {
-      quarterAmount = rounding(newAmount / 4, 1000);
+      quarterAmount = rounding(newAmount / 4, 100000);
     } 
     this.setVersionState((prevState, props) => {
       let hcEffort = keepCloning(prevState.headcountEffort);
@@ -791,7 +794,7 @@ function ScenarioManager(props) {
         priorScenarioName = priorScenario.versionName;
       }
     });
-    if (index === 0 || index <= activeVersionID) {
+    if (index === 0) {
       return (
         <React.Fragment>
           <tr>
@@ -1128,7 +1131,7 @@ function HeadcountEffort (props) {
               thousandSeparator={true}
             />
           </td>
-          <DataRows
+          <DataRowsDecimals
             startYear={startYear}
             displaySelections={displaySelections}
             dataArray={hcEffort}
@@ -1140,7 +1143,7 @@ function HeadcountEffort (props) {
           <td className="numerical">
             <NumberFormat
               displayType="text"
-              value={totalHeadcountEffort}
+              value={rounding(totalHeadcountEffort,100000)}
               thousandSeparator={true}
             /> 
           </td>
@@ -1150,7 +1153,7 @@ function HeadcountEffort (props) {
   });
 
   let totalHeadcountEffort = calculatePeriodTotal(headcountEffort);
-  let grandTotal = arrayTotal(totalHeadcountEffort);
+  let grandTotal = rounding(arrayTotal(totalHeadcountEffort),100000);
 
   return (
     <section id="Headcount-Effort">
@@ -1712,9 +1715,10 @@ class PeriodBridgeV2 extends React.Component {
     let selectedPeriodType = this.state.selectedPeriodType;
     let versionName = versions[activeVersionID].versionName; 
     let selectedPeriodLabel = periodNumberToString(this.state.selectedCompPeriod);
-    let curVerMilestones = totalMilestones(versions[activeVersionID].revenueMilestones)
     let curVersion = versions[activeVersionID]
     let curPeriod = curVersion.versionPeriod; 
+    let curVerMilestones = totalMilestones(versions[activeVersionID].revenueMilestones, curPeriod)
+    let periodTypeSinceInception = "Since Inception";
     let curHeadcountEffort = curVersion.headcountEffort;
     let curExternalSpend = curVersion.externalSpend;
     let curHeadcountSpend = calculateHeadcountSpend(curHeadcountEffort, programs)
@@ -1724,7 +1728,7 @@ class PeriodBridgeV2 extends React.Component {
 
 
     let compVersion = versions[compVersionIndex]
-    let compVerMilestones = totalMilestones(compVersion.revenueMilestones)
+    let compVerMilestones = totalMilestones(compVersion.revenueMilestones, selectedCompPeriod)
     let compHeadcountEffort = compVersion.headcountEffort;
     let compExternalSpend = compVersion.externalSpend;
     let compHeadcountSpend = calculateHeadcountSpend(compHeadcountEffort, programs)
@@ -1732,25 +1736,6 @@ class PeriodBridgeV2 extends React.Component {
     let compTotalIncurredSpend = periodAmountCalc(calculatePeriodTotal(compTotalProgSpendArray), selectedCompPeriod, selectedPeriodType); 
     let compTotalSpend = arrayTotal(calculatePeriodTotal(compTotalProgSpendArray)); 
 
-    let milestoneVarianceRows = programs.map((program, programIndex) => {
-      let milestoneVariance = curVerMilestones - compVerMilestones;
-      let totalIncurredSpend = incurredTotalSpend(versions, compVersionIndex, programs, programIndex, selectedCompPeriod, selectedPeriodType);
-      let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
-      let percentComplete = totalIncurredSpend / totalProgramSpend;
-      let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
-      let milestoneRev = milestoneVariance * percentComplete * progWtdAvg; 
-      return(
-        <React.Fragment>
-          <VarianceRows
-            programName={program.name}
-            label={"Milestone Variance"}
-            milestones={milestoneVariance}
-            revenue={milestoneRev}
-          />
-        </React.Fragment>
-      )
-    })
-    
     let incurredVarianceRows = programs.map((program, programIndex) => {
       let incurredProgSpendVariance = incurredSpendVariance(versions, activeVersionID, compVersionIndex, curPeriod, selectedCompPeriod, programs, programIndex, selectedPeriodType);
       let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
@@ -1781,6 +1766,25 @@ class PeriodBridgeV2 extends React.Component {
             label={"Total Spend Variance"}
             totalSpend={totalProgSpendVariance} 
             revenue={totalVarRev}
+          />
+        </React.Fragment>
+      )
+    })
+    
+    let milestoneVarianceRows = programs.map((program, programIndex) => {
+      let milestoneVariance = curVerMilestones - compVerMilestones;
+      let totalIncurredSpend = incurredTotalSpend(versions, activeVersionID, programs, programIndex, curPeriod, selectedPeriodType);
+      let totalProgramSpend = totalProgSpend(versions, activeVersionID, programs, programIndex);
+      let percentComplete = totalIncurredSpend / totalProgramSpend;
+      let progWtdAvg = programWeightedAvg(versions, activeVersionID, programs, programIndex);
+      let milestoneRev = milestoneVariance * percentComplete * progWtdAvg; 
+      return(
+        <React.Fragment>
+          <VarianceRows
+            programName={program.name}
+            label={"Milestone Variance"}
+            milestones={milestoneVariance}
+            revenue={milestoneRev}
           />
         </React.Fragment>
       )
@@ -1824,7 +1828,7 @@ class PeriodBridgeV2 extends React.Component {
               </td>
             </tr>
             <tr>
-              <td>Comparison Model</td>
+              <td>Comparison Version</td>
               <td>
                 <select
                   value={versions[this.state.selectedComparisonIndex].versionName}
@@ -1852,9 +1856,9 @@ class PeriodBridgeV2 extends React.Component {
           <thead>
             <tr>
               <th></th>
-              <th>Milestones</th>
-              <th>Incurred</th>
+              <th>Total Incurred Spend</th>
               <th>Total Spend</th>
+              <th>Milestones</th>
               <th>Program WA</th>
               <th>Revenue</th>
             </tr>
@@ -1869,9 +1873,9 @@ class PeriodBridgeV2 extends React.Component {
               programName={compVersion.versionName}
               label={compVersionLabel}
             />
-            {milestoneVarianceRows}
             {incurredVarianceRows}
             {totalVarianceRows}
+            {milestoneVarianceRows}
             {wtdAvgVarianceRows}
             <VarianceRows
               periodSpend={curTotalIncurredSpend}
@@ -2249,8 +2253,6 @@ function DataRows(props) {
               onValueChange={(values, e) => editAmount(cell.type, cell.period, Number(values.value), programIndex)}
               thousandSeparator={true}
               isNumericString={true}
-              decimalScale={2}
-              fixedDecimalScale={false}
               decimalSeparator={"."}
             />
           </td>
@@ -2280,6 +2282,40 @@ function DataRows(props) {
   })
   return dataCells;
 }
+function DataRowsDecimals(props) {
+  const {
+    startYear,
+    displaySelections,
+    dataArray,
+    yearsOut,
+    programIndex,
+    editAmount,
+    input,
+    suffix
+  } = props;
+
+  let years = yearsArray(startYear, yearsOut)
+  let displayType = displayArray(displaySelections);
+  let calculatedData = dataToDisplay(displayType, dataArray);
+  let dataCells = calculatedData.map((cell, cellIndex) => {
+    return(
+      <React.Fragment>
+        <td>
+          <NumericInput
+            value={cell.amount}
+            className="numerical"
+            onChange={(e) => editAmount(cell.type, cell.period, Number(e), programIndex)}
+            precision={5}
+            min={0}
+            inputmode="numeric"
+          snap/>
+        </td>
+      </React.Fragment>
+    )
+  })
+  return dataCells;
+}
+
 
 function TotalRows(props) {
   const {
@@ -2391,13 +2427,6 @@ function VarianceRows(props) {
         <td className="numerical">
           <NumberFormat
             displayType="text"
-            value={milestones}
-            thousandSeparator={true}
-          /> 
-        </td>
-        <td className="numerical">
-          <NumberFormat
-            displayType="text"
             value={periodSpend}
             thousandSeparator={true}
           /> 
@@ -2406,6 +2435,13 @@ function VarianceRows(props) {
           <NumberFormat
             displayType="text"
             value={totalSpend}
+            thousandSeparator={true}
+          /> 
+        </td>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={milestones}
             thousandSeparator={true}
           /> 
         </td>

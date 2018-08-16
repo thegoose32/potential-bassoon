@@ -469,7 +469,9 @@ export function periodAmountCalc(array, currentPeriod, periodType) {
       periodAmount += period.amount;
     } else if (periodType === "YTD" && Math.floor(currentPeriod) <= period.period && period.period <= currentPeriod) { 
       periodAmount += period.amount;
-    } else if (periodType === "Full Year" && Math.floor(currentPeriod) <= period.period && period.period <= Math.ceil(currentPeriod)) {
+    } else if (periodType === "Full Year" && Math.floor(currentPeriod) <= period.period && period.period < Math.floor(currentPeriod + 1)) {
+      periodAmount += period.amount;
+    } else if (periodType === "Since Inception" && period.period <= currentPeriod) {
       periodAmount += period.amount;
     }
   });
@@ -727,10 +729,12 @@ export function progWtdAvgVariance(versions, activeVersionID, compVersionIndex, 
   return curVerProgWtdAvg - compVerProgWtdAvg;
 }
 
-export function totalMilestones(milestones) {
+export function totalMilestones(milestones, selectedPeriod) {
   let totalMilestones = 0;
   milestones.forEach((milestone) => {
-    totalMilestones += milestone.amount
+    if (milestone.dateEarned <= selectedPeriod) {
+      totalMilestones += milestone.amount
+    }
   })
   return totalMilestones;
 }
