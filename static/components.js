@@ -610,6 +610,13 @@ export class PharmaRevRec extends React.Component {
             versionPeriod={versionPeriod}
             activeVersionID={activeVersionID}
           /> 
+          <RevenueProjections
+            startYear={startYear}
+            yearsOut={yearsOut}
+            versions={versions}
+            activeVersionID={activeVersionID}
+            programs={programs}
+          />
         </div>
       </div>
     )
@@ -2203,6 +2210,68 @@ class ExpenseAnalytics extends React.Component {
       </section>
     )
   }
+}
+
+function RevenueProjections(props) {
+  const {
+    startYear,
+    yearsOut,
+    versions,
+    activeVersionID,
+    programs
+  } = props;
+
+  let curVersion = versions[activeVersionID];
+  let versionPeriod = curVersion.versionPeriod;
+  let headcountSpend = calculateHeadcountSpend(curVersion.headcountEffort, programs);
+
+  let programCostRow = programs.map((program, programIndex) => {
+    let totalProgSpendArray = curVersion.externalSpend[programIndex].map((period, periodIndex) => {
+      period.amount += headcountSpend[programIndex][periodIndex].amount;
+      return period;
+    })
+
+    let incurredProgSpend = 0;
+    totalProgSpendArray.forEach((period) => {
+      if (period.period <= versionPeriod) {
+        incurredProgSpend += period.amount;
+      };
+    });
+
+    let futureProgSpendArray = totalProgSpendArray.filter(period => period.period > versionPeriod);
+
+    return(
+      <React.Fragment>
+        <tr>
+          <td>{program.name}</td>
+          <td className="numerical">
+            <NumberFormat
+              displayType="text"
+              value={incurredProgSpend}
+              thousandSeparator={true}
+            />
+          </td>
+        </tr>
+      </React.Fragment>
+    )
+  });
+
+  return(
+    <section id="RevenueForecast">
+      <h2>Revenue Forecast</h2>
+      <table>
+        <thead>
+          <tr>
+            <td>Program</td>
+            <td>Incurred Spend thru {periodNumberToString(versionPeriod)}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {programCostRow}
+        </tbody>
+      </table>
+    </section>
+  )
 }
 
 function Dropdown({options}) {
