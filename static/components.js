@@ -1579,6 +1579,7 @@ function DeferredRevenueRoll (props) {
     activeVersionID
   } = props;
 
+  let versionPeriod = versions[activeVersionID].versionPeriod;
   let milestoneRevEarned = revenueMilestones.map((milestone) => {
     return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID)
   })
@@ -1640,6 +1641,7 @@ function DeferredRevenueRoll (props) {
               displaySelections={displaySelections}
               dataArray={deferredRevenueBegBalance}
               startOrEnd="start"
+              versionPeriod={versionPeriod}
             />
           </tr>
           <tr>
@@ -1662,6 +1664,7 @@ function DeferredRevenueRoll (props) {
               displaySelections={displaySelections}
               dataArray={deferredRevEndBalance}
               startOrEnd="end"
+              versionPeriod={versionPeriod}
             />
           </tr>
         </tbody>
@@ -1720,7 +1723,7 @@ class PeriodBridgeV2 extends React.Component {
     let selectedPeriodLabel = periodNumberToString(this.state.selectedCompPeriod);
     let curVersion = versions[activeVersionID]
     let curPeriod = curVersion.versionPeriod; 
-    let curVerMilestones = totalMilestones(versions[activeVersionID].revenueMilestones, curPeriod)
+    let curVerMilestones = totalMilestones(curVersion.revenueMilestones, curPeriod)
     let periodTypeSinceInception = "Since Inception";
     let curHeadcountEffort = curVersion.headcountEffort;
     let curExternalSpend = curVersion.externalSpend;
@@ -1810,6 +1813,28 @@ class PeriodBridgeV2 extends React.Component {
         </React.Fragment>
       )
     })
+   
+    let priorPrdTrueUp = 0;
+    if (selectedPeriodType === "QTD" || Math.floor(curPeriod) !== Math.floor(selectedCompPeriod)) {
+      curVersion.revenueMilestones.forEach((milestone) => {
+        let priorPrdTrueUpArray = priorPeriodTrueup(programs, milestone, curPeriod, startYear, yearsOut, versions, activeVersionID);
+        priorPrdTrueUp += periodAmountCalc(priorPrdTrueUpArray, curPeriod, selectedPeriodType);
+      })
+    }
+
+    let priorPeriodTrueupRows = programs.map((program, programIndex) => {
+      let progWtdAvg = programWeightedAvg(versions, activeVersionID, programs, programIndex);
+      let progPriorPrdTrueup = progWtdAvg * priorPrdTrueUp;
+      return(
+        <React.Fragment>
+          <VarianceRows
+            programName={program.name}
+            label={"Prior Period Trueup"}
+            revenue={progPriorPrdTrueup}
+          />
+        </React.Fragment>
+      )
+    });
 
     let compVersionLabel = selectedPeriodLabel + " " + selectedPeriodType;
     let curVersionLabel = periodNumberToString(curVersion.versionPeriod) + " " + selectedPeriodType;
@@ -1880,11 +1905,12 @@ class PeriodBridgeV2 extends React.Component {
             {totalVarianceRows}
             {milestoneVarianceRows}
             {wtdAvgVarianceRows}
+            {priorPeriodTrueupRows}
             <VarianceRows
               periodSpend={curTotalIncurredSpend}
               totalSpend={curTotalSpend}
               programWtdAvg={1}
-              revenue={(curTotalIncurredSpend/curTotalSpend)*curVerMilestones}
+              revenue={((curTotalIncurredSpend/curTotalSpend)*curVerMilestones) + priorPrdTrueUp}
               milestones={curVerMilestones}
               programName={curVersion.versionName}
               label={curVersionLabel}
@@ -2490,7 +2516,8 @@ function CummulativeTotalRows(props) {
   const {
     displaySelections,
     dataArray,
-    startOrEnd
+    startOrEnd,
+    versionPeriod
   } = props;
 
   // Override the type to not sum in calculatedData function below//
