@@ -13,7 +13,8 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   priorPeriodTrueup, calculateCurrentPeriodRev, totalMilestones, progWtdAvgVariance, 
-  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue,
+  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, 
+  percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue,
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
   totalProgSpend, incurredTotalSpend
 
@@ -185,25 +186,15 @@ export class PharmaRevRec extends React.Component {
   }
 
   setStartYear(startYear) {
-    this.setState((prevState, props) => {
-      let yearsOut = this.state.endYear - startYear + 1;
-      return {
-        startYear: startYear,
-      }
-      this.setYearsOut(startYear, yearsOut);
-    })
+    this.setState({startYear: startYear})
   }
 
   setEndYear(endYear) {
     this.setState({endYear: endYear})
-    let yearsOut = endYear - this.state.startYear + 1;
-    this.setYearsOut(yearsOut);
   }
 
-  //TODO: needs to be fixed - currently not running if startYear changes//
-  setYearsOut(yearsOut) {
+  setYearsOut(startYear, yearsOut) {
     let newYearsOut = Number(yearsOut); 
-    let startYear = this.state.startYear; 
     this.setState(setYearsOut(startYear, yearsOut))
   }
 
@@ -640,7 +631,6 @@ function SaveButton({onClick}) {
   )
 }
 
-
 function SideNavigation(props) {
   const {
     versions,
@@ -707,6 +697,7 @@ class ModelSetup extends React.Component {
   onSubmitClick(event) {
     this.props.setStartYear(this.state.startYear);
     this.props.setEndYear(this.state.endYear);
+    this.props.setYearsOut(this.state.startYear, this.state.endYear - this.state.startYear + 1)
   }
 
   render() {

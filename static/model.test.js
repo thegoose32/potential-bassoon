@@ -2,138 +2,44 @@ import * as model from './model.js'
 
 test("displaySelections", () => {
   const displaySelections = [
-    {
-      year: 2020,
-      type: "Annual"
-    },
-    {
-      year: 2021,
-      type: "Quarterly"
-    },
-    {
-      year: 2022,
-      type: "Annual"
-    }
+    {year: 2020, type: "Annual"},
+    {year: 2021, type: "Quarterly"},
+    {year: 2022, type: "Annual"}
   ];
-
   const actual = model.displayArray(displaySelections);
   const expected = [
-    {
-      period: 2020,
-      type: "Annual",
-      amount: 0
-    },
-    {
-      period: 2021.0,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2021.25,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2021.5,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2021.75,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2022,
-      type: "Annual",
-      amount: 0
-    }
+    {period: 2020, type: "Annual", amount: 0},
+    {period: 2021.0, type: "Quarterly", amount: 0},
+    {period: 2021.25, type: "Quarterly", amount: 0},
+    {period: 2021.5, type: "Quarterly", amount: 0},
+    {period: 2021.75, type: "Quarterly", amount: 0},
+    {period: 2022, type: "Annual", amount: 0}
   ]
   expect(actual).toEqual(expected);
 });
 
 test("dataToDisplay function", () => {
   const displayType = [
-    {
-      period: 2020,
-      type: "Annual",
-      amount: 0
-    },
-    {
-      period: 2021.0,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2021.25,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2021.5,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2021.75,
-      type: "Quarterly",
-      amount: 0
-    },
-    {
-      period: 2022,
-      type: "Annual",
-      amount: 0
-    }
+    {period: 2020, type: "Annual", amount: 0},
+    {period: 2021.0, type: "Quarterly", amount: 0},
+    {period: 2021.25, type: "Quarterly", amount: 0},
+    {period: 2021.5, type: "Quarterly", amount: 0},
+    {period: 2021.75, type: "Quarterly", amount: 0},
+    {period: 2022, type: "Annual", amount: 0}
   ]
   const dataArray = [
-    {
-      period: 2020.0,
-      amount: 200
-    },
-    {
-      period: 2020.25,
-      amount: 200
-    },
-    {
-      period: 2020.5,
-      amount: 200
-    },
-    {
-      period: 2020.75,
-      amount: 200
-    },
-    {
-      period: 2021.0,
-      amount: 400
-    },
-    {
-      period: 2021.25,
-      amount: 400
-    },
-    {
-      period: 2021.5,
-      amount: 400
-    },
-    {
-      period: 2021.75,
-      amount: 400
-    },
-    {
-      period: 2022.0,
-      amount: 100
-    },
-    {
-      period: 2022.25,
-      amount: 100
-    },
-    {
-      period: 2022.5,
-      amount: 100
-    },
-    {
-      period: 2022.75,
-      amount: 100
-    }
+    {period: 2020.0, amount: 200},
+    {period: 2020.25, amount: 200},
+    {period: 2020.5, amount: 200},
+    {period: 2020.75, amount: 200},
+    {period: 2021.0, amount: 400},
+    {period: 2021.25, amount: 400},
+    {period: 2021.5, amount: 400},
+    {period: 2021.75, amount: 400},
+    {period: 2022.0, amount: 100},
+    {period: 2022.25, amount: 100},
+    {period: 2022.5, amount: 100},
+    {period: 2022.75, amount: 100}
   ];
   const actual = model.dataToDisplay(displayType, dataArray);
   const expected = [
