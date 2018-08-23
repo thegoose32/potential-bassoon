@@ -527,6 +527,8 @@ export class PharmaRevRec extends React.Component {
             externalSpend={externalSpend}
             programs={programs}
             editExtSpendAmount={this.editExtSpendAmount}
+            versions={this.state.versions}
+            activeVersionID={this.state.activeVersionID}
           />
           <HeadcountEffort
             startYear={startYear}
@@ -535,6 +537,8 @@ export class PharmaRevRec extends React.Component {
             headcountEffort={headcountEffort}
             programs={programs}
             editHeadcountEffort={this.editHeadcountEffort}
+            versions={this.state.versions}
+            activeVersionID={this.state.activeVersionID}
           />
            <HeadcountSpend
             startYear={startYear}
@@ -1029,9 +1033,12 @@ function ExternalSpend (props) {
     displaySelections,
     externalSpend,
     programs,
-    editExtSpendAmount
+    editExtSpendAmount,
+    versions,
+    activeVersionID
   } = props;
 
+  let versionPeriod = versions[activeVersionID].versionPeriod;
   let externalSpendRow = externalSpend.map((programSpend, programIndex) => {
     let totalProgSpend = arrayTotal(programSpend); 
     return (
@@ -1046,6 +1053,7 @@ function ExternalSpend (props) {
             editAmount={editExtSpendAmount}
             programIndex={programIndex}
             input="Yes"
+            versionPeriod={versionPeriod}
           />
           <td className="numerical">
             <NumberFormat
@@ -1106,9 +1114,12 @@ function HeadcountEffort (props) {
     displaySelections,
     headcountEffort,
     programs,
-    editHeadcountEffort
+    editHeadcountEffort,
+    versions,
+    activeVersionID
   } = props;
 
+  let versionPeriod = versions[activeVersionID].versionPeriod;
   let headcountEffortRow = headcountEffort.map((hcEffort, hcEffortIndex) => {
     let totalHeadcountEffort = arrayTotal(hcEffort); 
     return (
@@ -1130,6 +1141,7 @@ function HeadcountEffort (props) {
             editAmount={editHeadcountEffort}
             programIndex={hcEffortIndex}
             input="Yes"
+            versionPeriod={versionPeriod}
           />
           <td className="numerical">
             <NumberFormat
@@ -2227,14 +2239,17 @@ function DataRows(props) {
     programIndex,
     editAmount,
     input,
-    suffix
+    suffix,
+    versionPeriod
   } = props;
+  // suffix added only when necessary //
+  // input determines if user can change amount //
 
   let years = yearsArray(startYear, yearsOut)
   let displayType = displayArray(displaySelections);
   let calculatedData = dataToDisplay(displayType, dataArray);
   let dataCells = calculatedData.map((cell, cellIndex) => {
-    if (input === "Yes") {
+    if (input === "Yes" && cell.period >= versionPeriod) {
       return(
         <React.Fragment>
           <td>
@@ -2249,7 +2264,7 @@ function DataRows(props) {
           </td>
         </React.Fragment>
       )
-    } else if (input === "No") {
+    } else if (input === "No" || cell.period < versionPeriod) {
       let cellCopy = keepCloning(cell);
       let displayAmount = 0; 
       if (suffix === "%") {
@@ -2282,31 +2297,46 @@ function DataRowsDecimals(props) {
     programIndex,
     editAmount,
     input,
-    suffix
+    suffix,
+    versionPeriod
   } = props;
 
   let years = yearsArray(startYear, yearsOut)
   let displayType = displayArray(displaySelections);
   let calculatedData = dataToDisplay(displayType, dataArray);
   let dataCells = calculatedData.map((cell, cellIndex) => {
-    return(
-      <React.Fragment>
-        <td>
-          <NumericInput
-            value={cell.amount}
-            className="numerical"
-            onChange={(e) => editAmount(cell.type, cell.period, Number(e), programIndex)}
-            precision={5}
-            min={0}
-            inputmode="numeric"
-          snap/>
-        </td>
-      </React.Fragment>
-    )
+    if (cell.period >= versionPeriod) {
+      return(
+        <React.Fragment>
+          <td>
+            <NumericInput
+              value={cell.amount}
+              className="numerical"
+              onChange={(e) => editAmount(cell.type, cell.period, Number(e), programIndex)}
+              precision={5}
+              min={0}
+              inputmode="numeric"
+            snap/>
+          </td>
+        </React.Fragment>
+      )
+    } else {
+      return(
+        <React.Fragment>
+          <td className="numerical">
+            <NumberFormat
+              displayType="text"
+              value={cell.amount}
+              thousandSeparator={true}
+              isNumericString={true}
+            /> 
+          </td>
+        </React.Fragment>
+      )
+    }
   })
   return dataCells;
 }
-
 
 function TotalRows(props) {
   const {
