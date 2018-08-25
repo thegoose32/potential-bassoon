@@ -616,6 +616,7 @@ export class PharmaRevRec extends React.Component {
             versions={versions}
             activeVersionID={activeVersionID}
             programs={programs}
+            displaySelections={displaySelections}
           />
         </div>
       </div>
@@ -1086,7 +1087,6 @@ function ExternalSpend (props) {
             <th>Program</th>
             <TablePeriodHeaders
               startYear={startYear}
-              yearsOut={yearsOut}
               displaySelections={displaySelections}
             />
             <th>Total External Spend</th>
@@ -1175,7 +1175,6 @@ function HeadcountEffort (props) {
             <th>Annual FTE Rate</th>
             <TablePeriodHeaders
               startYear={startYear}
-              yearsOut={yearsOut}
               displaySelections={displaySelections}
             />
             <th>Total Headcount Effort</th>
@@ -1260,7 +1259,6 @@ function HeadcountSpend (props) {
             <th className="numerical"> Annual FTE Rate</th>
             <TablePeriodHeaders
               startYear={startYear}
-              yearsOut={yearsOut}
               displaySelections={displaySelections}
             />
             <th>Total Headcount Spend</th>
@@ -1342,7 +1340,6 @@ function TotalProgramSpend (props) {
             <th>Program</th>
             <TablePeriodHeaders
               startYear={startYear}
-              yearsOut={yearsOut}
               displaySelections={displaySelections}
             />
             <th className="numerical">Total Program Spend</th>
@@ -1519,7 +1516,6 @@ function RevenueRecognizedModel(props) {
             <th>Milestone</th>
             <TablePeriodHeaders
               startYear={startYear}
-              yearsOut={yearsOut}
               displaySelections={displaySelections}
             />
             <th className="numerical">Total Milestone Revenue</th>
@@ -1636,7 +1632,6 @@ function DeferredRevenueRoll (props) {
             <th></th>
             <TablePeriodHeaders
               startYear={startYear}
-              yearsOut={yearsOut}
               displaySelections={displaySelections}
             />
           </tr>
@@ -2218,12 +2213,26 @@ function RevenueProjections(props) {
     yearsOut,
     versions,
     activeVersionID,
-    programs
+    programs,
+    displaySelections
   } = props;
 
   let curVersion = versions[activeVersionID];
   let versionPeriod = curVersion.versionPeriod;
   let headcountSpend = calculateHeadcountSpend(curVersion.headcountEffort, programs);
+  let dataArray = addDataArray(startYear, yearsOut);
+  let forecastDataArray = dataArray.filter(period => period.period > versionPeriod)
+  
+  // Override the type to not sum in calculatedData function below//
+  let forecastDisplaySelections = keepCloning(displaySelections).map((period) => {
+    if (period.year < Math.ceil(versionPeriod) + 1) {
+      period.type = "Quarterly"
+    } else {
+      period.type = "Annual"
+    }
+    return period;
+  })
+
 
   let programCostRow = programs.map((program, programIndex) => {
     let totalProgSpendArray = curVersion.externalSpend[programIndex].map((period, periodIndex) => {
@@ -2251,6 +2260,15 @@ function RevenueProjections(props) {
               thousandSeparator={true}
             />
           </td>
+          <DataRows
+            startYear={startYear}
+            displaySelections={forecastDisplaySelections}
+            dataArray={curVersion.forecastExpenses[programIndex]}
+            yearsOut={yearsOut}
+            programIndex={programIndex}
+            input="Yes"
+            versionPeriod={versionPeriod}
+          />
         </tr>
       </React.Fragment>
     )
@@ -2261,10 +2279,14 @@ function RevenueProjections(props) {
       <h2>Revenue Forecast</h2>
       <table>
         <thead>
-          <tr>
+          <th>
             <td>Program</td>
             <td>Incurred Spend thru {periodNumberToString(versionPeriod)}</td>
-          </tr>
+            <TablePeriodHeaders
+              startYear={versionPeriod}
+              displaySelections={forecastDisplaySelections}
+            />
+          </th>
         </thead>
         <tbody>
           {programCostRow}
@@ -2304,14 +2326,14 @@ function AddItem({addItem, label}) {
   )
 }
 
-function TablePeriodHeaders({startYear, yearsOut, displaySelections}) {
+function TablePeriodHeaders({startYear, displaySelections}) {
   let labels = [];
   displaySelections.forEach((selection, selectionIndex) => {
     if (selection.type === "Annual") {
       labels.push("FY " + (startYear + selectionIndex))
     } else {
-      for (let x = 1; x < 5; x++) {
-        labels.push("Q" + x + " " + (startYear + selectionIndex))
+      for (let qtr = 1; qtr <= 4; qtr++) {
+        labels.push("Q" + qtr + " " + (startYear + selectionIndex))
       }
     }
   })

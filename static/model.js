@@ -23,7 +23,6 @@ export const defaultState = {
       fteRate: 250000
     }
   ],
-  activityLog: [],
   versions: [
     {
       versionName: "Q1 2018 close",
@@ -31,18 +30,9 @@ export const defaultState = {
       versionID: 1,
       priorVersionID: 0,
       displaySelections: [
-        {
-          year: 2018,
-          type: "Quarterly"
-        }, 
-        {
-          year: 2019,
-          type: "Annual"
-        },
-        {
-          year: 2020,
-          type: "Annual"
-        }
+        {year: 2018, type: "Quarterly"}, 
+        {year: 2019, type: "Annual"},
+        {year: 2020, type: "Annual"}
       ],
       revenueMilestones: [
         {
@@ -59,191 +49,87 @@ export const defaultState = {
           {period: 2018.25, amount: 100},
           {period: 2018.5, amount: 100},
           {period: 2018.75, amount: 100},
-          {
-            period: 2019.0,
-            amount: 100
-          },
-          {
-            period: 2019.25,
-            amount: 100
-          },
-          {
-            period: 2019.5,
-            amount: 100
-          },
-          {
-            period: 2019.75,
-            amount: 100
-          },
-          {
-            period: 2020.0,
-            amount: 100
-          },
-          {
-            period: 2020.25,
-            amount: 100
-          },
-          {
-            period: 2020.5,
-            amount: 100
-          },
-          {
-            period: 2020.75,
-            amount: 100
-          }
+          {period: 2019.0, amount: 100},
+          {period: 2019.25, amount: 100},
+          {period: 2019.5, amount: 100},
+          {period: 2019.75, amount: 100},
+          {period: 2020.0, amount: 100},
+          {period: 2020.25, amount: 100},
+          {period: 2020.5, amount: 100},
+          {period: 2020.75, amount: 100}
         ],
         [
-          {
-            period: 2018.0,
-            amount: 100
-          },
-          {
-            period: 2018.25,
-            amount: 100
-          },
-          {
-            period: 2018.5,
-            amount: 100
-          },
-          {
-            period: 2018.75,
-            amount: 100
-          },
-          {
-            period: 2019.0,
-            amount: 100
-          },
-          {
-            period: 2019.25,
-            amount: 100
-          },
-          {
-            period: 2019.5,
-            amount: 100
-          },
-          {
-            period: 2019.75,
-            amount: 100
-          },
-          {
-            period: 2020.0,
-            amount: 100
-          },
-          {
-            period: 2020.25,
-            amount: 100
-          },
-          {
-            period: 2020.5,
-            amount: 100
-          },
-          {
-            period: 2020.75,
-            amount: 100
-          }
+          {period: 2018.0, amount: 100},
+          {period: 2018.25, amount: 100},
+          {period: 2018.5, amount: 100},
+          {period: 2018.75, amount: 100},
+          {period: 2019.0, amount: 100},
+          {period: 2019.25, amount: 100},
+          {period: 2019.5, amount: 100},
+          {period: 2019.75, amount: 100},
+          {period: 2020.0, amount: 100},
+          {period: 2020.25, amount: 100},
+          {period: 2020.5, amount: 100},
+          {period: 2020.75, amount: 100}
         ]
       ],
-     headcountEffort: [
-       [
-          {
-            period: 2018.0,
-            amount: 2
-          },
-          {
-            period: 2018.25,
-            amount: 2
-          },
-          {
-            period: 2018.5,
-            amount: 2
-          },
-          {
-            period: 2018.75,
-            amount: 2
-          },
-          {
-            period: 2019.0,
-            amount: 2
-          },
-          {
-            period: 2019.25,
-            amount: 2
-          },
-          {
-            period: 2019.5,
-            amount: 2
-          },
-          {
-            period: 2019.75,
-            amount: 2
-          },
-          {
-            period: 2020.0,
-            amount: 2
-          },
-          {
-            period: 2020.25,
-            amount: 2
-          },
-          {
-            period: 2020.5,
-            amount: 2
-          },
-          {
-            period: 2020.75,
-            amount: 2
-          }
+      headcountEffort: [
+        [
+          {period: 2018.0, amount: 2},
+          {period: 2018.25, amount: 2},
+          {period: 2018.5, amount: 2},
+          {period: 2018.75, amount: 2},
+          {period: 2019.0, amount: 2},
+          {period: 2019.25, amount: 2},
+          {period: 2019.5, amount: 2},
+          {period: 2019.75, amount: 2},
+          {period: 2020.0, amount: 2},
+          {period: 2020.25, amount: 2},
+          {period: 2020.5, amount: 2},
+          {period: 2020.75, amount: 2}
         ],
         [
-          {
-            period: 2018.0,
-            amount: 2
-          },
-          {
-            period: 2018.25,
-            amount: 2
-          },
-          {
-            period: 2018.5,
-            amount: 2
-          },
-          {
-            period: 2018.75,
-            amount: 2
-          },
-          {
-            period: 2019.0,
-            amount: 2
-          },
-          {
-            period: 2019.25,
-            amount: 2
-          },
-          {
-            period: 2019.5,
-            amount: 2
-          },
-          {
-            period: 2019.75,
-            amount: 2
-          },
-          {
-            period: 2020.0,
-            amount: 2
-          },
-          {
-            period: 2020.25,
-            amount: 2
-          },
-          {
-            period: 2020.5,
-            amount: 2
-          },
-          {
-            period: 2020.75,
-            amount: 2
-          }
-        ]
+          {period: 2018.0, amount: 2},
+          {period: 2018.25, amount: 2},
+          {period: 2018.5, amount: 2},
+          {period: 2018.75, amount: 2},
+          {period: 2019.0, amount: 2},
+          {period: 2019.25, amount: 2},
+          {period: 2019.5, amount: 2},
+          {period: 2019.75, amount: 2},
+          {period: 2020.0, amount: 2},
+          {period: 2020.25, amount: 2},
+          {period: 2020.5, amount: 2},
+          {period: 2020.75, amount: 2}
+        ],
+      ],
+      forecastExpenses: [
+        [
+          {period: 2018.25, amount: 1000100},
+          {period: 2018.5, amount: 1000100},
+          {period: 2018.75, amount: 1000100},
+          {period: 2019.0, amount: 1000100},
+          {period: 2019.25, amount: 1000100},
+          {period: 2019.5, amount: 1000100},
+          {period: 2019.75, amount: 1000100},
+          {period: 2020.0, amount: 1000100},
+          {period: 2020.25, amount: 1000100},
+          {period: 2020.5, amount: 1000100},
+          {period: 2020.75, amount: 1000100}
+        ],
+        [
+          {period: 2018.25, amount: 1000100},
+          {period: 2018.5, amount: 1000100},
+          {period: 2018.75, amount: 1000100},
+          {period: 2019.0, amount: 1000100},
+          {period: 2019.25, amount: 1000100},
+          {period: 2019.5, amount: 1000100},
+          {period: 2019.75, amount: 1000100},
+          {period: 2020.0, amount: 1000100},
+          {period: 2020.25, amount: 1000100},
+          {period: 2020.5, amount: 1000100},
+          {period: 2020.75, amount: 1000100}
+        ],
       ],
     }
   ]
