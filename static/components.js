@@ -73,6 +73,9 @@ export class PharmaRevRec extends React.Component {
     
     //Period Analytics
     this.setComparisonModel = this.setComparisonModel.bind(this);
+
+    //Forecast Revenue
+    this.editFcstExp = this.editFcstExp.bind(this);
   }
 
   setVersionState(versionChanges) {
@@ -236,6 +239,11 @@ export class PharmaRevRec extends React.Component {
         let newHcEffort = newScenario.headcountEffort;
         let newHcEffortArray = addDataArray(startYear, yearsOut);
         newHcEffort.push(newHcEffortArray);
+
+        // add forecast expenses array //
+        let newFcstExp = newScenario.forecastExpenses;
+        let newFcstExpArray = addDataArray(startYear, yearsOut);
+        newFcstExp.push(newFcstExpArray);
         
         return newScenario;
       });
@@ -259,6 +267,10 @@ export class PharmaRevRec extends React.Component {
 
         let headcountEffortArray = newScenario.headcountEffort;
         headcountEffortArray.splice(programIndex, 1);
+
+        let fcstExpArray = newScenario.forecastExpenses;
+        fcstExpArray.splice(programIndex, 1);
+
         return newScenario;
       })
         
@@ -392,6 +404,29 @@ export class PharmaRevRec extends React.Component {
       }
     })
   }
+
+  editFcstExp(displayType, period, newAmount, programIndex) {
+    let quarterAmount = 0;
+    if (displayType === "Annual") {
+      quarterAmount = rounding(newAmount / 4, 100000);
+    } 
+    this.setVersionState((prevState, props) => {
+      let fcstExp = keepCloning(prevState.forecastExpenses);
+      let programFcstExp = fcstExp[programIndex];
+      let newFcstExp = programFcstExp.map((amount) => {
+        if (displayType === "Annual" && Math.floor(amount.period) === period) {
+          amount.amount = quarterAmount;
+        } else if (displayType === "Quarterly" && amount.period === period) {
+          amount.amount = newAmount;
+        }
+        return amount;
+      })
+      return {
+        forecastExpenses: fcstExp 
+      }
+    })
+  }
+
 
   setComparisonModel(newModelIndex) {
     let newComparisonModel = newModelIndex;
@@ -617,6 +652,7 @@ export class PharmaRevRec extends React.Component {
             activeVersionID={activeVersionID}
             programs={programs}
             displaySelections={displaySelections}
+            editFcstExp={this.editFcstExp}
           />
         </div>
       </div>
@@ -2214,18 +2250,18 @@ function RevenueProjections(props) {
     versions,
     activeVersionID,
     programs,
-    displaySelections
+    displaySelections,
+    editFcstExp
   } = props;
 
   let curVersion = versions[activeVersionID];
   let versionPeriod = curVersion.versionPeriod;
+  let nextPeriod = versionPeriod + 0.25;
   let headcountSpend = calculateHeadcountSpend(curVersion.headcountEffort, programs);
-  let dataArray = addDataArray(startYear, yearsOut);
-  let forecastDataArray = dataArray.filter(period => period.period > versionPeriod)
   
   // Override the type to not sum in calculatedData function below//
   let forecastDisplaySelections = keepCloning(displaySelections).map((period) => {
-    if (period.year < Math.ceil(versionPeriod) + 1) {
+    if (Math.floor(versionPeriod) === period.year) {
       period.type = "Quarterly"
     } else {
       period.type = "Annual"
@@ -2247,7 +2283,7 @@ function RevenueProjections(props) {
       };
     });
 
-    let futureProgSpendArray = totalProgSpendArray.filter(period => period.period > versionPeriod);
+    let futureProgSpendArray = curVersion.forecastExpenses[programIndex].filter(period => period.period > versionPeriod);
 
     return(
       <React.Fragment>
@@ -2260,33 +2296,43 @@ function RevenueProjections(props) {
               thousandSeparator={true}
             />
           </td>
-          <DataRows
-            startYear={startYear}
-            displaySelections={forecastDisplaySelections}
-            dataArray={curVersion.forecastExpenses[programIndex]}
-            yearsOut={yearsOut}
+          <RevenueForecastRow
+            dataArray={futureProgSpendArray}
+            editAmount={editFcstExp}
             programIndex={programIndex}
-            input="Yes"
-            versionPeriod={versionPeriod}
+            displaySelections={forecastDisplaySelections}
+            periodStart={nextPeriod}
           />
         </tr>
       </React.Fragment>
     )
   });
 
+  let quarterLabels = periodLabels(nextPeriod, 1 - (nextPeriod % 1));
+  let periodHeaders = forecastDisplaySelections.map((selection, selectionIndex) => {
+    if (selection.type === "Annual") {
+      quarterLabels.push("FY " + (Math.floor(versionPeriod) + selectionIndex));
+    }
+  })
+  let tableHeaders = quarterLabels.map((label) => {
+    return (
+      <React.Fragment>
+        <th className="numerical">{label}</th>
+      </React.Fragment>
+    )
+  })
+
+
   return(
     <section id="RevenueForecast">
       <h2>Revenue Forecast</h2>
       <table>
         <thead>
-          <th>
-            <td>Program</td>
-            <td>Incurred Spend thru {periodNumberToString(versionPeriod)}</td>
-            <TablePeriodHeaders
-              startYear={versionPeriod}
-              displaySelections={forecastDisplaySelections}
-            />
-          </th>
+          <tr>
+            <th>Program</th>
+            <th>Incurred Spend thru {periodNumberToString(versionPeriod)}</th>
+            {tableHeaders}
+          </tr>
         </thead>
         <tbody>
           {programCostRow}
@@ -2294,6 +2340,37 @@ function RevenueProjections(props) {
       </table>
     </section>
   )
+}
+
+function RevenueForecastRow(props) {
+  const {
+    dataArray,
+    editAmount,
+    displaySelections,
+    programIndex,
+    periodStart,
+  } = props;
+
+  let displayType = displayArray(displaySelections);
+  let reducedDisplayType = displayType.filter(period => period.period >= periodStart);
+  let calculatedData = dataToDisplay(reducedDisplayType, dataArray);
+  let revenueForecastRow = calculatedData.map((cell, cellIndex) => {
+    return(
+      <React.Fragment>
+        <td>
+          <NumberFormat
+            value={cell.amount}
+            className="numerical"
+            onValueChange={(values, e) => editAmount(cell.type, cell.period, Number(values.value), programIndex)}
+            thousandSeparator={true}
+            isNumericString={true}
+            decimalSeparator={"."}
+          />
+        </td>
+      </React.Fragment>
+    )
+  })
+  return revenueForecastRow;
 }
 
 function Dropdown({options}) {
