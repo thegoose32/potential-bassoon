@@ -833,7 +833,11 @@ function ScenarioManager(props) {
         priorScenarioName = priorScenario.versionName;
       }
     });
-    if (index === 0) {
+    if (index === 0 || index === activeVersionID) {
+      let priorScenarioLabel = priorScenarioName;
+      if (index === 0) {
+        priorScenarioLabel = "N/A - Initial Model";
+      }
       return (
         <React.Fragment>
           <tr>
@@ -851,7 +855,7 @@ function ScenarioManager(props) {
                 <Dropdown options={periodSelections}/>
               </select>
             </td>
-            <td>N/A - Initial Model</td>
+            <td>{priorScenarioLabel}</td>
             <td></td>
           </tr>
         </React.Fragment>
@@ -1785,7 +1789,7 @@ class PeriodBridgeV2 extends React.Component {
       let totalProgramSpend = totalProgSpend(versions, compVersionIndex, programs, programIndex);
       let percentComplete = incurredProgSpendVariance / totalProgramSpend;
       let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
-      let incurredVarRev = curVerMilestones * percentComplete * progWtdAvg 
+      let incurredVarRev = compVerMilestones * percentComplete * progWtdAvg 
       return(
         <React.Fragment>
           <VarianceRows
@@ -1802,7 +1806,7 @@ class PeriodBridgeV2 extends React.Component {
       let totalProgSpendVariance = totalSpendVariance(versions, activeVersionID, compVersionIndex, programs, programIndex)
       let totalVarPercentComplete = totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, curPeriod, selectedPeriodType);
       let progWtdAvg = programWeightedAvg(versions, compVersionIndex, programs, programIndex);
-      let totalVarRev = curVerMilestones * totalVarPercentComplete * progWtdAvg;
+      let totalVarRev = compVerMilestones * totalVarPercentComplete * progWtdAvg;
       return(
         <React.Fragment>
           <VarianceRows
