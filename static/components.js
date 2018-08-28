@@ -2272,8 +2272,9 @@ function RevenueProjections(props) {
 
   let programCostRow = programs.map((program, programIndex) => {
     let totalProgSpendArray = curVersion.externalSpend[programIndex].map((period, periodIndex) => {
-      period.amount += headcountSpend[programIndex][periodIndex].amount;
-      return period;
+      let newPeriod = keepCloning(period);
+      newPeriod.amount += headcountSpend[programIndex][periodIndex].amount;
+      return newPeriod;
     })
 
     let incurredProgSpend = 0;
