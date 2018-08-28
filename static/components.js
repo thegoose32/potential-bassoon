@@ -488,7 +488,6 @@ export class PharmaRevRec extends React.Component {
     let percentTotal = rounding(arrayTotal(percentComplete), 1000000);
     let dollarCompleteCum = dollarCompleteCummArray(totalSpend)
     let percentCompleteCum = percentCompleteCummArray(dollarCompleteCum, grandTotalSpend);
-    let percentTotalCum = rounding(arrayTotal(percentComplete), 1000000);
 
     let versionNames = versions.map((version) => {
       return version.versionName
@@ -559,7 +558,6 @@ export class PharmaRevRec extends React.Component {
             startYear={startYear}
             yearsOut={yearsOut}
             displaySelections={displaySelections}
-            externalSpend={externalSpend}
             programs={programs}
             editExtSpendAmount={this.editExtSpendAmount}
             versions={this.state.versions}
@@ -569,7 +567,6 @@ export class PharmaRevRec extends React.Component {
             startYear={startYear}
             yearsOut={yearsOut}
             displaySelections={displaySelections}
-            headcountEffort={headcountEffort}
             programs={programs}
             editHeadcountEffort={this.editHeadcountEffort}
             versions={this.state.versions}
@@ -597,15 +594,12 @@ export class PharmaRevRec extends React.Component {
             percentCompleteCum={percentCompleteCum}
             percentComplete={percentComplete}
             percentTotal={percentTotal}
-            percentTotalCum={percentTotalCum}
             totalSpend={totalSpend}
           />
           <RevenueRecognizedModel
             startYear={startYear}
             yearsOut={yearsOut}
             displaySelections={displaySelections}
-            percentComplete={percentComplete}
-            percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
             versionPeriod={versionPeriod}
             versions={versions}
@@ -617,14 +611,12 @@ export class PharmaRevRec extends React.Component {
             startYear={startYear}
             yearsOut={yearsOut}
             displaySelections={displaySelections}
-            percentComplete={percentComplete}
-            percentCompleteCum={percentCompleteCum}
             revenueMilestones={revenueMilestones}
             programs={programs}
             versions={versions}
             activeVersionID={activeVersionID}
           />
-          <PeriodBridgeV2
+          <PeriodBridge
             startYear={startYear}
             yearsOut={yearsOut}
             programs={programs}
@@ -635,14 +627,10 @@ export class PharmaRevRec extends React.Component {
           <ExpenseAnalytics
             startYear={startYear}
             yearsOut={yearsOut}
-            externalSpend={externalSpend}
-            headcountEffort={headcountEffort}
-            headcountSpend={headcountSpend}
             programs={programs}
             totalProgramSpend={totalProgramSpend}
             versions={versions}
             versionNames={versionNames}
-            versionPeriod={versionPeriod}
             activeVersionID={activeVersionID}
           /> 
           <RevenueProjections
@@ -1079,13 +1067,13 @@ function ExternalSpend (props) {
     startYear,
     yearsOut,
     displaySelections,
-    externalSpend,
     programs,
     editExtSpendAmount,
     versions,
     activeVersionID
   } = props;
 
+  let externalSpend = versions[activeVersionID].externalSpend;
   let versionPeriod = versions[activeVersionID].versionPeriod;
   let externalSpendRow = externalSpend.map((programSpend, programIndex) => {
     let totalProgSpend = arrayTotal(programSpend); 
@@ -1102,6 +1090,7 @@ function ExternalSpend (props) {
             programIndex={programIndex}
             input="Yes"
             versionPeriod={versionPeriod}
+            activeVersionID={activeVersionID}
           />
           <td className="numerical">
             <NumberFormat
@@ -1159,13 +1148,13 @@ function HeadcountEffort (props) {
     startYear,
     yearsOut,
     displaySelections,
-    headcountEffort,
     programs,
     editHeadcountEffort,
     versions,
     activeVersionID
   } = props;
 
+  let headcountEffort = versions[activeVersionID].headcountEffort;
   let versionPeriod = versions[activeVersionID].versionPeriod;
   let headcountEffortRow = headcountEffort.map((hcEffort, hcEffortIndex) => {
     let totalHeadcountEffort = arrayTotal(hcEffort); 
@@ -1189,6 +1178,7 @@ function HeadcountEffort (props) {
             programIndex={hcEffortIndex}
             input="Yes"
             versionPeriod={versionPeriod}
+            activeVersionID={activeVersionID}
           />
           <td className="numerical">
             <NumberFormat
@@ -1342,7 +1332,6 @@ function TotalProgramSpend (props) {
     percentCompleteCum,
     percentComplete,
     percentTotal,
-    percentTotalCum,
     totalSpend
   } = props;
 
@@ -1455,8 +1444,6 @@ function RevenueRecognizedModel(props) {
     yearsOut,
     displaySelections,
     revenueMilestones,
-    percentComplete,
-    percentCompleteCum,
     versionPeriod,
     cummPercentDiff,
     versions,
@@ -1615,8 +1602,6 @@ function DeferredRevenueRoll (props) {
     yearsOut,
     displaySelections,
     revenueMilestones,
-    percentComplete,
-    percentCompleteCum,
     versions,
     programs,
     activeVersionID
@@ -1715,7 +1700,7 @@ function DeferredRevenueRoll (props) {
   )
 }
 
-class PeriodBridgeV2 extends React.Component {
+class PeriodBridge extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -2002,18 +1987,19 @@ class ExpenseAnalytics extends React.Component {
 
   render() {
     let programs = this.props.programs;
-    let externalSpend = this.props.externalSpend;
-    let headcountSpend = this.props.headcountSpend;
+    let versions = this.props.versions;
+    let activeVersionID = this.props.activeVersionID;
+    let curVersion = versions[activeVersionID];
+    let versionName = curVersion.versionName; 
+    let externalSpend = curVersion.externalSpend; 
+    let headcountEffort = curVersion.headcountEffort;
+    let headcountSpend = calculateHeadcountSpend(headcountEffort, programs);
     let totalProgramSpend = this.props.totalProgramSpend;
-    let headcountEffort = this.props.headcountEffort;
     let startYear = this.props.startYear;
     let yearsOut = this.props.yearsOut;
-    let versionPeriod = this.props.versionPeriod;
-    let activeVersionID = this.props.activeVersionID;
+    let versionPeriod = curVersion.versionPeriod;
 
     let selectedPeriod = this.state.selectedPeriod;
-    let versions = this.props.versions;
-    let versionName = versions[activeVersionID].versionName; 
     let selectedPeriodType = this.state.selectedPeriodType;
     let periodSelections = periodLabels(startYear, yearsOut)
 
@@ -2315,7 +2301,7 @@ function RevenueProjections(props) {
 
   let quarterLabels = periodLabels(nextPeriod, 1 - (nextPeriod % 1));
   let periodHeaders = forecastDisplaySelections.map((selection, selectionIndex) => {
-    if (selection.type === "Annual") {
+    if (selection.type === "Annual" && selection.year > nextPeriod) {
       quarterLabels.push("FY " + (Math.floor(versionPeriod) + selectionIndex));
     }
   })
@@ -2439,7 +2425,8 @@ function DataRows(props) {
     editAmount,
     input,
     suffix,
-    versionPeriod
+    versionPeriod,
+    activeVersionID
   } = props;
   // suffix added only when necessary //
   // input determines if user can change amount //
@@ -2448,7 +2435,7 @@ function DataRows(props) {
   let displayType = displayArray(displaySelections);
   let calculatedData = dataToDisplay(displayType, dataArray);
   let dataCells = calculatedData.map((cell, cellIndex) => {
-    if (input === "Yes" && cell.period >= versionPeriod) {
+    if (input === "Yes" && (cell.period >= versionPeriod || activeVersionID === 0)) {
       return(
         <React.Fragment>
           <td>
@@ -2497,14 +2484,15 @@ function DataRowsDecimals(props) {
     editAmount,
     input,
     suffix,
-    versionPeriod
+    versionPeriod,
+    activeVersionID
   } = props;
 
   let years = yearsArray(startYear, yearsOut)
   let displayType = displayArray(displaySelections);
   let calculatedData = dataToDisplay(displayType, dataArray);
   let dataCells = calculatedData.map((cell, cellIndex) => {
-    if (cell.period >= versionPeriod) {
+    if (cell.period >= versionPeriod || activeVersionID === 0) {
       return(
         <React.Fragment>
           <td>
