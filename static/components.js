@@ -384,16 +384,12 @@ export class PharmaRevRec extends React.Component {
   }
 
   editHeadcountEffort(displayType, period, newAmount, programIndex) {
-    let quarterAmount = 0;
-    if (displayType === "Annual") {
-      quarterAmount = rounding(newAmount / 4, 100000);
-    } 
     this.setVersionState((prevState, props) => {
       let hcEffort = keepCloning(prevState.headcountEffort);
       let programHcEffort = hcEffort[programIndex];
       let newHcEffort = programHcEffort.map((amount) => {
         if (displayType === "Annual" && Math.floor(amount.period) === period) {
-          amount.amount = quarterAmount;
+          amount.amount = newAmount;
         } else if (displayType === "Quarterly" && amount.period === period) {
           amount.amount = newAmount;
         }
@@ -1169,16 +1165,15 @@ function HeadcountEffort (props) {
               thousandSeparator={true}
             />
           </td>
-          <DataRowsDecimals
+          <HeadcountEffortRow
             startYear={startYear}
             displaySelections={displaySelections}
             dataArray={hcEffort}
             yearsOut={yearsOut}
-            editAmount={editHeadcountEffort}
             programIndex={hcEffortIndex}
-            input="Yes"
             versionPeriod={versionPeriod}
             activeVersionID={activeVersionID}
+            editHeadcountEffort={editHeadcountEffort}
           />
           <td className="numerical">
             <NumberFormat
@@ -1232,6 +1227,66 @@ function HeadcountEffort (props) {
     </section>
   )
 }
+
+function HeadcountEffortRow(props) {
+  const {
+    startYear,
+    displaySelections,
+    dataArray,
+    yearsOut,
+    programIndex,
+    versionPeriod,
+    editHeadcountEffort,
+    activeVersionID
+  } = props;
+ 
+  let years = yearsArray(startYear, yearsOut)
+  let displayType = displayArray(displaySelections);
+  let calculatedData =  displayType.map((displayPeriod) => {
+    dataArray.forEach((amount, amountIndex) => {
+      if (displayPeriod.period === amount.period && displayPeriod.type === "Quarterly") {
+        displayPeriod.amount += amount.amount;
+      } else if (displayPeriod.period <= amount.period && amount.period < (displayPeriod.period + 1) && displayPeriod.type === "Annual") {
+        displayPeriod.amount += (amount.amount / 4);
+      }
+    })
+    return displayPeriod;
+  })
+  let dataCells = calculatedData.map((cell, cellIndex) => {
+    if (cell.period >= versionPeriod || activeVersionID === 0) {
+      return(
+        <React.Fragment>
+          <td>
+            <NumericInput
+              value={cell.amount}
+              className="numerical"
+              onChange={(e) => editHeadcountEffort(cell.type, cell.period, Number(e), programIndex)}
+              precision={5}
+              min={0}
+              inputmode="numeric"
+            snap/>
+          </td>
+        </React.Fragment>
+      )
+    } else {
+      return(
+        <React.Fragment>
+          <td className="numerical">
+            <NumberFormat
+              displayType="text"
+              value={cell.amount}
+              thousandSeparator={true}
+              isNumericString={true}
+            /> 
+          </td>
+        </React.Fragment>
+      )
+    }
+  })
+  return dataCells;
+}
+
+
 
 function HeadcountSpend (props) {
   const {
@@ -2466,56 +2521,6 @@ function DataRows(props) {
               value={displayAmount}
               thousandSeparator={true}
               suffix={suffix}
-            /> 
-          </td>
-        </React.Fragment>
-      )
-    }
-  })
-  return dataCells;
-}
-function DataRowsDecimals(props) {
-  const {
-    startYear,
-    displaySelections,
-    dataArray,
-    yearsOut,
-    programIndex,
-    editAmount,
-    input,
-    suffix,
-    versionPeriod,
-    activeVersionID
-  } = props;
-
-  let years = yearsArray(startYear, yearsOut)
-  let displayType = displayArray(displaySelections);
-  let calculatedData = dataToDisplay(displayType, dataArray);
-  let dataCells = calculatedData.map((cell, cellIndex) => {
-    if (cell.period >= versionPeriod || activeVersionID === 0) {
-      return(
-        <React.Fragment>
-          <td>
-            <NumericInput
-              value={cell.amount}
-              className="numerical"
-              onChange={(e) => editAmount(cell.type, cell.period, Number(e), programIndex)}
-              precision={5}
-              min={0}
-              inputmode="numeric"
-            snap/>
-          </td>
-        </React.Fragment>
-      )
-    } else {
-      return(
-        <React.Fragment>
-          <td className="numerical">
-            <NumberFormat
-              displayType="text"
-              value={cell.amount}
-              thousandSeparator={true}
-              isNumericString={true}
             /> 
           </td>
         </React.Fragment>
