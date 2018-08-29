@@ -299,8 +299,9 @@ export function rounding(input, decimals) {
 export function calculateHeadcountSpend(headcountEffort, programs) {
   let headcountSpend = headcountEffort.map((progEffort, progIndex) => {
     let copiedProgEffort = keepCloning(progEffort);
+    let qtrFTERate = programs[progIndex].fteRate / 4;
     copiedProgEffort.forEach((copiedHcEffort) => { 
-      copiedHcEffort.amount = rounding(copiedHcEffort.amount * programs[progIndex].fteRate, 100);
+      copiedHcEffort.amount = rounding(copiedHcEffort.amount * qtrFTERate, 100);
     })
     return copiedProgEffort
   })
