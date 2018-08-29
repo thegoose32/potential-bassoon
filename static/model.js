@@ -387,8 +387,10 @@ export function priorPeriodTrueup(programs, milestone, currentPeriod, startYear,
     let priorPrdCurrVerCummPct = periodCummPercentComp(currentVersion.headcountEffort, currentVersion.externalSpend, programs, priorPeriod);
     let priorPrdPriorVerCummPct = periodCummPercentComp(priorVersion.headcountEffort, priorVersion.externalSpend, programs, priorPeriod);
     let priorRevArray = blankArray.map((period) => {
-      if (period.period === currentPeriod && milestone.dateEarned <= period.period) {
+      if (period.period === currentPeriod && milestone.dateEarned < period.period) {
         period.amount = (priorPrdCurrVerCummPct - priorPrdPriorVerCummPct) * milestone.amount;
+      } else if (period.period === currentPeriod && milestone.dateEarned === period.period) {
+        period.amount = priorPrdCurrVerCummPct * milestone.amount;
       } else {
         period.amount = 0
       }
