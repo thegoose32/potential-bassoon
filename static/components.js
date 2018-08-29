@@ -311,7 +311,6 @@ export class PharmaRevRec extends React.Component {
         id: newId,
         name: "New Milestone",
         dateEarned: period,
-        datePaid: period,
         amount: 10000
       };
       revMilestones.push(newMilestone);
@@ -344,7 +343,8 @@ export class PharmaRevRec extends React.Component {
   editMilestoneEarned(milestoneIndex, newDate) {
     this.setVersionState((prevState, props) => {
       let revMilestones = prevState.revenueMilestones.slice();
-      revMilestones[milestoneIndex].dateEarned = periodStringToNumber(newDate);
+      let newDateNumber =  periodStringToNumber(newDate);
+      revMilestones[milestoneIndex].dateEarned = newDateNumber;
       return {
         revenueMilestones: revMilestones
       }
@@ -1020,7 +1020,7 @@ function RevenueMilestones(props) {
           </td>
           <td>
             <select
-              value={milestone.dateEarnedLabel}
+              value={dateEarnedLabel}
               onChange={(e) => editMilestoneEarned(milestoneIndex, e.target.value)}
             >
               <Dropdown options={periodSelections}/>
