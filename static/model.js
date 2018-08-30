@@ -429,10 +429,10 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, versions, 
   let currentVersion = versions[activeVersionID];
   let percentCompleteCumm = percentCompleteCummArrayFromData(currentVersion.headcountEffort, currentVersion.externalSpend, programs)
   let initialModelRevenueArray = calculateCurrentPeriodRev(startYear, yearsOut, milestone, percentCompleteCumm)
-  let adjModelRevenueArray = initialModelRevenueArray.map((period) => {
+  let adjModelRevenueArray = initialModelRevenueArray.map((period, periodIndex) => {
     versions.forEach((version) => {
       let priorVersionIndex = calculatePriorVersionIndex(versions, version.priorVersionID);
-      if (version.versionPeriod === period.period && priorVersionIndex === "Initial Model" && currentVersion.versionPeriod >= version.versionPeriod) {
+      if (version.versionPeriod === period.period && priorVersionIndex === "Initial Model" && currentVersion.versionPeriod >= version.versionPeriod && periodIndex === 0) {
         let curVerCummPercentCompl = periodCummPercentComp(version.headcountEffort, version.externalSpend, programs, version.versionPeriod);
         let milestoneAmount = milestonePeriodRevenue(milestone, version.versionPeriod, curVerCummPercentCompl, null, period.period)
         return period.amount = milestoneAmount
