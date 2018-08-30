@@ -325,7 +325,7 @@ export function dollarCompleteCummArray(totalSpend) {
     let cummulativeTotal = arrayTotal(totalSpendThruPeriod);
     let periodCopy = keepCloning(period);
     periodCopy.amount = cummulativeTotal;
-    return rounding(periodCopy, 100);
+    return periodCopy;
   });
   return dollarCompleteCummArray;
 }
