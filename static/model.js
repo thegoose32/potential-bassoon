@@ -325,7 +325,7 @@ export function dollarCompleteCummArray(totalSpend) {
     let cummulativeTotal = arrayTotal(totalSpendThruPeriod);
     let periodCopy = keepCloning(period);
     periodCopy.amount = cummulativeTotal;
-    return periodCopy;
+    return rounding(periodCopy, 100);
   });
   return dollarCompleteCummArray;
 }
@@ -436,7 +436,7 @@ export function calculateModelRevenue(startYear, yearsOut, milestone, versions, 
         let curVerCummPercentCompl = periodCummPercentComp(version.headcountEffort, version.externalSpend, programs, version.versionPeriod);
         let milestoneAmount = milestonePeriodRevenue(milestone, version.versionPeriod, curVerCummPercentCompl, null, period.period)
         return period.amount = milestoneAmount
-      } else if (version.versionPeriod === period.period && priorVersionIndex !== "Initial Model" && currentVersion.versionPeriod >= version.versionPeriod) {
+      } else if (version.versionPeriod >= period.period && priorVersionIndex !== "Initial Model" && currentVersion.versionPeriod >= version.versionPeriod) {
         let curVerCummPercentCompl = periodCummPercentComp(version.headcountEffort, version.externalSpend, programs, version.versionPeriod);
         let priorVersion = versions[priorVersionIndex];
         let priorVerCummPercentCompl = periodCummPercentComp(priorVersion.headcountEffort, priorVersion.externalSpend, programs, priorVersion.versionPeriod)
