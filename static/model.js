@@ -586,7 +586,7 @@ export function calculateCurrentPeriodRev(milestone, blankRevArray, versions, pr
     if (milestone.dateEarned <= period.period) {
       milestoneAmount += milestone.amount;
     };
-    if (periodIndex === 0 || milestone.dateEarned === period.period) {
+    if (periodIndex === 0 || (milestone.dateEarned > periodVersion.versionPeriod && milestone.dateEarned === period.period)) {
       newPeriod.amount = milestoneAmount * percentCompleteCumm[periodIndex].amount;
     } else {
       newPeriod.amount = milestoneAmount * (percentCompleteCumm[periodIndex].amount - percentCompleteCumm[periodIndex - 1].amount)
@@ -612,7 +612,7 @@ export function calculatePriorPrdTrueup(milestone, revArray, versions, programs,
         percentCompl = percentCompleteCumm[prevVerPeriodIndex].amount;
       };
       let milestoneAmount = 0;
-      if (milestone.dateEarned <= versionPeriod) {
+      if (milestone.dateEarned <= newPeriod.period) {
         milestoneAmount += milestone.amount;
       };
       newPeriod.amount = (milestoneAmount * percentCompl) - revToDate;
