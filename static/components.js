@@ -1521,8 +1521,7 @@ function RevenueRecognizedModel(props) {
     activeVersionID
   } = props;
   
-  let adjRevMilestones = revenueMilestones.filter(milestone => milestone.dateEarned <= versions[activeVersionID].versionPeriod);
-  let milestoneRows = adjRevMilestones.map((milestone, milestoneIndex) => {
+  let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
     let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
     let currentPeriodRev = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs); 
     let priorPeriodRevTrueup = calculatePriorPrdTrueup(milestone, currentPeriodRev, versions, programs, activeVersionID);
