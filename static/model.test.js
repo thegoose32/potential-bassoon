@@ -2225,7 +2225,102 @@ test("incurredTotalSpend", () => {
   expect(actual).toEqual(expected);
 })
 
+test("revenueVersionIndexArray", () => {
+  const revenueBridgeModel = bridgeModel();
+  const startYear = revenueBridgeModel.startYear;
+  const yearsOut = 1;
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = revenueBridgeModel.activeVersionID;
+  const actual = model.revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
 
+test("revenueVersionIndexArray - lower activeVerionID", () => {
+  const revenueBridgeModel = bridgeModel();
+  const startYear = revenueBridgeModel.startYear;
+  const yearsOut = 1;
+  const versions = revenueBridgeModel.versions;
+  const activeVersionID = 0;
+  const actual = model.revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 0, amount: 0},
+    {period: 2018.5, revVerIndex: 0, amount: 0},
+    {period: 2018.75, revVerIndex: 0, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculateCurrentPeriodRevV2", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = versions[1].revenueMilestones[0];
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const actual = model.calculateCurrentPeriodRevV2(milestone, revArray, versions, programs);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 250},
+    {period: 2018.25, revVerIndex: 1, amount: 200},
+    {period: 2018.5, revVerIndex: 1, amount: 400},
+    {period: 2018.75, revVerIndex: 1, amount: 275},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculatePriorPrdTrueup", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = versions[1].revenueMilestones[0];
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const activeVersionID = revenueBridgeModel.activeVersionID;
+  const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 125},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculatePriorPrdTrueup - first version of model", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = versions[1].revenueMilestones[0];
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const activeVersionID = 0;
+  const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
 
 function fixtureSimpleModel () {
   const simpleModelFixture = {
@@ -2233,7 +2328,7 @@ function fixtureSimpleModel () {
     modelName: "Example Collaboration 606 Model",
     startYear: 2018,
     endYear: 2018,
-    activeVersionID: 2,
+    activeVersionID: 1,
     programs: [
       {
         name: "Program A", 

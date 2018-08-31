@@ -12,11 +12,11 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   arrayTotal, calculatePeriodTotal, keepCloning, rounding, incurredSpendVariance, 
   calculateHeadcountSpend, percentCompleteArray, dollarCompleteCummArray,
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
-  priorPeriodTrueup, calculateCurrentPeriodRev, totalMilestones, progWtdAvgVariance, 
-  setYearsOut, calculatePriorVersionIndex, calculateModelRevenue, periodStringToNumber, 
-  percentCompleteCummArrayFromData, periodNumberToString, currentPeriodRevenue,
+  priorPeriodTrueup, totalMilestones, progWtdAvgVariance, 
+  setYearsOut, calculatePriorVersionIndex, periodStringToNumber, 
+  percentCompleteCummArrayFromData, periodNumberToString, 
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
-  totalProgSpend, incurredTotalSpend
+  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue,
 
 } from './model'
 
@@ -1508,9 +1508,9 @@ function RevenueRecognizedModel(props) {
   } = props;
   
   let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
-    let totalMilestoneRevenue = calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID);
-    let priorPeriodRevTrueup = priorPeriodTrueup(programs, milestone, versionPeriod, startYear, yearsOut, versions, activeVersionID);
-    let currentPeriodRev = currentPeriodRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID, versionPeriod); 
+    let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+    let currentPeriodRev = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs); 
+    let priorPeriodRevTrueup = calculatePriorPrdTrueup(milestone, currentPeriodRev, versions, programs, activeVersionID);
     let totalCurrentPeriodRev = arrayTotal(currentPeriodRev);
     let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
 
@@ -1578,15 +1578,11 @@ function RevenueRecognizedModel(props) {
     }
   })
 
-  let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID)
-  })
+  let totalRevenueArray = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs);
+  let grandTotalRevenue = arrayTotal(totalRevenueArray);
 
-  let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
-  let grandTotalRevenue = arrayTotal(totalRevenueEarned);
-
-  let currentPeriodRev = periodAmountCalc(totalRevenueEarned, versionPeriod, "QTD") 
-  let currentYTDPeriodRev = periodAmountCalc(totalRevenueEarned, versionPeriod, "YTD")
+  let currentPeriodRev = periodAmountCalc(totalRevenueArray, versionPeriod, "QTD") 
+  let currentYTDPeriodRev = periodAmountCalc(totalRevenueArray, versionPeriod, "YTD")
   let versionPeriodLabel = periodNumberToString(versionPeriod);
 
   return (
@@ -1609,7 +1605,7 @@ function RevenueRecognizedModel(props) {
             <td>Total Revenue</td>
             <TotalRows
               displaySelections={displaySelections}
-              dataArray={totalRevenueEarned}
+              dataArray={totalRevenueArray}
             />
             <td className="numerical">
               <NumberFormat
@@ -1663,11 +1659,7 @@ function DeferredRevenueRoll (props) {
   } = props;
 
   let versionPeriod = versions[activeVersionID].versionPeriod;
-  let milestoneRevEarned = revenueMilestones.map((milestone) => {
-    return calculateModelRevenue(startYear, yearsOut, milestone, versions, programs, activeVersionID)
-  })
-
-  let totalRevenueEarned = calculatePeriodTotal(milestoneRevEarned);
+  let totalRevenueEarned = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs); 
 
   let milestoneReceived = addDataArray(startYear, yearsOut);
   milestoneReceived.map((period, periodIndex) => {
@@ -1899,7 +1891,9 @@ class PeriodBridge extends React.Component {
     let priorPrdTrueUp = 0;
     if (selectedPeriodType === "QTD" || Math.floor(curPeriod) !== Math.floor(selectedCompPeriod)) {
       curVersion.revenueMilestones.forEach((milestone) => {
-        let priorPrdTrueUpArray = priorPeriodTrueup(programs, milestone, curPeriod, startYear, yearsOut, versions, activeVersionID);
+        let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+        let currentPeriodRev = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs); 
+        let priorPrdTrueUpArray = calculatePriorPrdTrueup(milestone, currentPeriodRev, versions, programs, activeVersionID);
         priorPrdTrueUp += periodAmountCalc(priorPrdTrueUpArray, curPeriod, selectedPeriodType);
       })
     }
