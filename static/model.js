@@ -619,8 +619,8 @@ export function calculatePriorPrdTrueup(milestone, revArray, versions, programs,
 export function calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs) {
   let blankRevArray = addDataArray(startYear, yearsOut);
   let adjRevMilestones = revenueMilestones.filter(milestone => milestone.dateEarned <= versions[activeVersionID].versionPeriod);
-  let revVerIndexArray = adjRevMilestones(startYear, yearsOut, versions, activeVersionID);
-  revenueMilestones.forEach((milestone) => {
+  let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+  adjRevMilestones.forEach((milestone) => {
     let currentPeriodRevArray = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs);
     currentPeriodRevArray.forEach((period, periodIndex) => {
       blankRevArray[periodIndex].amount += period.amount;

@@ -1037,6 +1037,9 @@ function RevenueMilestones(props) {
     )
   })
 
+  let totalMilestones = 0;
+  revenueMilestones.forEach((milestone) => {totalMilestones += milestone.amount})
+
   return (
     <section id="Revenue-Milestones">
       <h2>Revenue Milestones</h2>
@@ -1051,6 +1054,17 @@ function RevenueMilestones(props) {
         </thead>
         <tbody>
           {revenueRows}
+          <tr>
+            <td>Total Milestones</td>
+            <td></td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={totalMilestones}
+                thousandSeparator={true}
+              />
+            </td>
+          </tr>
         </tbody>
       </table>
       <AddItem addItem={addMilestone} label="Milestone"/>
