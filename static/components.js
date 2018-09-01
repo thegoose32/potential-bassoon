@@ -14,7 +14,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   percentCompleteCummArray, periodType, periodAmountCalc, calculateTotalSpendArrays,
   priorPeriodTrueup, totalMilestones, progWtdAvgVariance, 
   setYearsOut, calculatePriorVersionIndex, periodStringToNumber, 
-  percentCompleteCummArrayFromData, periodNumberToString, 
+  percentCompleteCummArrayFromData, periodNumberToString, milestonePeriodCheck, 
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
   totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue,
 

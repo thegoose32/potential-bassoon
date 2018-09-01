@@ -582,14 +582,11 @@ export function calculateCurrentPeriodRev(milestone, blankRevArray, versions, pr
     let newPeriod = keepCloning(period);
     let periodVersion = versions[newPeriod.revVerIndex];
     let percentCompleteCumm = percentCompleteCummArrayFromData(periodVersion.headcountEffort, periodVersion.externalSpend, programs)
-    let milestoneAmount = 0;
-    if (milestone.dateEarned <= period.period) {
-      milestoneAmount += milestone.amount;
-    };
-    if (periodIndex === 0 || (milestone.dateEarned > periodVersion.versionPeriod && milestone.dateEarned === period.period)) {
-      newPeriod.amount = milestoneAmount * percentCompleteCumm[periodIndex].amount;
-    } else {
-      newPeriod.amount = milestoneAmount * (percentCompleteCumm[periodIndex].amount - percentCompleteCumm[periodIndex - 1].amount)
+    let milestoneAmount = milestonePeriodCheck(milestone, period);
+    if (periodIndex === 0) {
+      newPeriod.amount += milestoneAmount * percentCompleteCumm[periodIndex].amount;
+    } else if (milestone.dateEarned <= period.period) {
+      newPeriod.amount += milestoneAmount * (percentCompleteCumm[periodIndex].amount - percentCompleteCumm[periodIndex - 1].amount)
     }
     return newPeriod;
   });
@@ -599,27 +596,24 @@ export function calculateCurrentPeriodRev(milestone, blankRevArray, versions, pr
 export function calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID) {
   let curVersion = versions[activeVersionID];
   let versionPeriod = curVersion.versionPeriod;
-  let prevPeriod = versionPeriod - 0.25;
-  let prevVerPeriodIndex = revArray.findIndex(period => period.period === prevPeriod);
-  let revToDateArray = revArray.filter(period => period.period < versionPeriod);
-  let revToDate = arrayTotal(revToDateArray);
   let percentCompleteCumm = percentCompleteCummArrayFromData(curVersion.headcountEffort, curVersion.externalSpend, programs)
   let priorPrdTrueUpArray = revArray.map((period, periodIndex) => {
     let newPeriod = keepCloning(period);
-    if (newPeriod.period === versionPeriod) {
-      let percentCompl = 0;
-      if (prevVerPeriodIndex >= 0) {
-        percentCompl = percentCompleteCumm[prevVerPeriodIndex].amount;
+    if (milestone.dateEarned === period.period || versionPeriod === period.period) {
+      let prevIndex = 0;
+      let percentCompl = 0; 
+      if (periodIndex - 1 !== -1) {
+        percentCompl = percentCompleteCumm[periodIndex - 1].amount;
       };
-      let milestoneAmount = 0;
-      if (milestone.dateEarned <= newPeriod.period) {
-        milestoneAmount += milestone.amount;
-      };
+      let milestoneAmount = milestonePeriodCheck(milestone, period);
+      let revToDateArray = revArray.filter(revArrayPeriod => revArrayPeriod.period <= period.period - 0.25);
+      let revToDate = arrayTotal(revToDateArray);
       newPeriod.amount = (milestoneAmount * percentCompl) - revToDate;
+      return newPeriod;
     } else {
       newPeriod.amount = 0;
+      return newPeriod; 
     }
-    return newPeriod;
   })
   return priorPrdTrueUpArray;
 }
@@ -640,4 +634,10 @@ export function calculateTotalRevenue(startYear, yearsOut, versions, activeVersi
   return blankRevArray;
 }
 
-
+export function milestonePeriodCheck(milestone, period) {
+  let milestoneAmount = 0;
+  if (milestone.dateEarned <= period.period) {
+    milestoneAmount += milestone.amount;
+  };
+  return milestoneAmount;
+}

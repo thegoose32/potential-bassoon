@@ -1756,10 +1756,121 @@ test("revenueVersionIndexArray - lower activeVerionID", () => {
   expect(actual).toEqual(expected);
 })
 
-test("calculateCurrentPeriodRev", () => {
+test("calculateCurrentPeriodRev - scenario 1", () => {
   const revenueBridgeModel = bridgeModel();
   const versions = revenueBridgeModel.versions;
-  const milestone = versions[1].revenueMilestones[0];
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.5,
+    amount: 1000
+  }
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 0, amount: 0},
+    {period: 2018.5, revVerIndex: 0, amount: 0},
+    {period: 2018.75, revVerIndex: 0, amount: 0},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 0, amount: 0},
+    {period: 2018.5, revVerIndex: 0, amount: 250},
+    {period: 2018.75, revVerIndex: 0, amount: 250},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculatePriorPrdTrueup - scenario 1", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.5,
+    amount: 1000
+  }
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 0, amount: 0},
+    {period: 2018.5, revVerIndex: 0, amount: 250},
+    {period: 2018.75, revVerIndex: 0, amount: 250},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const activeVersionID = 0;
+  const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 0, amount: 0},
+    {period: 2018.5, revVerIndex: 0, amount: 500},
+    {period: 2018.75, revVerIndex: 0, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculateCurrentPeriodRev - scenario 2", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.5,
+    amount: 1000
+  }
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 0},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 400},
+    {period: 2018.75, revVerIndex: 1, amount: 275},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculatePriorPrdTrueup - scenario 2", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.5,
+    amount: 1000
+  }
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 400},
+    {period: 2018.75, revVerIndex: 1, amount: 275},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const activeVersionID = 1;
+  const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 1, amount: 325},
+    {period: 2018.75, revVerIndex: 1, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculateCurrentPeriodRev - scenario 3", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.0,
+    amount: 1000
+  }
   const revArray = [
     {period: 2018.0, revVerIndex: 0, amount: 0},
     {period: 2018.25, revVerIndex: 1, amount: 0},
@@ -1770,54 +1881,63 @@ test("calculateCurrentPeriodRev", () => {
   const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
   const expected = [
     {period: 2018.0, revVerIndex: 0, amount: 250},
-    {period: 2018.25, revVerIndex: 1, amount: 200},
+    {period: 2018.25, revVerIndex: 1, amount: 175},
     {period: 2018.5, revVerIndex: 1, amount: 400},
     {period: 2018.75, revVerIndex: 1, amount: 275},
   ];
   expect(actual).toEqual(expected);
 })
 
-test("calculatePriorPrdTrueup", () => {
+test("calculatePriorPrdTrueup - scenario 3", () => {
   const revenueBridgeModel = bridgeModel();
   const versions = revenueBridgeModel.versions;
-  const milestone = versions[1].revenueMilestones[0];
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.0,
+    amount: 1000
+  }
   const revArray = [
-    {period: 2018.0, revVerIndex: 0, amount: 0},
-    {period: 2018.25, revVerIndex: 1, amount: 0},
-    {period: 2018.5, revVerIndex: 1, amount: 0},
-    {period: 2018.75, revVerIndex: 1, amount: 0},
+    {period: 2018.0, revVerIndex: 0, amount: 250},
+    {period: 2018.25, revVerIndex: 1, amount: 175},
+    {period: 2018.5, revVerIndex: 1, amount: 400},
+    {period: 2018.75, revVerIndex: 1, amount: 275},
   ];
   const programs = revenueBridgeModel.programs;
-  const activeVersionID = revenueBridgeModel.activeVersionID;
+  const activeVersionID = 1;
   const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
   const expected = [
     {period: 2018.0, revVerIndex: 0, amount: 0},
-    {period: 2018.25, revVerIndex: 1, amount: 125},
+    {period: 2018.25, revVerIndex: 1, amount: -100},
     {period: 2018.5, revVerIndex: 1, amount: 0},
     {period: 2018.75, revVerIndex: 1, amount: 0},
   ];
   expect(actual).toEqual(expected);
 })
 
-test("calculatePriorPrdTrueup - first version of model", () => {
-  const revenueBridgeModel = bridgeModel();
-  const versions = revenueBridgeModel.versions;
-  const milestone = versions[1].revenueMilestones[0];
-  const revArray = [
-    {period: 2018.0, revVerIndex: 0, amount: 0},
-    {period: 2018.25, revVerIndex: 1, amount: 0},
-    {period: 2018.5, revVerIndex: 1, amount: 0},
-    {period: 2018.75, revVerIndex: 1, amount: 0},
-  ];
-  const programs = revenueBridgeModel.programs;
-  const activeVersionID = 0;
-  const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
-  const expected = [
-    {period: 2018.0, revVerIndex: 0, amount: 0},
-    {period: 2018.25, revVerIndex: 1, amount: 0},
-    {period: 2018.5, revVerIndex: 1, amount: 0},
-    {period: 2018.75, revVerIndex: 1, amount: 0},
-  ];
+test("milestonePeriodCheck - milestone earned period 3, current period 0", () => {
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.5,
+    amount: 1000
+  }
+  const period = {period: 2018.0, revVerIndex: 0, amount: 0};
+  const actual = model.milestonePeriodCheck(milestone, period);
+  const expected = 0;
+  expect(actual).toEqual(expected);
+})
+
+test("milestonePeriodCheck - milestone earned period 3, current period 3", () => {
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.5,
+    amount: 1000
+  }
+  const period = {period: 2018.5, revVerIndex: 0, amount: 0};
+  const actual = model.milestonePeriodCheck(milestone, period);
+  const expected = 1000;
   expect(actual).toEqual(expected);
 })
 
@@ -2010,8 +2130,8 @@ function bridgeModel() {
             {period: 2018.75, amount: 0}
           ],
           [
-            {period: 2018, amount: 25},
-            {period: 2018.25, amount: 100},
+            {period: 2018, amount: 50},
+            {period: 2018.25, amount: 75},
             {period: 2018.5, amount: 300},
             {period: 2018.75, amount: 275}
           ]
