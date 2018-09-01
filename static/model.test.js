@@ -1915,6 +1915,59 @@ test("calculatePriorPrdTrueup - scenario 3", () => {
   expect(actual).toEqual(expected);
 })
 
+test("calculateCurrentPeriodRev - scenario 4", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.0,
+    amount: 1000
+  }
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: 0},
+    {period: 2018.5, revVerIndex: 2, amount: 0},
+    {period: 2018.75, revVerIndex: 2, amount: 0},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 250},
+    {period: 2018.25, revVerIndex: 1, amount: 175},
+    {period: 2018.5, revVerIndex: 2, amount: 375},
+    {period: 2018.75, revVerIndex: 2, amount: 218.75},
+  ];
+  expect(actual).toEqual(expected);
+})
+
+test("calculatePriorPrdTrueup - scenario 4", () => {
+  const revenueBridgeModel = bridgeModel();
+  const versions = revenueBridgeModel.versions;
+  const milestone = {
+    id: 1000,
+    name: "Upfront Payment",
+    dateEarned: 2018.0,
+    amount: 1000
+  }
+  const revArray = [
+    {period: 2018.0, revVerIndex: 0, amount: 250},
+    {period: 2018.25, revVerIndex: 1, amount: 175},
+    {period: 2018.5, revVerIndex: 2, amount: 375},
+    {period: 2018.75, revVerIndex: 2, amount: 218.75},
+  ];
+  const programs = revenueBridgeModel.programs;
+  const activeVersionID = 2;
+  const actual = model.calculatePriorPrdTrueup(milestone, revArray, versions, programs, activeVersionID);
+  const expected = [
+    {period: 2018.0, revVerIndex: 0, amount: 0},
+    {period: 2018.25, revVerIndex: 1, amount: -100},
+    {period: 2018.5, revVerIndex: 2, amount: 81.25},
+    {period: 2018.75, revVerIndex: 2, amount: 0},
+  ];
+  expect(actual).toEqual(expected);
+})
+
 test("milestonePeriodCheck - milestone earned period 3, current period 0", () => {
   const milestone = {
     id: 1000,
@@ -2149,9 +2202,57 @@ function bridgeModel() {
             {period: 2018.5, amount: 0},
             {period: 2018.75, amount: 0}
           ]
+        ],
+      },
+      {
+        versionName: "Q3 2018 close",
+        versionPeriod: 2018.5,
+        versionID: 3,
+        priorVersionID: 2,
+        displaySelections: [
+          {
+            year: 2018,
+            type: "Annual"
+          } 
+        ],
+        revenueMilestones: [
+          {
+            id: 1000,
+            name: "Upfront Payment",
+            dateEarned: 2018, 
+            amount: 1000
+          }
+        ],
+        externalSpend: [
+          [
+            {period: 2018, amount: 100},
+            {period: 2018.25, amount: 100},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ],
+          [
+            {period: 2018, amount: 50},
+            {period: 2018.25, amount: 75},
+            {period: 2018.5, amount: 300},
+            {period: 2018.75, amount: 175}
+          ]
+        ],
+        headcountEffort: [
+          [
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ],
+          [
+            {period: 2018, amount: 0},
+            {period: 2018.25, amount: 0},
+            {period: 2018.5, amount: 0},
+            {period: 2018.75, amount: 0}
+          ]
         ]
       }
-    ]  
+    ]
   }
   return bridgeModel;
 }
