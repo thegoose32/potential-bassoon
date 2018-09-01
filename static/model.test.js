@@ -1233,22 +1233,10 @@ test("calculateTotalSpendArray test",() => {
       {period: 2021.25, amount: 400},
       {period: 2021.5, amount: 400},
       {period: 2021.75, amount: 400},
-      {
-        period: 2022,
-        amount: 100
-      },
-      {
-        period: 2022.25,
-        amount: 100
-      },
-      {
-        period: 2022.5,
-        amount: 100
-      },
-      {
-        period: 2022.75,
-        amount: 100
-      }
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
     ],
     [ 
       {period: 2020, amount: 200},
@@ -1259,124 +1247,40 @@ test("calculateTotalSpendArray test",() => {
       {period: 2021.25, amount: 400},
       {period: 2021.5, amount: 400},
       {period: 2021.75, amount: 400},
-      {
-        period: 2022,
-        amount: 100
-      },
-      {
-        period: 2022.25,
-        amount: 100
-      },
-      {
-        period: 2022.5,
-        amount: 100
-      },
-      {
-        period: 2022.75,
-        amount: 100
-      }
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
     ]
   ];
   const headcountSpend = [ 
     [ 
-      {
-        period: 2020,
-        amount: 200
-      },
-      {
-        period: 2020.25,
-        amount: 200
-      },
-      {
-        period: 2020.5,
-        amount: 200
-      },
-      {
-        period: 2020.75,
-        amount: 200
-      },
-      {
-        period: 2021,
-        amount: 400
-      },
-      {
-        period: 2021.25,
-        amount: 400
-      },
-      {
-        period: 2021.5,
-        amount: 400
-      },
-      {
-        period: 2021.75,
-        amount: 400
-      },
-      {
-        period: 2022,
-        amount: 100
-      },
-      {
-        period: 2022.25,
-        amount: 100
-      },
-      {
-        period: 2022.5,
-        amount: 100
-      },
-      {
-        period: 2022.75,
-        amount: 100
-      }
+      {period: 2020, amount: 200},
+      {period: 2020.25, amount: 200},
+      {period: 2020.5, amount: 200},
+      {period: 2020.75, amount: 200},
+      {period: 2021, amount: 400},
+      {period: 2021.25, amount: 400},
+      {period: 2021.5, amount: 400},
+      {period: 2021.75, amount: 400},
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
     ],
     [ 
-      {
-        period: 2020,
-        amount: 200
-      },
-      {
-        period: 2020.25,
-        amount: 200
-      },
-      {
-        period: 2020.5,
-        amount: 200
-      },
-      {
-        period: 2020.75,
-        amount: 200
-      },
-      {
-        period: 2021,
-        amount: 400
-      },
-      {
-        period: 2021.25,
-        amount: 400
-      },
-      {
-        period: 2021.5,
-        amount: 400
-      },
-      {
-        period: 2021.75,
-        amount: 400
-      },
-      {
-        period: 2022,
-        amount: 100
-      },
-      {
-        period: 2022.25,
-        amount: 100
-      },
-      {
-        period: 2022.5,
-        amount: 100
-      },
-      {
-        period: 2022.75,
-        amount: 100
-      }
+      {period: 2020, amount: 200},
+      {period: 2020.25, amount: 200},
+      {period: 2020.5, amount: 200},
+      {period: 2020.75, amount: 200},
+      {period: 2021, amount: 400},
+      {period: 2021.25, amount: 400},
+      {period: 2021.5, amount: 400},
+      {period: 2021.75, amount: 400},
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
     ]
   ];
   const actual = model.calculateTotalSpendArrays(externalSpend, headcountSpend);
