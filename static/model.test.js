@@ -1559,64 +1559,28 @@ test("percentCompleteCummArrayFromData - simpleModel", () => {
   const programs = simpleModel.programs;
   const actual = model.percentCompleteCummArrayFromData(headcountEffort, externalSpend, programs);
   const expected = [
-    {
-      period: 2018.0,
-      amount: 0.25
-    },
-    {
-      period: 2018.25,
-      amount: 0.5
-    },
-    {
-      period: 2018.5,
-      amount: 0.75
-    },
-    {
-      period: 2018.75,
-      amount: 1
-    },
+    {period: 2018.0, amount: 0.25},
+    {period: 2018.25, amount: 0.5},
+    {period: 2018.5, amount: 0.75},
+    {period: 2018.75, amount: 1},
   ];
   expect(actual).toEqual(expected);
 })
 
 test("editDataArrayYears", () => {
   const array = [ 
-    {
-      period: 2018.0,
-      amount: 0
-    },
-    {
-      period: 2018.25,
-      amount: 0
-    },
-    {
-      period: 2018.5,
-      amount: 750
-    },
-    {
-      period: 2018.75,
-      amount: 250
-    },
+    {period: 2018.0, amount: 0},
+    {period: 2018.25, amount: 0},
+    {period: 2018.5, amount: 750},
+    {period: 2018.75, amount: 250},
   ];
   const startYear = 2019;
   const actual = model.editDataArrayYears(array, startYear);
   const expected = [
-    {
-      period: 2019.0,
-      amount: 0
-    },
-    {
-      period: 2019.25,
-      amount: 0
-    },
-    {
-      period: 2019.5,
-      amount: 750
-    },
-    {
-      period: 2019.75,
-      amount: 250
-    },
+    {period: 2019.0, amount: 0},
+    {period: 2019.25, amount: 0},
+    {period: 2019.5, amount: 750},
+    {period: 2019.75, amount: 250},
   ];
   expect(actual).toEqual(expected);
 })
@@ -1921,7 +1885,7 @@ test("calculateCurrentPeriodRev - scenario 4", () => {
   const milestone = {
     id: 1000,
     name: "Upfront Payment",
-    dateEarned: 2018.0,
+    dateEarned: 2018.25,
     amount: 1000
   }
   const revArray = [
@@ -1947,7 +1911,7 @@ test("calculatePriorPrdTrueup - scenario 4", () => {
   const milestone = {
     id: 1000,
     name: "Upfront Payment",
-    dateEarned: 2018.0,
+    dateEarned: 2018.25,
     amount: 1000
   }
   const revArray = [

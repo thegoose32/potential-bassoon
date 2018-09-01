@@ -597,10 +597,10 @@ export function calculatePriorPrdTrueup(milestone, revArray, versions, programs,
   let curVersion = versions[activeVersionID];
   let versionPeriod = curVersion.versionPeriod;
   let percentCompleteCumm = percentCompleteCummArrayFromData(curVersion.headcountEffort, curVersion.externalSpend, programs)
+  let cummTrueUp = 0;
   let priorPrdTrueUpArray = revArray.map((period, periodIndex) => {
     let newPeriod = keepCloning(period);
-    let cummTrueUp = 0;
-    if ((milestone.dateEarned === period.period) || (versionPeriod === period.period && versionPeriod >= milestone.dateEarned)) {
+    if (milestone.dateEarned === period.period || (versionPeriod === period.period && versionPeriod >= milestone.dateEarned)) {
       let prevIndex = 0;
       let percentCompl = 0; 
       if (periodIndex - 1 !== -1) {
