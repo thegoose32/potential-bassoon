@@ -16,7 +16,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   setYearsOut, calculatePriorVersionIndex, periodStringToNumber, 
   percentCompleteCummArrayFromData, periodNumberToString, milestonePeriodCheck, 
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
-  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue,
+  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone
 
 } from './model'
 
@@ -1054,7 +1054,7 @@ function RevenueMilestones(props) {
         </thead>
         <tbody>
           {revenueRows}
-          <tr>
+          <tr className="total">
             <td>Total Milestones</td>
             <td></td>
             <td className="numerical">
@@ -1064,6 +1064,7 @@ function RevenueMilestones(props) {
                 thousandSeparator={true}
               />
             </td>
+            <td></td>
           </tr>
         </tbody>
       </table>
@@ -1133,8 +1134,8 @@ function ExternalSpend (props) {
         </thead>
         <tbody>
           {externalSpendRow}
-          <tr>
-            <td>Total</td>
+          <tr className="total">
+            <td>Total External Spend</td>
             <TotalRows
               displaySelections={displaySelections}
               dataArray={totalExternalSpend}
@@ -1221,8 +1222,8 @@ function HeadcountEffort (props) {
         </thead>
         <tbody>
           {headcountEffortRow}
-          <tr>
-            <td>Total</td>
+          <tr className="total">
+            <td>Total Headcount Effort</td>
             <td></td>
             <TotalRows
               displaySelections={displaySelections}
@@ -1365,8 +1366,8 @@ function HeadcountSpend (props) {
         </thead>
         <tbody>
           {headcountEffortRow}
-          <tr>
-            <td>Total</td>
+          <tr className="total">
+            <td>Total Headcount Spend</td>
             <td></td>
             <TotalRows
               displaySelections={displaySelections}
@@ -1445,7 +1446,7 @@ function TotalProgramSpend (props) {
         </thead>
         <tbody>
           {totalProgRow}
-          <tr>
+          <tr className="total">
             <td>Total development costs ($)</td>
             <TotalRows
               displaySelections={displaySelections}
@@ -1459,7 +1460,7 @@ function TotalProgramSpend (props) {
               /> 
             </td>
           </tr>
-          <tr>
+          <tr className="total">
             <td>Total development costs (%)</td>
             <DataRows
               startYear={startYear}
@@ -1478,7 +1479,7 @@ function TotalProgramSpend (props) {
               /> 
             </td>
           </tr>
-          <tr>
+          <tr className="total">
             <td>Running total development costs ($)</td>
             <CummulativeDataRows
               startYear={startYear}
@@ -1489,7 +1490,7 @@ function TotalProgramSpend (props) {
             />
             <td></td>
           </tr>
-          <tr>
+          <tr className="total">
             <td>Running total development costs (%)</td>
             <CummulativeDataRows
               startYear={startYear}
@@ -1507,158 +1508,191 @@ function TotalProgramSpend (props) {
   )
 }
 
-function RevenueRecognizedModel(props) {
-  const {
-    startYear,
-    yearsOut,
-    displaySelections,
-    revenueMilestones,
-    versionPeriod,
-    cummPercentDiff,
-    versions,
-    programs,
-    versionID,
-    activeVersionID
-  } = props;
-  
-  let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
-    let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
-    let currentPeriodRev = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs); 
-    let priorPeriodRevTrueup = calculatePriorPrdTrueup(milestone, currentPeriodRev, versions, programs, activeVersionID);
-    let totalCurrentPeriodRev = arrayTotal(currentPeriodRev);
-    let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
-
-    if (totalPriorPeriodRevTrueup !== 0) {
-      return (
-        <React.Fragment>
-          <tr>
-            <td>{milestone.name} - Current Revenue</td>
-            <DataRows
-              startYear={startYear}
-              displaySelections={displaySelections}
-              dataArray={currentPeriodRev}
-              yearsOut={yearsOut}
-              input="No"
-            />
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(totalCurrentPeriodRev,1)}
-                thousandSeparator={true}
-              /> 
-            </td>
-          </tr>
-          <tr>
-            <td>{milestone.name} - Prior Period True Up</td>
-            <DataRows
-              startYear={startYear}
-              displaySelections={displaySelections}
-              dataArray={priorPeriodRevTrueup}
-              yearsOut={yearsOut}
-              input="No"
-            />
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(totalPriorPeriodRevTrueup,1)}
-                thousandSeparator={true}
-              /> 
-            </td>
-          </tr>
-        </React.Fragment>
-      );
-    } else {
-      return (
-        <React.Fragment>
-          <tr>
-            <td>{milestone.name} - Current Revenue</td>
-            <DataRows
-              startYear={startYear}
-              displaySelections={displaySelections}
-              dataArray={currentPeriodRev}
-              yearsOut={yearsOut}
-              input="No"
-            />
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(totalCurrentPeriodRev,1)}
-                thousandSeparator={true}
-              /> 
-            </td>
-          </tr>
-        </React.Fragment>
-      )
+class RevenueRecognizedModel extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      priorTrueUpDisplay: "No"
     }
-  })
 
-  let totalRevenueArray = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs);
-  let grandTotalRevenue = arrayTotal(totalRevenueArray);
+    this.setPriorTrueUpDisplay = this.setPriorTrueUpDisplay;
+  }
 
-  let currentPeriodRev = periodAmountCalc(totalRevenueArray, versionPeriod, "QTD") 
-  let currentYTDPeriodRev = periodAmountCalc(totalRevenueArray, versionPeriod, "YTD")
-  let versionPeriodLabel = periodNumberToString(versionPeriod);
+  setPriorTrueUpDisplay() {
+    this.setState(function(prevState, props) {
+      let currentDisplaySetting = prevState.priorTrueUpDisplay;
+      let newTrueUpDisplay = "Yes";
+      if (currentDisplaySetting === "No") {
+        newTrueUpDisplay = "Yes";
+      } else if (currentDisplaySetting === "Yes") {
+        newTrueUpDisplay = "No"
+      }
+      return {
+        priorTrueUpDisplay: newTrueUpDisplay
+      }
+    })
+  }
 
-  return (
-    <section id="Revenue-Recognized">
-      <h2>Revenue Recognized</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Milestone</th>
-            <TablePeriodHeaders
-              startYear={startYear}
-              displaySelections={displaySelections}
-            />
-            <th className="numerical">Total Milestone Revenue</th>
-          </tr>
-        </thead>
-        <tbody>
-          {milestoneRows}
-          <tr>
-            <td>Total Revenue</td>
-            <TotalRows
-              displaySelections={displaySelections}
-              dataArray={totalRevenueArray}
-            />
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(grandTotalRevenue,1)}
-                thousandSeparator={true}
-              /> 
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <br></br>
-      <table>
-        <tbody>
-          <tr>
-            <td>{versionPeriodLabel} QTD revenue</td>
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(currentPeriodRev,1)}
-                thousandSeparator={true}
-              />
-            </td>
-          </tr>
-          <tr>
-            <td>{versionPeriodLabel} YTD revenue</td>
-            <td className="numerical">
-              <NumberFormat
-                displayType="text"
-                value={rounding(currentYTDPeriodRev,1)}
-                thousandSeparator={true}
-              />
-            </td>
-          </tr>
+  render() {
+    let startYear = this.props.startYear;
+    let yearsOut = this.props.yearsOut;
+    let displaySelections = this.props.displaySelections;
+    let revenueMilestones = this.props.revenueMilestones;
+    let versionPeriod = this.props.versionPeriod;
+    let versions = this.props.versions;
+    let programs = this.props.programs;
+    let versionID = this.props.versionID;
+    let activeVersionID = this.props.activeVersionID;
  
-        </tbody>
-      </table>
-    </section>
-  )
+    let milestoneRows = revenueMilestones.map((milestone, milestoneIndex) => {
+      let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+      let currentPeriodRev = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs); 
+      let priorPeriodRevTrueup = calculatePriorPrdTrueup(milestone, currentPeriodRev, versions, programs, activeVersionID);
+      let totalCurrentPeriodRev = arrayTotal(currentPeriodRev);
+      let totalPriorPeriodRevTrueup = arrayTotal(priorPeriodRevTrueup);
+
+      let totalRevenueMilestoneArray = calculateTotalRevenueByMilestone(startYear, yearsOut, versions, activeVersionID, milestone, programs)
+      let totalRevenueMilestone = arrayTotal(totalRevenueMilestoneArray);
+
+      if (this.state.priorTrueUpDisplay === "Yes") {
+        return (
+          <React.Fragment>
+            <tr>
+              <td>{milestone.name} - Current Revenue</td>
+              <DataRows
+                startYear={startYear}
+                displaySelections={displaySelections}
+                dataArray={currentPeriodRev}
+                yearsOut={yearsOut}
+                input="No"
+              />
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(totalCurrentPeriodRev,1)}
+                  thousandSeparator={true}
+                /> 
+              </td>
+            </tr>
+            <tr>
+              <td>{milestone.name} - Prior Period True Up</td>
+              <DataRows
+                startYear={startYear}
+                displaySelections={displaySelections}
+                dataArray={priorPeriodRevTrueup}
+                yearsOut={yearsOut}
+                input="No"
+              />
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(totalPriorPeriodRevTrueup,1)}
+                  thousandSeparator={true}
+                /> 
+              </td>
+            </tr>
+          </React.Fragment>
+        );
+      } else {
+        return (
+          <React.Fragment>
+            <tr>
+              <td>{milestone.name} - Current Revenue</td>
+              <DataRows
+                startYear={startYear}
+                displaySelections={displaySelections}
+                dataArray={totalRevenueMilestoneArray}
+                yearsOut={yearsOut}
+                input="No"
+              />
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(totalRevenueMilestone,1)}
+                  thousandSeparator={true}
+                /> 
+              </td>
+            </tr>
+          </React.Fragment>
+        )
+      }
+    })
+
+    let totalRevenueArray = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs);
+    let grandTotalRevenue = arrayTotal(totalRevenueArray);
+
+    let currentPeriodRev = periodAmountCalc(totalRevenueArray, versionPeriod, "QTD") 
+    let currentYTDPeriodRev = periodAmountCalc(totalRevenueArray, versionPeriod, "YTD")
+    let versionPeriodLabel = periodNumberToString(versionPeriod);
+
+    return (
+      <section id="Revenue-Recognized">
+        <h2>Revenue Recognized</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Milestone</th>
+              <TablePeriodHeaders
+                startYear={startYear}
+                displaySelections={displaySelections}
+              />
+              <th className="numerical">Total Milestone Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {milestoneRows}
+            <tr className="total">
+              <td>Total Revenue</td>
+              <TotalRows
+                displaySelections={displaySelections}
+                dataArray={totalRevenueArray}
+              />
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(grandTotalRevenue,1)}
+                  thousandSeparator={true}
+                /> 
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <tbody>
+            <tr className="total">
+              <th>{versionPeriodLabel} QTD revenue</th>
+              <th className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(currentPeriodRev,1)}
+                  thousandSeparator={true}
+                />
+              </th>
+            </tr>
+            <tr className="total">
+              <th>{versionPeriodLabel} YTD revenue</th>
+              <th className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(currentYTDPeriodRev,1)}
+                  thousandSeparator={true}
+                />
+              </th>
+            </tr>
+            <tr>
+              <th>Display prior period adjustment</th>
+              <th>
+                <button onClick= {(e) => {this.setPriorTrueUpDisplay()}}>
+                  {this.state.priorTrueUpDisplay}
+                </button>
+              </th>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    )
+  }
 }
 
 function DeferredRevenueRoll (props) {
@@ -1746,7 +1780,7 @@ function DeferredRevenueRoll (props) {
               dataArray={totalRevenueEarned}
             />
           </tr>
-          <tr>
+          <tr className="total">
             <td>End Balance</td>
             <CummulativeTotalRows
               displaySelections={displaySelections}
@@ -1928,6 +1962,7 @@ class PeriodBridge extends React.Component {
 
     let compVersionLabel = selectedPeriodLabel + " " + selectedPeriodType;
     let curVersionLabel = periodNumberToString(curVersion.versionPeriod) + " " + selectedPeriodType;
+    let trClassName = "total"
 
     return (
       <section id="Period-Bridge">
@@ -1990,6 +2025,7 @@ class PeriodBridge extends React.Component {
               milestones={compVerMilestones}
               programName={compVersion.versionName}
               label={compVersionLabel}
+              trClass={trClassName}
             />
             {incurredVarianceRows}
             {totalVarianceRows}
@@ -2004,6 +2040,7 @@ class PeriodBridge extends React.Component {
               milestones={curVerMilestones}
               programName={curVersion.versionName}
               label={curVersionLabel}
+              trClass={trClassName}
             />
           </tbody>
         </table>
@@ -2634,7 +2671,8 @@ function VarianceRows(props) {
     revenue,
     programName,
     milestones,
-    label
+    label,
+    trClass
   } = props;
 
   let programWtdAvgDisplay; 
@@ -2643,7 +2681,7 @@ function VarianceRows(props) {
   }
   return(
     <React.Fragment>
-      <tr>
+      <tr className={trClass}>
         <td>{programName} - {label}</td>
         <td className="numerical">
           <NumberFormat

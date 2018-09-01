@@ -465,54 +465,71 @@ test("no change to editDataArrayLength", () => {
 
 test("arrayTotal test", () => {
   const array = [ 
-    {
-      period: 2020,
-      amount: 200
-    },
-    {
-      period: 2020.25,
-      amount: 200
-    },
-    {
-      period: 2020.5,
-      amount: 200
-    },
-    {
-      period: 2020.75,
-      amount: 200
-    },
-    {
-      period: 2021,
-      amount: 400
-    },
-    {
-      period: 2021.25,
-      amount: 400
-    },
-    {
-      period: 2021.5,
-      amount: 400
-    },
-    {
-      period: 2021.75,
-      amount: 400
-    },
-    {
-      period: 2022,
-      amount: 100
-    },
-    {
-      period: 2022.25,
-      amount: 100
-    },
-    {
-      period: 2022.5,
-      amount: 100
-    },
-    {
-      period: 2022.75,
-      amount: 100
-    }
+  Last login: Sat Sep  1 09:15:11 on console
+Sabrinas-Air:~ Paul$ cd desktop
+Sabrinas-Air:desktop Paul$ cd pharmaRevRec/
+Sabrinas-Air:pharmaRevRec Paul$ cd static/
+Sabrinas-Air:static Paul$ cd model.js
+-bash: cd: model.js: Not a directory
+Sabrinas-Air:static Paul$ vim model.
+Sabrinas-Air:static Paul$ vim model.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+583     let periodVersion = versions[newPeriod.revVerIndex];
+    {period: 2020, amount: 200},
+      {period: 2020.25, amount: 200},
+      {period: 2020.5, amount: 200},
+      {period: 2020.75, amount: 200},
+      {period: 2021, amount: 400},
+      {period: 2021.25, amount: 400},
+      {period: 2021.5, amount: 400},
+      {period: 2021.75, amount: 400},
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
   ];
   const actual = model.arrayTotal(array)
   const expected = 2800;
@@ -522,105 +539,33 @@ test("arrayTotal test", () => {
 test("calculatePeriodTotal test", () => {
   const arrayOfArrays = [
     [ 
-      {
-        period: 2020,
-        amount: 200
-      },
-      {
-        period: 2020.25,
-        amount: 200
-      },
-      {
-        period: 2020.5,
-        amount: 200
-      },
-      {
-        period: 2020.75,
-        amount: 200
-      },
-      {
-        period: 2021,
-        amount: 400
-      },
-      {
-        period: 2021.25,
-        amount: 400
-      },
-      {
-        period: 2021.5,
-        amount: 400
-      },
-      {
-        period: 2021.75,
-        amount: 400
-      },
-      {
-        period: 2022,
-        amount: 100
-      },
-      {
-        period: 2022.25,
-        amount: 100
-      },
-      {
-        period: 2022.5,
-        amount: 100
-      },
-      {
-        period: 2022.75,
-        amount: 100
-      }
+      {period: 2020, amount: 200},
+      {period: 2020.25, amount: 200},
+      {period: 2020.5, amount: 200},
+      {period: 2020.75, amount: 200},
+      {period: 2021, amount: 400},
+      {period: 2021.25, amount: 400},
+      {period: 2021.5, amount: 400},
+      {period: 2021.75, amount: 400},
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
     ],
-    [
-      {
-        period: 2020,
-        amount: 200
-      },
-      {
-        period: 2020.25,
-        amount: 200
-      },
-      {
-        period: 2020.5,
-        amount: 200
-      },
-      {
-        period: 2020.75,
-        amount: 200
-      },
-      {
-        period: 2021,
-        amount: 400
-      },
-      {
-        period: 2021.25,
-        amount: 400
-      },
-      {
-        period: 2021.5,
-        amount: 400
-      },
-      {
-        period: 2021.75,
-        amount: 400
-      },
-      {
-        period: 2022,
-        amount: 100
-      },
-      {
-        period: 2022.25,
-        amount: 100
-      },
-      {
-        period: 2022.5,
-        amount: 100
-      },
-      {
-        period: 2022.75,
-        amount: 100
-      }
-    ]
+    [ 
+      {period: 2020, amount: 200},
+      {period: 2020.25, amount: 200},
+      {period: 2020.5, amount: 200},
+      {period: 2020.75, amount: 200},
+      {period: 2021, amount: 400},
+      {period: 2021.25, amount: 400},
+      {period: 2021.5, amount: 400},
+      {period: 2021.75, amount: 400},
+      {period: 2022, amount: 100},
+      {period: 2022.25, amount: 100},
+      {period: 2022.5, amount: 100},
+      {period: 2022.75, amount: 100}
+    ],
   ]
   const actual = model.calculatePeriodTotal(arrayOfArrays)
   const expected = [
@@ -1286,104 +1231,32 @@ test("calculateTotalSpendArray test",() => {
   const actual = model.calculateTotalSpendArrays(externalSpend, headcountSpend);
   const expected = [
     [ 
-      {
-        period: 2020,
-        amount: 400
-      },
-      {
-        period: 2020.25,
-        amount: 400
-      },
-      {
-        period: 2020.5,
-        amount: 400
-      },
-      {
-        period: 2020.75,
-        amount: 400
-      },
-      {
-        period: 2021,
-        amount: 800
-      },
-      {
-        period: 2021.25,
-        amount: 800
-      },
-      {
-        period: 2021.5,
-        amount: 800
-      },
-      {
-        period: 2021.75,
-        amount: 800
-      },
-      {
-        period: 2022,
-        amount: 200
-      },
-      {
-        period: 2022.25,
-        amount: 200
-      },
-      {
-        period: 2022.5,
-        amount: 200
-      },
-      {
-        period: 2022.75,
-        amount: 200
-      }
+      {period: 2020, amount: 400},
+      {period: 2020.25, amount: 400},
+      {period: 2020.5, amount: 400},
+      {period: 2020.75, amount: 400},
+      {period: 2021, amount: 800},
+      {period: 2021.25, amount: 800},
+      {period: 2021.5, amount: 800},
+      {period: 2021.75, amount: 800},
+      {period: 2022, amount: 200},
+      {period: 2022.25, amount: 200},
+      {period: 2022.5, amount: 200},
+      {period: 2022.75, amount: 200}
     ],
     [ 
-      {
-        period: 2020,
-        amount: 400
-      },
-      {
-        period: 2020.25,
-        amount: 400
-      },
-      {
-        period: 2020.5,
-        amount: 400
-      },
-      {
-        period: 2020.75,
-        amount: 400
-      },
-      {
-        period: 2021,
-        amount: 800
-      },
-      {
-        period: 2021.25,
-        amount: 800
-      },
-      {
-        period: 2021.5,
-        amount: 800
-      },
-      {
-        period: 2021.75,
-        amount: 800
-      },
-      {
-        period: 2022,
-        amount: 200
-      },
-      {
-        period: 2022.25,
-        amount: 200
-      },
-      {
-        period: 2022.5,
-        amount: 200
-      },
-      {
-        period: 2022.75,
-        amount: 200
-      }
+      {period: 2020, amount: 400},
+      {period: 2020.25, amount: 400},
+      {period: 2020.5, amount: 400},
+      {period: 2020.75, amount: 400},
+      {period: 2021, amount: 800},
+      {period: 2021.25, amount: 800},
+      {period: 2021.5, amount: 800},
+      {period: 2021.75, amount: 800},
+      {period: 2022, amount: 200},
+      {period: 2022.25, amount: 200},
+      {period: 2022.5, amount: 200},
+      {period: 2022.75, amount: 200}
     ]
   ];
   expect(actual).toEqual(expected);

@@ -644,3 +644,18 @@ export function milestonePeriodCheck(milestone, period) {
   };
   return milestoneAmount;
 }
+
+export function calculateTotalRevenueByMilestone(startYear, yearsOut, versions, activeVersionID, milestone, programs) {
+  let blankRevArray = addDataArray(startYear, yearsOut);
+  let revVerIndexArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+  let currentPeriodRevArray = calculateCurrentPeriodRev(milestone, revVerIndexArray, versions, programs);
+  currentPeriodRevArray.forEach((period, periodIndex) => {
+    blankRevArray[periodIndex].amount += period.amount;
+  })
+  let priorPrdTrueUpArray = calculatePriorPrdTrueup(milestone, currentPeriodRevArray, versions, programs, activeVersionID);
+  priorPrdTrueUpArray.forEach((period, periodIndex) => {
+    blankRevArray[periodIndex].amount += period.amount;
+  })
+  return blankRevArray;
+}
+
