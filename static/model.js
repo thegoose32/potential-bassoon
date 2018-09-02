@@ -105,30 +105,30 @@ export const defaultState = {
       ],
       forecastExpenses: [
         [
-          {period: 2018.25, amount: 500100},
-          {period: 2018.5, amount: 500100},
-          {period: 2018.75, amount: 500100},
-          {period: 2019.0, amount: 500100},
-          {period: 2019.25, amount: 500100},
-          {period: 2019.5, amount: 500100},
-          {period: 2019.75, amount: 500100},
-          {period: 2020.0, amount: 500100},
-          {period: 2020.25, amount: 500100},
-          {period: 2020.5, amount: 500100},
-          {period: 2020.75, amount: 500100}
+          {period: 2018.25, amount: 125100},
+          {period: 2018.5, amount: 125100},
+          {period: 2018.75, amount: 125100},
+          {period: 2019.0, amount: 125100},
+          {period: 2019.25, amount: 125100},
+          {period: 2019.5, amount: 125100},
+          {period: 2019.75, amount: 125100},
+          {period: 2020.0, amount: 125100},
+          {period: 2020.25, amount: 125100},
+          {period: 2020.5, amount: 125100},
+          {period: 2020.75, amount: 125100}
         ],
         [
-          {period: 2018.25, amount: 500100},
-          {period: 2018.5, amount: 500100},
-          {period: 2018.75, amount: 500100},
-          {period: 2019.0, amount: 500100},
-          {period: 2019.25, amount: 500100},
-          {period: 2019.5, amount: 500100},
-          {period: 2019.75, amount: 500100},
-          {period: 2020.0, amount: 500100},
-          {period: 2020.25, amount: 500100},
-          {period: 2020.5, amount: 500100},
-          {period: 2020.75, amount: 500100}
+          {period: 2018.25, amount: 125100},
+          {period: 2018.5, amount: 125100},
+          {period: 2018.75, amount: 125100},
+          {period: 2019.0, amount: 125100},
+          {period: 2019.25, amount: 125100},
+          {period: 2019.5, amount: 125100},
+          {period: 2019.75, amount: 125100},
+          {period: 2020.0, amount: 125100},
+          {period: 2020.25, amount: 125100},
+          {period: 2020.5, amount: 125100},
+          {period: 2020.75, amount: 125100}
         ],
       ],
     }
@@ -658,4 +658,26 @@ export function calculateTotalRevenueByMilestone(startYear, yearsOut, versions, 
   })
   return blankRevArray;
 }
+
+export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpArray) {
+  let revArray = blankRevArray.map((period, periodIndex) => {
+    let newPeriod = keepCloning(period);
+    let revAmount = 0;
+    let totalFcstExp = arrayTotal(fcstExpArray);
+    let totalFcstDollarCompleteCumm = dollarCompleteCummArray(fcstExpArray); 
+    let percentCompleteCumm = percentCompleteCummArray(totalFcstDollarCompleteCumm, totalFcstExp)
+    revenueMilestones.forEach((milestone) => {
+      let milestoneAmount = milestonePeriodCheck(milestone, period);
+      if (periodIndex === 0) {
+        revAmount += milestone.amount * percentCompleteCumm[periodIndex].amount;
+      } else if (milestone.dateEarned <= period.period) {
+        revAmount += milestone.amount * (percentCompleteCumm[periodIndex].amount - percentCompleteCumm[periodIndex - 1].amount)
+      }
+    });
+    newPeriod.amount = revAmount
+    return newPeriod;
+  });
+  return revArray;
+}
+
 

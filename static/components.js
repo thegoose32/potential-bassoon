@@ -16,7 +16,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   setYearsOut, calculatePriorVersionIndex, periodStringToNumber, 
   percentCompleteCummArrayFromData, periodNumberToString, milestonePeriodCheck, 
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
-  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone
+  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone, calculateFcstRevenue
 
 } from './model'
 
@@ -1875,8 +1875,8 @@ class PeriodBridge extends React.Component {
           <VarianceRows
             programName={program.name}
             label={"Incurred Variance"}
-            periodSpend={incurredProgSpendVariance}
-            revenue={incurredVarRev}
+            periodSpend={rounding(incurredProgSpendVariance,1)}
+            revenue={rounding(incurredVarRev,1)}
           />
         </React.Fragment>
       )
@@ -1892,8 +1892,8 @@ class PeriodBridge extends React.Component {
           <VarianceRows
             programName={program.name}
             label={"Total Spend Variance"}
-            totalSpend={totalProgSpendVariance} 
-            revenue={totalVarRev}
+            totalSpend={rounding(totalProgSpendVariance,1)} 
+            revenue={rounding(totalVarRev,1)}
           />
         </React.Fragment>
       )
@@ -1905,14 +1905,15 @@ class PeriodBridge extends React.Component {
       let totalProgramSpend = totalProgSpend(versions, activeVersionID, programs, programIndex);
       let percentComplete = totalIncurredSpend / totalProgramSpend;
       let progWtdAvg = programWeightedAvg(versions, activeVersionID, programs, programIndex);
-      let milestoneRev = milestoneVariance * percentComplete * progWtdAvg; 
+      let milestoneRev = milestoneVariance * percentComplete * progWtdAvg;
+      let milestoneVarianceByProg = milestoneVariance * progWtdAvg;
       return(
         <React.Fragment>
           <VarianceRows
             programName={program.name}
             label={"Milestone Variance"}
-            milestones={milestoneVariance}
-            revenue={milestoneRev}
+            milestones={rounding(milestoneVarianceByProg,1)}
+            revenue={rounding(milestoneRev,1)}
           />
         </React.Fragment>
       )
@@ -1929,8 +1930,8 @@ class PeriodBridge extends React.Component {
           <VarianceRows
             programName={program.name}
             label={"Total WA Variance"}
-            programWtdAvg={wtdAvgVariance}
-            revenue={totalWtdAvgVarRev}
+            programWtdAvg={rounding(wtdAvgVariance,10000)}
+            revenue={rounding(totalWtdAvgVarRev,1)}
           />
         </React.Fragment>
       )
@@ -1954,7 +1955,7 @@ class PeriodBridge extends React.Component {
           <VarianceRows
             programName={program.name}
             label={"Prior Period Trueup"}
-            revenue={progPriorPrdTrueup}
+            revenue={rounding(progPriorPrdTrueup,1)}
           />
         </React.Fragment>
       )
@@ -2019,7 +2020,7 @@ class PeriodBridge extends React.Component {
           <tbody>
             <VarianceRows
               periodSpend={compTotalIncurredSpend}
-              totalSpend={compTotalSpend}
+              totalSpend={rounding(compTotalSpend,1)}
               programWtdAvg={1}
               revenue={(compTotalIncurredSpend/compTotalSpend)*compVerMilestones}
               milestones={compVerMilestones}
@@ -2034,7 +2035,7 @@ class PeriodBridge extends React.Component {
             {priorPeriodTrueupRows}
             <VarianceRows
               periodSpend={curTotalIncurredSpend}
-              totalSpend={curTotalSpend}
+              totalSpend={rounding(curTotalSpend,1)}
               programWtdAvg={1}
               revenue={((curTotalIncurredSpend/curTotalSpend)*curVerMilestones) + priorPrdTrueUp}
               milestones={curVerMilestones}
@@ -2359,7 +2360,7 @@ function RevenueProjections(props) {
     return period;
   })
 
-
+  let incurredSpend = 0;
   let programCostRow = programs.map((program, programIndex) => {
     let totalProgSpendArray = curVersion.externalSpend[programIndex].map((period, periodIndex) => {
       let newPeriod = keepCloning(period);
@@ -2370,6 +2371,7 @@ function RevenueProjections(props) {
     let incurredProgSpend = 0;
     totalProgSpendArray.forEach((period) => {
       if (period.period <= versionPeriod) {
+        incurredSpend += period.amount;
         incurredProgSpend += period.amount;
       };
     });
@@ -2413,6 +2415,30 @@ function RevenueProjections(props) {
     )
   })
 
+  let fcstExpArray = calculatePeriodTotal(keepCloning(curVersion.forecastExpenses));
+  fcstExpArray.unshift({period: versionPeriod, amount: incurredSpend});
+
+  let totalRevenue = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, curVersion.revenueMilestones, programs);
+  let revenueThruPeriod = arrayTotal(totalRevenue.filter(period => period.period <= versionPeriod));
+  let blankRevArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+  let futurePrdBlankRevArray = blankRevArray.filter(period => period.period > versionPeriod);
+  let revenueProjection = calculateFcstRevenue(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray)
+  let displayType = displayArray(forecastDisplaySelections);
+  let reducedDisplayType = displayType.filter(period => period.period > versionPeriod);
+  let calculatedData = dataToDisplay(reducedDisplayType, revenueProjection);
+  let revenueProjectionRow = calculatedData.map((period) => {
+    return(
+      <React.Fragment>
+        <td className="numerical">
+          <NumberFormat
+            displayType="text"
+            value={rounding(period.amount,1)}
+            thousandSeparator={true}
+          /> 
+        </td>
+      </React.Fragment>
+    )
+  })
 
   return(
     <section id="RevenueForecast">
@@ -2427,6 +2453,18 @@ function RevenueProjections(props) {
         </thead>
         <tbody>
           {programCostRow}
+          <tr></tr>
+          <tr className="total">
+            <td>Projected Revenue Pattern</td>
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={rounding(revenueThruPeriod,1)}
+                thousandSeparator={true}
+              />
+            </td>
+            {revenueProjectionRow}
+          </tr>
         </tbody>
       </table>
     </section>
