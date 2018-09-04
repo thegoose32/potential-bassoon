@@ -105,6 +105,7 @@ export const defaultState = {
       ],
       forecastExpenses: [
         [
+          {period: 2018.0, amount: 125100},
           {period: 2018.25, amount: 125100},
           {period: 2018.5, amount: 125100},
           {period: 2018.75, amount: 125100},
@@ -118,6 +119,7 @@ export const defaultState = {
           {period: 2020.75, amount: 125100}
         ],
         [
+          {period: 2018.0, amount: 125100},
           {period: 2018.25, amount: 125100},
           {period: 2018.5, amount: 125100},
           {period: 2018.75, amount: 125100},
@@ -659,17 +661,23 @@ export function calculateTotalRevenueByMilestone(startYear, yearsOut, versions, 
   return blankRevArray;
 }
 
-export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpArray) {
+export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod) {
   let revArray = blankRevArray.map((period, periodIndex) => {
     let newPeriod = keepCloning(period);
     let revAmount = 0;
     let totalFcstExp = arrayTotal(fcstExpArray);
     let totalFcstDollarCompleteCumm = dollarCompleteCummArray(fcstExpArray); 
+    let verPrdCummExpIndex = 0;
+    if (periodIndex !== 0) {
+      verPrdCummExpIndex = totalFcstDollarCompleteCumm.map(function(e) { return e.period; }).indexOf(versionPeriod - 0.25);
+    }
     let percentCompleteCumm = percentCompleteCummArray(totalFcstDollarCompleteCumm, totalFcstExp)
     revenueMilestones.forEach((milestone) => {
       let milestoneAmount = milestonePeriodCheck(milestone, period);
-      if (periodIndex === 0) {
-        revAmount += milestone.amount * percentCompleteCumm[periodIndex].amount;
+      if (periodIndex === 0 && activeVersionID !==0) {
+        revAmount += (milestone.amount * percentCompleteCumm[periodIndex].amount) + ((milestone.amount * percentCompleteCumm[verPrdCummExpIndex].amount) - revenueThruPeriod);
+      } else if (periodIndex === 0) { 
+        revAmount += (milestone.amount * percentCompleteCumm[periodIndex].amount); 
       } else if (milestone.dateEarned <= period.period) {
         revAmount += milestone.amount * (percentCompleteCumm[periodIndex].amount - percentCompleteCumm[periodIndex - 1].amount)
       }

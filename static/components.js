@@ -423,7 +423,6 @@ export class PharmaRevRec extends React.Component {
     })
   }
 
-
   setComparisonModel(newModelIndex) {
     let newComparisonModel = newModelIndex;
     this.setVersionState({comparisonModelIndex: newComparisonModel});
@@ -2334,141 +2333,191 @@ class ExpenseAnalytics extends React.Component {
   }
 }
 
-function RevenueProjections(props) {
-  const {
-    startYear,
-    yearsOut,
-    versions,
-    activeVersionID,
-    programs,
-    displaySelections,
-    editFcstExp
-  } = props;
-
-  let curVersion = versions[activeVersionID];
-  let versionPeriod = curVersion.versionPeriod;
-  let nextPeriod = versionPeriod + 0.25;
-  let headcountSpend = calculateHeadcountSpend(curVersion.headcountEffort, programs);
-  
-  // Override the type to not sum in calculatedData function below//
-  let forecastDisplaySelections = keepCloning(displaySelections).map((period) => {
-    if (Math.floor(versionPeriod) === period.year) {
-      period.type = "Quarterly"
-    } else {
-      period.type = "Annual"
+class RevenueProjections extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      copyExpMultiplier: 100,
     }
-    return period;
-  })
 
-  let incurredSpend = 0;
-  let programCostRow = programs.map((program, programIndex) => {
-    let totalProgSpendArray = curVersion.externalSpend[programIndex].map((period, periodIndex) => {
-      let newPeriod = keepCloning(period);
-      newPeriod.amount += headcountSpend[programIndex][periodIndex].amount;
-      return newPeriod;
+    this.setCopyExpMultiplier = this.setCopyExpMultiplier.bind(this);
+  }
+
+  setCopyExpMultiplier(newMultiplier) {
+    let newExpMultiplier = newMultiplier;
+    this.setState({copyExpMultiplier: newExpMultiplier});
+  }
+
+  render() {
+    let startYear = this.props.startYear;
+    let yearsOut = this.props.yearsOut;
+    let versions = this.props.versions;
+    let activeVersionID = this.props.activeVersionID;
+    let programs = this.props.programs;
+    let displaySelections = this.props.displaySelections;
+    let editFcstExp = this.props.editFcstExp;
+
+    let curVersion = versions[activeVersionID];
+    let versionPeriod = curVersion.versionPeriod;
+    let nextPeriod = versionPeriod + 0.25;
+    let headcountSpend = calculateHeadcountSpend(curVersion.headcountEffort, programs);
+    
+    // Override the type to not sum in calculatedData function below//
+    let forecastDisplaySelections = keepCloning(displaySelections).map((period) => {
+      if (Math.floor(versionPeriod) === period.year) {
+        period.type = "Quarterly"
+      } else {
+        period.type = "Annual"
+      }
+      return period;
     })
 
-    let incurredProgSpend = 0;
-    totalProgSpendArray.forEach((period) => {
-      if (period.period <= versionPeriod) {
-        incurredSpend += period.amount;
-        incurredProgSpend += period.amount;
-      };
-    });
+    let incurredSpend = 0;
+    let programCostRow = programs.map((program, programIndex) => {
+      let totalProgSpendArray = curVersion.externalSpend[programIndex].map((period, periodIndex) => {
+        let newPeriod = keepCloning(period);
+        newPeriod.amount += headcountSpend[programIndex][periodIndex].amount;
+        return newPeriod;
+      })
 
-    let futureProgSpendArray = curVersion.forecastExpenses[programIndex].filter(period => period.period > versionPeriod);
+      let incurredProgSpend = 0;
+      totalProgSpendArray.forEach((period) => {
+        if (period.period < versionPeriod) {
+          incurredSpend += period.amount;
+          incurredProgSpend += period.amount;
+        };
+      });
 
-    return(
-      <React.Fragment>
-        <tr>
-          <td>{program.name}</td>
-          <td className="numerical">
-            <NumberFormat
-              displayType="text"
-              value={incurredProgSpend}
-              thousandSeparator={true}
-            />
-          </td>
-          <RevenueForecastRow
-            dataArray={futureProgSpendArray}
-            editAmount={editFcstExp}
-            programIndex={programIndex}
-            displaySelections={forecastDisplaySelections}
-            periodStart={nextPeriod}
-          />
-        </tr>
-      </React.Fragment>
-    )
-  });
+      let futureProgSpendArray = curVersion.forecastExpenses[programIndex].filter(period => period.period >= versionPeriod);
+      let totalProgSpend = arrayTotal(futureProgSpendArray) + incurredProgSpend;
 
-  let quarterLabels = periodLabels(nextPeriod, 1 - (nextPeriod % 1));
-  let periodHeaders = forecastDisplaySelections.map((selection, selectionIndex) => {
-    if (selection.type === "Annual" && selection.year > nextPeriod) {
-      quarterLabels.push("FY " + (Math.floor(versionPeriod) + selectionIndex));
-    }
-  })
-  let tableHeaders = quarterLabels.map((label) => {
-    return (
-      <React.Fragment>
-        <th className="numerical">{label}</th>
-      </React.Fragment>
-    )
-  })
-
-  let fcstExpArray = calculatePeriodTotal(keepCloning(curVersion.forecastExpenses));
-  fcstExpArray.unshift({period: versionPeriod, amount: incurredSpend});
-
-  let totalRevenue = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, curVersion.revenueMilestones, programs);
-  let revenueThruPeriod = arrayTotal(totalRevenue.filter(period => period.period <= versionPeriod));
-  let blankRevArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
-  let futurePrdBlankRevArray = blankRevArray.filter(period => period.period > versionPeriod);
-  let revenueProjection = calculateFcstRevenue(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray)
-  let displayType = displayArray(forecastDisplaySelections);
-  let reducedDisplayType = displayType.filter(period => period.period > versionPeriod);
-  let calculatedData = dataToDisplay(reducedDisplayType, revenueProjection);
-  let revenueProjectionRow = calculatedData.map((period) => {
-    return(
-      <React.Fragment>
-        <td className="numerical">
-          <NumberFormat
-            displayType="text"
-            value={rounding(period.amount,1)}
-            thousandSeparator={true}
-          /> 
-        </td>
-      </React.Fragment>
-    )
-  })
-
-  return(
-    <section id="RevenueForecast">
-      <h2>Revenue Forecast</h2>
-      <table>
-        <thead>
+      return(
+        <React.Fragment>
           <tr>
-            <th>Program</th>
-            <th>Incurred Spend thru {periodNumberToString(versionPeriod)}</th>
-            {tableHeaders}
-          </tr>
-        </thead>
-        <tbody>
-          {programCostRow}
-          <tr></tr>
-          <tr className="total">
-            <td>Projected Revenue Pattern</td>
+            <td>{program.name}</td>
             <td className="numerical">
               <NumberFormat
                 displayType="text"
-                value={rounding(revenueThruPeriod,1)}
+                value={incurredProgSpend}
                 thousandSeparator={true}
               />
             </td>
-            {revenueProjectionRow}
+            <RevenueForecastRow
+              dataArray={futureProgSpendArray}
+              editAmount={editFcstExp}
+              programIndex={programIndex}
+              displaySelections={forecastDisplaySelections}
+              periodStart={versionPeriod}
+            />
+            <td className="numerical">
+              <NumberFormat
+                displayType="text"
+                value={totalProgSpend}
+                thousandSeparator={true}
+              />
+            </td>
           </tr>
-        </tbody>
-      </table>
-    </section>
-  )
+        </React.Fragment>
+      )
+    });
+
+    let quarterLabels = periodLabels(versionPeriod, 1 - (versionPeriod % 1));
+    let periodHeaders = forecastDisplaySelections.map((selection, selectionIndex) => {
+      if (selection.type === "Annual" && selection.year > versionPeriod) {
+        quarterLabels.push("FY " + (Math.floor(versionPeriod) + selectionIndex));
+      }
+    })
+    let tableHeaders = quarterLabels.map((label) => {
+      return (
+        <React.Fragment>
+          <th className="numerical">{label}</th>
+        </React.Fragment>
+      )
+    })
+
+    let fcstExpArray = calculatePeriodTotal(keepCloning(curVersion.forecastExpenses));
+
+    let totalRevenue = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, curVersion.revenueMilestones, programs);
+    let revenueThruPeriod = arrayTotal(totalRevenue.filter(period => period.period < versionPeriod));
+    let blankRevArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
+    let futurePrdBlankRevArray = blankRevArray.filter(period => period.period >= versionPeriod);
+    let revenueProjection = calculateFcstRevenue(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod)
+    let displayType = displayArray(forecastDisplaySelections);
+    let reducedDisplayType = displayType.filter(period => period.period >= versionPeriod);
+    let calculatedData = dataToDisplay(reducedDisplayType, revenueProjection);
+    let totalFcstRevenue = arrayTotal(revenueProjection) + revenueThruPeriod;
+    let revenueProjectionRow = calculatedData.map((period) => {
+      return(
+        <React.Fragment>
+          <td className="numerical">
+            <NumberFormat
+              displayType="text"
+              value={rounding(period.amount,1)}
+              thousandSeparator={true}
+            /> 
+          </td>
+        </React.Fragment>
+      )
+    })
+
+    return(
+      <section id="RevenueForecast">
+        <h2>Revenue Forecast</h2>
+        <table>
+          <tbody>
+            <tr>
+              <td>Reset Expenses at a multiple of X%</td>
+              <td>
+                <NumberFormat
+                  value={this.state.copyExpMultiplier}
+                  className="numerical"
+                  onValueChange={(values, e) => this.setCopyExpMultiplier(values.value)}
+                  suffix={"%"}
+                  isNumericString={true}
+                />
+              </td>
+              <td>
+                <button>Copy</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th>Program</th>
+              <th>Incurred Spend thru {periodNumberToString(versionPeriod - 0.25)}</th>
+              {tableHeaders}
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {programCostRow}
+            <tr></tr>
+            <tr className="total">
+              <td>Projected Revenue Pattern</td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(revenueThruPeriod,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+              {revenueProjectionRow}
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(totalFcstRevenue,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    )
+  }
 }
 
 function RevenueForecastRow(props) {
