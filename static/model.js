@@ -665,8 +665,17 @@ export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpAr
   let revArray = blankRevArray.map((period, periodIndex) => {
     let newPeriod = keepCloning(period);
     let revAmount = 0;
-    let totalFcstExp = arrayTotal(fcstExpArray);
-    let totalFcstDollarCompleteCumm = dollarCompleteCummArray(fcstExpArray); 
+    let revThruPeriod = revenueThruPeriod;
+    let cummFcstExpArray = fcstExpArray.map((period) => {
+      let verPeriodIndex = fcstExpArray.map(function(e) { return e.period; }).indexOf(versionPeriod);
+      if (period.period < versionPeriod) {
+        fcstExpArray[verPeriodIndex].amount += period.amount;
+      }
+      return period;
+    });
+    let updFcstExpArray = cummFcstExpArray.filter(period => period.period >= versionPeriod);
+    let totalFcstExp = arrayTotal(updFcstExpArray);
+    let totalFcstDollarCompleteCumm = dollarCompleteCummArray(updFcstExpArray);
     let verPrdCummExpIndex = 0;
     if (periodIndex !== 0) {
       verPrdCummExpIndex = totalFcstDollarCompleteCumm.map(function(e) { return e.period; }).indexOf(versionPeriod - 0.25);
@@ -674,12 +683,20 @@ export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpAr
     let percentCompleteCumm = percentCompleteCummArray(totalFcstDollarCompleteCumm, totalFcstExp)
     revenueMilestones.forEach((milestone) => {
       let milestoneAmount = milestonePeriodCheck(milestone, period);
-      if (periodIndex === 0 && activeVersionID !==0) {
-        revAmount += (milestone.amount * percentCompleteCumm[periodIndex].amount) + ((milestone.amount * percentCompleteCumm[verPrdCummExpIndex].amount) - revenueThruPeriod);
-      } else if (periodIndex === 0) { 
-        revAmount += (milestone.amount * percentCompleteCumm[periodIndex].amount); 
-      } else if (milestone.dateEarned <= period.period) {
-        revAmount += milestone.amount * (percentCompleteCumm[periodIndex].amount - percentCompleteCumm[periodIndex - 1].amount)
+      let verPeriodIndex = percentCompleteCumm.map(function(e) { return e.period; }).indexOf(period.period);
+      if (milestone.dateEarned === period.period) {
+        if (verPeriodIndex === 0 && activeVersionID !== 0) {
+          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - revenueThruPeriod; 
+          revThruPeriod -= revThruPeriod
+        } else if (activeVersionID === 0) {
+          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount); 
+        }
+      } else if (milestone.dateEarned < period.period) {
+        if (verPeriodIndex === 0 && activeVersionID !== 0) {
+          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - revenueThruPeriod; 
+        } else {
+          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - ((milestone.amount * percentCompleteCumm[verPeriodIndex - 1].amount));
+        }
       }
     });
     newPeriod.amount = revAmount

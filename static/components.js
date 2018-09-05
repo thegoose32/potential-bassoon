@@ -76,6 +76,7 @@ export class PharmaRevRec extends React.Component {
 
     //Forecast Revenue
     this.editFcstExp = this.editFcstExp.bind(this);
+    this.setFcstExpMultiplier = this.setFcstExpMultiplier.bind(this);
   }
 
   setVersionState(versionChanges) {
@@ -423,6 +424,30 @@ export class PharmaRevRec extends React.Component {
     })
   }
 
+  setFcstExpMultiplier(multiplier, programs) {
+    this.setVersionState((prevState, props) => {
+      let fcstExp = keepCloning(prevState.forecastExpenses);
+      let newFcstExp = fcstExp.map((array, progIndex) => { 
+        let progExtSpend = prevState.externalSpend;
+        let progHCSpend = calculateHeadcountSpend(prevState.headcountEffort, programs);
+        let progTotalSpendArray = calculateTotalSpendArrays(progExtSpend, progHCSpend);
+        let newArray = array.map((fcstPeriod) => {
+          progTotalSpendArray[progIndex].forEach((expPeriod) => {
+            if (fcstPeriod.period === expPeriod.period) {
+              let multiplierNum = Number(multiplier) /100;
+              fcstPeriod.amount = expPeriod.amount * multiplierNum;
+            }
+          })
+          return fcstPeriod;
+        })
+      return array;
+    })
+    return {
+      forecastExpenses: newFcstExp
+    }
+  })
+}
+
   setComparisonModel(newModelIndex) {
     let newComparisonModel = newModelIndex;
     this.setVersionState({comparisonModelIndex: newComparisonModel});
@@ -636,6 +661,7 @@ export class PharmaRevRec extends React.Component {
             programs={programs}
             displaySelections={displaySelections}
             editFcstExp={this.editFcstExp}
+            setFcstExpMultiplier={this.setFcstExpMultiplier}
           />
         </div>
       </div>
@@ -2477,7 +2503,7 @@ class RevenueProjections extends React.Component {
                 />
               </td>
               <td>
-                <button>Copy</button>
+                <button onClick={(e) => this.props.setFcstExpMultiplier(this.state.copyExpMultiplier, programs)}>Copy</button>
               </td>
             </tr>
           </tbody>
@@ -2487,7 +2513,7 @@ class RevenueProjections extends React.Component {
           <thead>
             <tr>
               <th>Program</th>
-              <th>Incurred Spend thru {periodNumberToString(versionPeriod - 0.25)}</th>
+              <th>Incurred thru {periodNumberToString(versionPeriod - 0.25)}</th>
               {tableHeaders}
               <th>Total</th>
             </tr>
