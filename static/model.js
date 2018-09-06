@@ -410,6 +410,7 @@ export function setYearsOut(startYear, yearsOut) {
 
     let extSpend = prevState.externalSpend;
     let hcSpend = prevState.headcountEffort;
+    let fcstExp = prevState.forecastExpenses;
     
     let versions = prevState.versions;
     let newVersions = versions.map((version, versionIndex) => {
@@ -435,8 +436,15 @@ export function setYearsOut(startYear, yearsOut) {
         let arrayLength = editDataArrayLength(array, startYear, yearsOut);
         return editDataArrayYears(arrayLength, startYear, yearsOut);
       })
+      
+      let newFcstExp = newVersion.forecastExpenses.map((array) => {
+        let arrayLength = editDataArrayLength(array, startYear, yearsOut);
+        return editDataArrayYears(arrayLength, startYear, yearsOut);
+      })
+
       newVersion.externalSpend = newExtSpend;
       newVersion.headcountEffort = newHCEffort;
+      newVersion.forecastExpenses = newFcstExp;
       return newVersion;
     })
 
@@ -662,23 +670,24 @@ export function calculateTotalRevenueByMilestone(startYear, yearsOut, versions, 
 }
 
 export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod) {
+  let cummFcstExpArray = keepCloning(fcstExpArray);
+  cummFcstExpArray.forEach((period) => {
+    let verPeriodIndex = fcstExpArray.map(function(e) { return e.period; }).indexOf(versionPeriod);
+    if (period.period < versionPeriod) {
+      cummFcstExpArray[verPeriodIndex].amount += period.amount;
+    }
+    return period;
+  });
+  let revThruPeriod = revenueThruPeriod;
   let revArray = blankRevArray.map((period, periodIndex) => {
     let newPeriod = keepCloning(period);
     let revAmount = 0;
-    let revThruPeriod = revenueThruPeriod;
-    let cummFcstExpArray = fcstExpArray.map((period) => {
-      let verPeriodIndex = fcstExpArray.map(function(e) { return e.period; }).indexOf(versionPeriod);
-      if (period.period < versionPeriod) {
-        fcstExpArray[verPeriodIndex].amount += period.amount;
-      }
-      return period;
-    });
     let updFcstExpArray = cummFcstExpArray.filter(period => period.period >= versionPeriod);
     let totalFcstExp = arrayTotal(updFcstExpArray);
     let totalFcstDollarCompleteCumm = dollarCompleteCummArray(updFcstExpArray);
     let verPrdCummExpIndex = 0;
     if (periodIndex !== 0) {
-      verPrdCummExpIndex = totalFcstDollarCompleteCumm.map(function(e) { return e.period; }).indexOf(versionPeriod - 0.25);
+      verPrdCummExpIndex = totalFcstDollarCompleteCumm.map(function(e) { return e.period; }).indexOf(period.period - 0.25);
     }
     let percentCompleteCumm = percentCompleteCummArray(totalFcstDollarCompleteCumm, totalFcstExp)
     revenueMilestones.forEach((milestone) => {
@@ -688,7 +697,7 @@ export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpAr
         if (verPeriodIndex === 0 && activeVersionID !== 0) {
           revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - revenueThruPeriod; 
           revThruPeriod -= revThruPeriod
-        } else if (activeVersionID === 0) {
+        } else if (activeVersionID === 0 || milestone.dateEarned >= versionPeriod) {
           revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount); 
         }
       } else if (milestone.dateEarned < period.period) {
@@ -704,5 +713,39 @@ export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpAr
   });
   return revArray;
 }
+export function calculateFcstRevenueV2(revenueMilestones, blankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod) {
+  let cummFcstExpArray = keepCloning(fcstExpArray);
+  cummFcstExpArray.forEach((period) => {
+    let verPeriodIndex = fcstExpArray.map(function(e) { return e.period; }).indexOf(versionPeriod);
+    if (period.period < versionPeriod) {
+      cummFcstExpArray[verPeriodIndex].amount += period.amount;
+    }
+    return period;
+  });
+  let updFcstExpArray = cummFcstExpArray.filter(period => period.period >= versionPeriod);
+  let percentComplete = percentCompleteArray(updFcstExpArray)
+
+  let milestoneRevEarned = blankRevArray.map((period) => {
+    revenueMilestones.forEach((milestone) => {
+      if (milestone.dateEarned <= versionPeriod) {
+        period.amount += milestone.amount;
+      }
+    })
+    return period;
+  })
+
+  let revArray = blankRevArray.map((period, periodIndex) => {
+    let milestoneEarnedPeriod = milestoneRevEarned.filter(milestonePeriod => milestonePeriod.period === period.period);
+    let cummFcstExpPeriod = percentComplete.filter(cummFcstPeriod => cummFcstPeriod.period === period.period);
+    if (period.period === versionPeriod + 0.25 && activeVersionID !== 0) {
+      period.amount = (milestoneEarnedPeriod[0].amount * cummFcstExpPeriod[0].amount) - revenueThruPeriod;
+    } else {
+      period.amount = (milestoneEarnedPeriod[0].amount * cummFcstExpPeriod[0].amount);
+    }
+    return period;
+  });
+  return revArray;
+}
+
 
 

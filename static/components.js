@@ -16,7 +16,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   setYearsOut, calculatePriorVersionIndex, periodStringToNumber, 
   percentCompleteCummArrayFromData, periodNumberToString, milestonePeriodCheck, 
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
-  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone, calculateFcstRevenue
+  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone, calculateFcstRevenue, calculateFcstRevenueV2
 
 } from './model'
 
@@ -2467,7 +2467,7 @@ class RevenueProjections extends React.Component {
     let revenueThruPeriod = arrayTotal(totalRevenue.filter(period => period.period < versionPeriod));
     let blankRevArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
     let futurePrdBlankRevArray = blankRevArray.filter(period => period.period >= versionPeriod);
-    let revenueProjection = calculateFcstRevenue(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod)
+    let revenueProjection = calculateFcstRevenueV2(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod)
     let displayType = displayArray(forecastDisplaySelections);
     let reducedDisplayType = displayType.filter(period => period.period >= versionPeriod);
     let calculatedData = dataToDisplay(reducedDisplayType, revenueProjection);
