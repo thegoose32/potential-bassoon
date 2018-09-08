@@ -163,7 +163,8 @@ export function displayArray(displaySelections) {
 }
 
 export function dataToDisplay(displayType, dataArray) {
-  let dataRows = displayType.map((displayPeriod) => {
+  let newDisplayType = keepCloning(displayType);
+  let dataRows = newDisplayType.map((displayPeriod) => {
     dataArray.forEach((amount, amountIndex) => {
       if (displayPeriod.period === amount.period && displayPeriod.type === "Quarterly") {
         displayPeriod.amount += amount.amount;
@@ -670,50 +671,6 @@ export function calculateTotalRevenueByMilestone(startYear, yearsOut, versions, 
 }
 
 export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod) {
-  let cummFcstExpArray = keepCloning(fcstExpArray);
-  cummFcstExpArray.forEach((period) => {
-    let verPeriodIndex = fcstExpArray.map(function(e) { return e.period; }).indexOf(versionPeriod);
-    if (period.period < versionPeriod) {
-      cummFcstExpArray[verPeriodIndex].amount += period.amount;
-    }
-    return period;
-  });
-  let revThruPeriod = revenueThruPeriod;
-  let revArray = blankRevArray.map((period, periodIndex) => {
-    let newPeriod = keepCloning(period);
-    let revAmount = 0;
-    let updFcstExpArray = cummFcstExpArray.filter(period => period.period >= versionPeriod);
-    let totalFcstExp = arrayTotal(updFcstExpArray);
-    let totalFcstDollarCompleteCumm = dollarCompleteCummArray(updFcstExpArray);
-    let verPrdCummExpIndex = 0;
-    if (periodIndex !== 0) {
-      verPrdCummExpIndex = totalFcstDollarCompleteCumm.map(function(e) { return e.period; }).indexOf(period.period - 0.25);
-    }
-    let percentCompleteCumm = percentCompleteCummArray(totalFcstDollarCompleteCumm, totalFcstExp)
-    revenueMilestones.forEach((milestone) => {
-      let milestoneAmount = milestonePeriodCheck(milestone, period);
-      let verPeriodIndex = percentCompleteCumm.map(function(e) { return e.period; }).indexOf(period.period);
-      if (milestone.dateEarned === period.period) {
-        if (verPeriodIndex === 0 && activeVersionID !== 0) {
-          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - revenueThruPeriod; 
-          revThruPeriod -= revThruPeriod
-        } else if (activeVersionID === 0 || milestone.dateEarned >= versionPeriod) {
-          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount); 
-        }
-      } else if (milestone.dateEarned < period.period) {
-        if (verPeriodIndex === 0 && activeVersionID !== 0) {
-          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - revenueThruPeriod; 
-        } else {
-          revAmount += (milestone.amount * percentCompleteCumm[verPeriodIndex].amount) - ((milestone.amount * percentCompleteCumm[verPeriodIndex - 1].amount));
-        }
-      }
-    });
-    newPeriod.amount = revAmount
-    return newPeriod;
-  });
-  return revArray;
-}
-export function calculateFcstRevenueV2(revenueMilestones, blankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod) {
   let cummFcstExpArray = keepCloning(fcstExpArray);
   cummFcstExpArray.forEach((period) => {
     let verPeriodIndex = fcstExpArray.map(function(e) { return e.period; }).indexOf(versionPeriod);

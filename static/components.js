@@ -16,7 +16,7 @@ import {displayOptions, newAmounts, defaultState, displayArray, dataToDisplay, p
   setYearsOut, calculatePriorVersionIndex, periodStringToNumber, 
   percentCompleteCummArrayFromData, periodNumberToString, milestonePeriodCheck, 
   totalVarPercComplete, totalSpendVariance, programWeightedAvg,
-  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone, calculateFcstRevenue, calculateFcstRevenueV2
+  totalProgSpend, incurredTotalSpend, revenueVersionIndexArray, calculateCurrentPeriodRev, calculatePriorPrdTrueup, calculateTotalRevenue, calculateTotalRevenueByMilestone, calculateFcstRevenue
 
 } from './model'
 
@@ -2467,12 +2467,12 @@ class RevenueProjections extends React.Component {
     let revenueThruPeriod = arrayTotal(totalRevenue.filter(period => period.period < versionPeriod));
     let blankRevArray = revenueVersionIndexArray(startYear, yearsOut, versions, activeVersionID);
     let futurePrdBlankRevArray = blankRevArray.filter(period => period.period >= versionPeriod);
-    let revenueProjection = calculateFcstRevenueV2(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod)
-    let displayType = displayArray(forecastDisplaySelections);
-    let reducedDisplayType = displayType.filter(period => period.period >= versionPeriod);
-    let calculatedData = dataToDisplay(reducedDisplayType, revenueProjection);
+    let revenueProjection = calculateFcstRevenue(curVersion.revenueMilestones, futurePrdBlankRevArray, fcstExpArray, versionPeriod, activeVersionID, revenueThruPeriod)
+    let fcstRevDisplayType = displayArray(forecastDisplaySelections);
+    let fcstRevReducedDisplayType = fcstRevDisplayType.filter(period => period.period >= versionPeriod);
+    let fcstRevCalcData = dataToDisplay(fcstRevReducedDisplayType, revenueProjection);
     let totalFcstRevenue = arrayTotal(revenueProjection) + revenueThruPeriod;
-    let revenueProjectionRow = calculatedData.map((period) => {
+    let revenueProjectionRow = fcstRevCalcData.map((period) => {
       return(
         <React.Fragment>
           <td className="numerical">
@@ -2484,7 +2484,32 @@ class RevenueProjections extends React.Component {
           </td>
         </React.Fragment>
       )
-    })
+    });
+
+    let revenueProjectionDiff = revenueProjection.map((fcstPeriod) => {
+      let newFcstPeriod = keepCloning(fcstPeriod);
+      totalRevenue.forEach((revPeriod) => {
+        if (fcstPeriod.period === revPeriod.period) {
+          newFcstPeriod.amount = fcstPeriod.amount - revPeriod.amount;
+        }
+      });
+      return newFcstPeriod;
+    });
+    let revDiffCalcData = dataToDisplay(fcstRevReducedDisplayType, revenueProjectionDiff);
+
+    let revenueProjectionDiffRow = revDiffCalcData.map((period) => {
+      return(
+        <React.Fragment>
+          <td className="numerical">
+            <NumberFormat
+              displayType="text"
+              value={rounding(period.amount,1)}
+              thousandSeparator={true}
+            /> 
+          </td>
+        </React.Fragment>
+      )
+    });
 
     return(
       <section id="RevenueForecast">
@@ -2539,6 +2564,18 @@ class RevenueProjections extends React.Component {
                 />
               </td>
             </tr>
+            <tr className="total">
+              <td>GAAP revenue diff</td>
+              <td className="numerical">0</td>
+              {revenueProjectionDiffRow}
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(arrayTotal(revenueProjectionDiff),1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr> 
           </tbody>
         </table>
       </section>
