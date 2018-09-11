@@ -515,6 +515,23 @@ export class PharmaRevRec extends React.Component {
 
     let priorVersionIndex = calculatePriorVersionIndex(versions, priorVersionID);
 
+    let csvLabel = [
+      {label: 'Item', key: 'label'},
+    ];
+
+    periodLabels(startYear, yearsOut).forEach((label, labelIndex) => {
+      let labelKey = 'period' + labelIndex;
+      csvLabel.push({label: label, key: labelKey});
+    });
+
+    let periodRev = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs); 
+    let csvData = [{}]; 
+    periodRev.forEach((period, periodIndex) => {
+      let labelKey = 'period' + periodIndex;
+      csvData[0][labelKey] = period.amount
+    });
+    csvData[0].label = 'Revenue';
+
     return (
       <div id="grid">
         <HeaderBar
@@ -526,6 +543,8 @@ export class PharmaRevRec extends React.Component {
           versions={this.state.versions}
           activeVersionID={this.state.activeVersionID}
           setActiveVersionID={this.setActiveVersionID}
+          csvLabel={csvLabel}
+          csvData={csvData}
         />
         <div id="content">
           <ModelSetup
@@ -693,6 +712,8 @@ function SideNavigation(props) {
     versions,
     activeVersionID,
     setActiveVersionID,
+    csvData,
+    csvLabel
   } = props;
 
   let versionNames = versions.map((version) => {
@@ -724,6 +745,13 @@ function SideNavigation(props) {
           </td>
         </tr>
       </table>
+      <hr></hr>
+      <CSVLink
+        filename={"Rev-rec-model.csv"}
+        data={csvData}
+        headers={csvLabel}
+      > Export Data
+      </CSVLink>
     </div>
   )
 }
