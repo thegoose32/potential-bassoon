@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import NumberFormat from 'react-number-format';
 import {CSVLink} from 'react-csv';
 import NumericInput from 'react-numeric-input';
+import Popover from 'react-simple-popover';
 NumericInput.style = null;
 
 var math = require('math.js');
@@ -557,7 +558,7 @@ export class PharmaRevRec extends React.Component {
             endYear={endYear}
             setEndYear={this.setEndYear}
           />
-          <ScenarioManager
+          <VersionManager
             versions={this.state.versions}
             addVersion={this.addVersion}
             deleteVersion={this.deleteVersion}
@@ -671,6 +672,7 @@ export class PharmaRevRec extends React.Component {
             versions={versions}
             versionNames={versionNames}
             activeVersionID={activeVersionID}
+            versionPeriod={versionPeriod}
           /> 
           <RevenueProjections
             startYear={startYear}
@@ -846,7 +848,7 @@ class ModelSetup extends React.Component {
   }
 }
 
-function ScenarioManager(props) { 
+function VersionManager(props) { 
   const {
     versions,
     addVersion,
@@ -864,17 +866,7 @@ function ScenarioManager(props) {
   let versionRows = versions.map((version, index) => {
     let versionName = version.versionName;
     let versionPeriod = periodNumberToString(version.versionPeriod);
-    let priorScenarioName;
-    versions.forEach((priorScenario) => {
-      if (version.priorVersionID === priorScenario.versionID) {
-        priorScenarioName = priorScenario.versionName;
-      }
-    });
     if (index === 0 || index === activeVersionID) {
-      let priorScenarioLabel = priorScenarioName;
-      if (index === 0) {
-        priorScenarioLabel = "N/A - Initial Model";
-      }
       return (
         <React.Fragment>
           <tr>
@@ -892,7 +884,6 @@ function ScenarioManager(props) {
                 <Dropdown options={periodSelections}/>
               </select>
             </td>
-            <td>{priorScenarioLabel}</td>
             <td></td>
           </tr>
         </React.Fragment>
@@ -908,7 +899,6 @@ function ScenarioManager(props) {
               />
             </td>
             <td>{versionPeriod}</td>
-            <td>{priorScenarioName}</td>
             <DeleteItem index={index} removeItem={deleteVersion} />
           </tr>
         </React.Fragment>
@@ -918,13 +908,12 @@ function ScenarioManager(props) {
   
   return (
     <section id="Versions">
-      <h2>Version Manager</h2>
+      <h2 title="The version manager is used to track each quarter close model. Amounts are locked for any period before the version period.">Version Manager</h2>
       <table className="actions-column">
         <thead>
           <tr>
             <th>Name</th>
             <th>Version Period</th>
-            <th>Prior Version</th>
             <th></th>
           </tr>
         </thead>
@@ -966,7 +955,7 @@ function YearDisplay(props) {
 
   return (
     <section id="Years_Display">
-      <h2>Years Display</h2>
+      <h2 title="Change the display type to show data by year or by quarter.">Years Display</h2>
       <table>
         <thead>
           <tr>
@@ -1182,13 +1171,13 @@ function ExternalSpend (props) {
               startYear={startYear}
               displaySelections={displaySelections}
             />
-            <th>Total External Spend</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
           {externalSpendRow}
           <tr className="total">
-            <td>Total External Spend</td>
+            <td>Total</td>
             <TotalRows
               displaySelections={displaySelections}
               dataArray={totalExternalSpend}
@@ -1226,13 +1215,6 @@ function HeadcountEffort (props) {
       <React.Fragment>
         <tr>
           <td>{programs[hcEffortIndex].name}</td>
-          <td className="numerical">
-            <NumberFormat
-              displayType="text"
-              value={programs[hcEffortIndex].fteRate}
-              thousandSeparator={true}
-            />
-          </td>
           <HeadcountEffortRow
             startYear={startYear}
             displaySelections={displaySelections}
@@ -1265,20 +1247,18 @@ function HeadcountEffort (props) {
         <thead>
           <tr>
             <th>Program</th>
-            <th>Annual FTE Rate</th>
             <TablePeriodHeaders
               startYear={startYear}
               displaySelections={displaySelections}
             />
-            <th>Total Headcount Effort</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
           {headcountEffortRow}
           <tr className="total">
-            <td>Total Headcount Effort</td>
-            <td></td>
-            <TotalRows
+            <td>Total</td>
+            <CummulativeTotalRows
               displaySelections={displaySelections}
               dataArray={totalHeadcountEffort}
             />
@@ -1414,13 +1394,13 @@ function HeadcountSpend (props) {
               startYear={startYear}
               displaySelections={displaySelections}
             />
-            <th>Total Headcount Spend</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
           {headcountEffortRow}
           <tr className="total">
-            <td>Total Headcount Spend</td>
+            <td>Total</td>
             <td></td>
             <TotalRows
               displaySelections={displaySelections}
@@ -1695,7 +1675,7 @@ class RevenueRecognizedModel extends React.Component {
           <tbody>
             {milestoneRows}
             <tr className="total">
-              <td>Total Revenue</td>
+              <td>Total QTD Revenue</td>
               <TotalRows
                 displaySelections={displaySelections}
                 dataArray={totalRevenueArray}
@@ -2286,7 +2266,7 @@ class ExpenseAnalytics extends React.Component {
             <td className="numerical">
               <NumberFormat
                 displayType="text"
-                value={diffPercent*100}
+                value={rounding(diffPercent*100,10000)}
                 suffix={"%"}
               />
             </td>
@@ -2959,3 +2939,39 @@ function CummulativeTotalRows(props) {
   return dataCells;
 }
 
+class PopoverDemo extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false
+    };
+  }
+
+  handleClick(e) {
+    this.setState({open: !this.state.open});
+  }
+
+  handleClose(e) {
+    this.setState({open: false});
+  }
+
+  render() {
+    return (
+      <div>
+        <a
+          href="#"
+          className="button"
+          ref="target"
+          onClick={this.handleClick.bind(this)}>Popover</a>
+        <Popover
+          placement='left'
+          container={this}
+          target={this.refs.target}
+          show={this.state.open}
+          onHide={this.handleClose.bind(this)} >
+          <p>This is popover</p>
+        </Popover>
+      </div>
+    );
+  }
+}

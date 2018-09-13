@@ -279,6 +279,10 @@ tr {
   }
 }
 
+tbody tr:hover:not(.total, .sub-total) {
+    background-color: #f2f2f2;
+}
+
 td {
   border-bottom: 1px solid #DDDDDD;
   color: #555;
@@ -306,6 +310,10 @@ th {
   }
 }
 
+h2[title]:not([title=""]) {
+    cursor: help;
+}
+
 input, select {
   background: none;
   border: none;
@@ -317,6 +325,8 @@ input, select {
   -webkit-appearance: none;
   width: 100%;
   height: 100%;
+  color: #2B5D56;
+  font-weight: 400;
 
   &.numericalShort {
     text-align: right;
