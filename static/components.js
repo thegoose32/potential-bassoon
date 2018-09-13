@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import NumberFormat from 'react-number-format';
 import {CSVLink} from 'react-csv';
 import NumericInput from 'react-numeric-input';
-import Popover from 'react-simple-popover';
 NumericInput.style = null;
 
 var math = require('math.js');
