@@ -797,11 +797,11 @@ class ModelSetup extends React.Component {
 
     return (
       <section id="Model_Setup">
-        <h2>Model Setup</h2>
+        <h2>Setup</h2>
         <table>
           <tbody>
             <tr>
-              <th>Model Name</th>
+              <th>Performance Obligation</th>
               <td className="long">
                 <input
                   value={modelName}
@@ -1009,7 +1009,7 @@ function Programs(props) {
 
   return (
     <section id="Programs">
-      <h2>Programs under Revenue Model</h2>
+      <h2>Programs under Performance Obligation</h2>
       <table className="actions-column">
         <thead>
           <tr>
@@ -1083,7 +1083,7 @@ function RevenueMilestones(props) {
 
   return (
     <section id="Revenue-Milestones">
-      <h2>Revenue Milestones</h2>
+      <h2>Transaction Price</h2>
       <table className="actions-column">
         <thead>
           <tr>
@@ -1096,7 +1096,7 @@ function RevenueMilestones(props) {
         <tbody>
           {revenueRows}
           <tr className="total">
-            <td>Total Milestones</td>
+            <td>Total Transaction Price</td>
             <td></td>
             <td className="numerical">
               <NumberFormat
@@ -1161,7 +1161,7 @@ function ExternalSpend (props) {
 
   return (
     <section id="External-Spend">
-      <h2>External Program Spend</h2>
+      <h2 title="Enter the actual and forecasted external spend to complete the performance obligation">External Spend Inputs</h2>
       <table>
         <thead>
           <tr>
@@ -1241,7 +1241,7 @@ function HeadcountEffort (props) {
 
   return (
     <section id="Headcount-Effort">
-      <h2>Headcount Effort by Program</h2>
+      <h2 title="Enter the actual and forecasted FTE effort to complete the performance obligation">Headcount Effort Inputs</h2>
       <table>
         <thead>
           <tr>
@@ -1383,7 +1383,7 @@ function HeadcountSpend (props) {
 
   return (
     <section id="Headcount-Spend">
-      <h2>Headcount Spend by Program</h2>
+      <h2 title="Displays the FTE cost to complete the performance obligation. Calculated based on FTE rate times the FTE effort." >Headcount Spend</h2>
       <table>
         <thead>
           <tr>
@@ -1775,6 +1775,22 @@ function DeferredRevenueRoll (props) {
     period.amount = begBalance;
   })
 
+  let defRevSTBalance = addDataArray(startYear, yearsOut);
+  defRevSTBalance.map((period, periodIndex) => {
+    let STBalance = 0;
+    totalRevenueEarned.forEach((revPeriod, revPeriodIndex) => {
+      if (periodIndex < revPeriodIndex && revPeriodIndex < periodIndex + 4) {
+        STBalance += revPeriod.amount;
+      }
+    });
+    period.amount = STBalance;
+  });
+
+  let defRevLTBalance = addDataArray(startYear, yearsOut);
+  defRevLTBalance.map((period, periodIndex) => {
+    period.amount = deferredRevEndBalance[periodIndex].amount - defRevSTBalance[periodIndex].amount;
+  });
+
   return (
     <section id="Deferred-Revenue-Rollforward">
       <h2>Deferred Revenue Rollforward</h2>
@@ -1821,6 +1837,25 @@ function DeferredRevenueRoll (props) {
               versionPeriod={versionPeriod}
             />
           </tr>
+          <tr className="total">
+            <td>ST Balance</td>
+            <CummulativeTotalRows
+              displaySelections={displaySelections}
+              dataArray={defRevSTBalance}
+              startOrEnd="end"
+              versionPeriod={versionPeriod}
+            />
+          </tr>
+          <tr className="total">
+            <td>LT Balance</td>
+            <CummulativeTotalRows
+              displaySelections={displaySelections}
+              dataArray={defRevLTBalance}
+              startOrEnd="end"
+              versionPeriod={versionPeriod}
+            />
+          </tr>
+
         </tbody>
       </table>
     </section>
@@ -2177,7 +2212,7 @@ class ExpenseAnalytics extends React.Component {
             <td className="numerical">
               <NumberFormat
                 displayType="text"
-                value={diffPercent*100}
+                value={rounding(diffPercent*100,10000)}
                 suffix={"%"}
               />
             </td>
@@ -2221,7 +2256,7 @@ class ExpenseAnalytics extends React.Component {
             <td className="numerical">
               <NumberFormat
                 displayType="text"
-                value={diffPercent*100}
+                value={rounding(diffPercent*100,10000)}
                 suffix={"%"}
               />
             </td>
