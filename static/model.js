@@ -694,7 +694,7 @@ export function calculateFcstRevenue(revenueMilestones, blankRevArray, fcstExpAr
   let revArray = blankRevArray.map((period, periodIndex) => {
     let milestoneEarnedPeriod = milestoneRevEarned.filter(milestonePeriod => milestonePeriod.period === period.period);
     let cummFcstExpPeriod = percentComplete.filter(cummFcstPeriod => cummFcstPeriod.period === period.period);
-    if (period.period === versionPeriod && activeVersionID !== 0) {
+    if (period.period === versionPeriod) {
       period.amount = (milestoneEarnedPeriod[0].amount * cummFcstExpPeriod[0].amount) - revenueThruPeriod;
     } else {
       period.amount = (milestoneEarnedPeriod[0].amount * cummFcstExpPeriod[0].amount);
