@@ -1,8 +1,5 @@
-import os
-
 import pytest
 import selenium
-from selenium.webdriver.chrome.options import Options
 
 import chromedriver_binary  # adds chromedriver to the path
 
