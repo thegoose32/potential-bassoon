@@ -6,6 +6,7 @@
 #
 atomicwrites==1.2.1       # via pytest
 attrs==18.2.0             # via pytest
+chromedriver-binary==2.42.0
 dj-database-url==0.5.0
 django-dotenv==1.4.2
 django==2.1.2
