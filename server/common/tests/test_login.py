@@ -1,5 +1,6 @@
-from common.tests.pages import LoginPage
 import time
+
+from common.tests.pages import LoginPage
 
 
 def test_login(driver):
