@@ -1,0 +1,10 @@
+django
+gunicorn
+dj-database-url
+psycopg2-binary
+honcho
+django-dotenv
+selenium
+chromedriver-binary
+pytest
+pytest-django
