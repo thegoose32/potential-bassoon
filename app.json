@@ -3,7 +3,10 @@
     "test": {
       "scripts": {
         "test": "./test"
-      }
+      },
+      "addons": [
+        "heroku-postgresql:in-dyno"
+      ]
     }
   },
   "buildpacks": [
