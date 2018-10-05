@@ -6,6 +6,9 @@
       },
       "addons": [
         "heroku-postgresql:in-dyno"
+      ],
+      "buildpacks": [       
+        {"url": "https://github.com/heroku/heroku-buildpack-google-chrome"}
       ]
     }
   },
