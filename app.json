@@ -1,0 +1,13 @@
+{
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "./test"
+      }
+    }
+  },
+  "buildpacks": [
+    {"url": "heroku/nodejs"},
+    {"url": "heroku/python"}
+  ]
+}
