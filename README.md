@@ -2,9 +2,7 @@
 
 ## System Dependencies
 
-- Python 3.6.x
-- Node 9.4.x
-- Postgres 9.6.x or higher
+See the buildall script for required system dependencies.
 
 ## Setup
 
