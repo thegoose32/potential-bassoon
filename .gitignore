@@ -4,3 +4,4 @@ server/collected_static
 node_modules
 dist
 .DS_Store
+.python-version
