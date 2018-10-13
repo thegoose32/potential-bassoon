@@ -1,10 +1,14 @@
-from server.common.export import Cell
+from common.export import Cell
 
 
-class TestCell(object):
-    def test_decode_colrow(self):
+class TestCell:
+    def test_decode_colrow_a1(self):
         assert Cell.decode_colrow('A1') == (0, 0)
+
+    def test_decode_colrow_b1(self):
         assert Cell.decode_colrow('B1') == (0, 1)
+
+    def test_decode_colrow_aa65(self):
         assert Cell.decode_colrow('aa65') == (64, 26)
 
     def test_creation(self):

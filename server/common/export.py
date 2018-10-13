@@ -1,15 +1,9 @@
 import re
 
 
-class Cell(object):
-    row = 0
-    col = 0
-    formula = 0
-    value = None
-    format_name = ""
-
-    @staticmethod
-    def decode_colrow(colrow):
+class Cell:
+    @classmethod
+    def decode_colrow(clazz, colrow):
         match = re.match(r'([A-Za-z]+)(\d+)', colrow)
         if match is None:
             raise ValueError(colrow + " is not a legal cell reference")
@@ -21,8 +15,8 @@ class Cell(object):
         row = int(match.group(2))
         return row-1, col-1
 
-    @staticmethod
-    def encode_colrow(row, col):
+    @classmethod
+    def encode_colrow(clazz, row, col):
         if row is None or col is None:
             return None
 
@@ -55,3 +49,4 @@ class Cell(object):
     @property
     def colrow(self):
         return Cell.encode_colrow(self.row, self.col)
+
