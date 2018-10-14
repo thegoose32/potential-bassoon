@@ -12,7 +12,7 @@ class TestCell:
         assert Cell.decode_colrow('aa65') == (64, 26)
 
     def test_creation(self):
-        c = Cell(5, 7, 3, format="my_format")
+        c = Cell.from_coordinates(5, 7, 3, format_name="my_format")
         assert c.row == 5
         assert c.col == 7
         assert c.formula == 3
@@ -20,7 +20,7 @@ class TestCell:
         assert c.format == "my_format"
 
     def test_creation_2(self):
-        c = Cell("DD3", "C1+C2")
+        c = Cell.from_colrow("DD3", "C1+C2")
         assert c.row == 2
         assert c.col == 107
         assert c.formula == "C1+C2"

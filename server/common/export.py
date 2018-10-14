@@ -1,9 +1,10 @@
 import re
+import json
 
 
 class Cell:
-    @classmethod
-    def decode_colrow(clazz, colrow):
+    @staticmethod
+    def decode_colrow(colrow):
         match = re.match(r'([A-Za-z]+)(\d+)', colrow)
         if match is None:
             raise ValueError(colrow + " is not a legal cell reference")
@@ -15,8 +16,8 @@ class Cell:
         row = int(match.group(2))
         return row-1, col-1
 
-    @classmethod
-    def encode_colrow(clazz, row, col):
+    @staticmethod
+    def encode_colrow(row, col):
         if row is None or col is None:
             return None
 
@@ -30,23 +31,23 @@ class Cell:
                 break
         return letter_accum + str(1 + row)
 
-    def __init__(self, *args, **kwargs):
-        if len(args) == 3 and type(args[0]) is int and type(args[1]) is int:
-            self.row = args[0]
-            self.col = args[1]
-            ix_formula = 2
-        elif len(args) == 2 and type(args[0]) is str:
-            colrow = Cell.decode_colrow(args[0])
-            self.row = colrow[0]
-            self.col = colrow[1]
-            ix_formula = 1
-        else:
-            raise ValueError('bad arguments for cell constructor')
-        self.formula = args[ix_formula]
-        if "format" in kwargs:
-            self.format = kwargs["format"]
+    def __init__(self, row, col, formula, format_name = None):
+        self.row = row
+        self.col = col
+        self.format = format_name
+        self.formula = formula
+
+    @classmethod
+    def from_coordinates(cls, row, col, formula, format_name=None):
+        return cls(row, col, formula, format_name)
+
+    @classmethod
+    def from_colrow(cls, colrow, formula, format_name=None):
+        row, col = Cell.decode_colrow(colrow)
+        return cls(row, col, formula, format_name)
 
     @property
     def colrow(self):
         return Cell.encode_colrow(self.row, self.col)
+
 
