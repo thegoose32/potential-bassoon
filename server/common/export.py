@@ -64,6 +64,9 @@ class ExportVersion:
 
     @classmethod
     def from_json(cls, json_vals, quarter_index, num_quarters):
+        # this internal routine is used to convert a list in the form [{period, value}, ...] to [value, ...] where
+        # the period is the index.  The latter is way simpler to use.  Brute force; allocate an empty list, then set
+        # the values in it.
         def value_map_to_list(value_map_lists):
             by_program_by_quarter = []
             for value_map_list in value_map_lists:
@@ -73,10 +76,7 @@ class ExportVersion:
                 by_program_by_quarter.append(value_list)
             return by_program_by_quarter
 
-        display_selections = {}
-        for ds in json_vals['displaySelections']:
-            display_selections[ds['year']] = ds['type']
-
+        display_selections = {ds['year']: ds['type'] for ds in json_vals['displaySelections']}
         revenue_milestones = json_vals['revenueMilestones']
 
         return cls(
@@ -108,11 +108,8 @@ class ExportModel:
         model_name = model['modelName']
         start_year = int(model['startYear'])
         end_year = int(model['endYear'])
-        program_names = []
-        program_fte_rates = []
-        for pi in model['programs']:
-            program_names.append(pi['name'])
-            program_fte_rates.append(pi['fteRate'])
+        program_names = [pi['name'] for pi in model['programs']]
+        program_fte_rates = [pi['fteRate'] for pi in model['programs']]
 
         quarter_index = {}
         num_quarters = 0
