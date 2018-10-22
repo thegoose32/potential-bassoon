@@ -8,3 +8,4 @@ selenium
 chromedriver-binary
 pytest
 pytest-django
+xlsxwriter
