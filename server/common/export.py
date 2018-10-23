@@ -222,9 +222,9 @@ class ExportSheet:
         for name, reference in references.items():
             colrow = build_colrow(reference)
             formula = formula.replace(name, colrow)
-        return formula
+        return "=" + formula
 
-    def fill_formula(self, formula, rows, cols, format_name=""):
+    def fill_formula(self, formula, rows, cols, format_name="", overwrite=False):
         # this is a trade-off.  we could process all references, which is wasteful, or make copies -- wasteful
         # if all references were used in every formula, then active_references would make things worse
         # here we are betting that most formulas will use only one or two of many references
@@ -233,8 +233,23 @@ class ExportSheet:
         for row_offset in range(0, rows):
             for col_offset in range(0, cols):
                 translated_formula = self.translate_references(formula, active_references, row_offset, col_offset)
-                self.cells.append(Cell.from_coordinates(self.current_row + row_offset, self.current_col + col_offset,
-                                                        translated_formula, format_name))
+                new_cell = Cell.from_coordinates(
+                    self.current_row + row_offset,
+                    self.current_col + col_offset,
+                    translated_formula,
+                    format_name
+                )
+                put_at = -1
+                if overwrite:
+                    put_at = next((ix for ix, cell in enumerate(self.cells)
+                         if cell.row == new_cell.row and cell.col == new_cell.col),
+                        -1
+                    )
+                if put_at == -1:
+                    self.cells.append(new_cell)
+                else:
+                    self.cells[put_at] = new_cell
+
         self.current_col = self.current_col + cols
         self.next_row = self.current_row + rows
 
@@ -318,6 +333,7 @@ class ExportSheet:
         # Total Spend in percent
         new.bump_row()
         new.insert_col(["Total Development Costs (%)"])
+        new.set_reference('total_development_percent')
         new.fill_formula("[total_spend_dollars]/[grand_total_spend_dollars]", 1, len(model.quarter_index), "percent")
 
         # Running total dollars
@@ -336,27 +352,34 @@ class ExportSheet:
         new.fill_formula("[running_total_dollars]/[grand_total_spend_dollars]", 1, len(model.quarter_index), "percent")
 
         # Recognized Revenue
+        # First, fill out as though this is the only sheet
         new.bump_row(2)
         new.quarter_heading("Revenue Recognized")
         # Note that we can do a "forward reference" but we've got to keep track of rows to do this.
         # don't forget the label in the offset
         new.set_reference("revenue_pool", offset_row=3, offset_col=1)
-        new.insert_col(["Running QTD Revenue"])
+        new.set_reference("running_total_revenue", offset_row=1, offset_col=1)
+        # running OTD revenue line.  Two formulas and a sum
+        new.insert_col(["Total QTD Revenue"])
         new.set_reference("qtd_revenue")
-        if len(sheets) > 0:
-            # when there are pre-existing sheets, reference previous period's data when it is set
-            cols_already_done = len(sheets)
-        else:
-            # first column is a special case
-            cols_already_done = 1
-        new.set_reference("previous_recognized", offset_col=-1)
-
-        # references need to be offset to allow for cells we are calculating otherwise
-        new.shift_reference('running_total_percent', offset_col=cols_already_done)
-        new.shift_reference('revenue_pool', offset_col=cols_already_done)
+        sum_base = new.colrow
+        new.fill_formula("[total_development_percent]*[revenue_pool]", 1, 1, "whole_dollar")
+        new.fill_formula("([running_total_percent]*[revenue_pool])-[running_total_revenue]",
+                         1,
+                         len(model.quarter_index)-1,
+                         "whole_dollar"
+        )
+        new.insert_single_sum(sum_base, "whole_dollar")
+        # running total revenue
+        new.bump_row()
+        new.insert_col(["Running QTD Revenue"])
+        new.fill_formula("[running_total_percent]*[revenue_pool]", 1, len(model.quarter_index), "whole_dollar")
+        # revenue pool
+        new.bump_row(2)
+        new.insert_col(["Revenue Pool at Period End"])
 
         new.fill_formula("([running_total_percent]*[revenue_pool])-[previous_recognized]",
-                         1, len(model.quarter_index) - cols_already_done, "whole_dollar")
+                         1, len(model.quarter_index), "whole_dollar")
         new.insert_sum_col(1, len(model.quarter_index), "whole_dollar")
         new.bump_row()
 
