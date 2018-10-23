@@ -242,9 +242,7 @@ class ExportSheet:
                 put_at = -1
                 if overwrite:
                     put_at = next((ix for ix, cell in enumerate(self.cells)
-                         if cell.row == new_cell.row and cell.col == new_cell.col),
-                        -1
-                    )
+                                   if cell.row == new_cell.row and cell.col == new_cell.col), -1)
                 if put_at == -1:
                     self.cells.append(new_cell)
                 else:
@@ -368,7 +366,7 @@ class ExportSheet:
                          1,
                          len(model.quarter_index)-1,
                          "whole_dollar"
-        )
+                         )
         new.insert_single_sum(sum_base, "whole_dollar")
         # running total revenue
         new.bump_row()
@@ -383,13 +381,7 @@ class ExportSheet:
         new.insert_sum_col(1, len(model.quarter_index), "whole_dollar")
         new.bump_row()
 
-
-
-
-
-
-
-
+        return new
 
 
 def export(output_location, model_json):
@@ -417,4 +409,3 @@ def export(output_location, model_json):
                 ws.write_formula(cell.colrow, cell.formula, formats[cell.format])
             else:
                 ws.write(cell.row, cell.col, cell.formula, formats[cell.format])
-
