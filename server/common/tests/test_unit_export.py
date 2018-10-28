@@ -553,7 +553,7 @@ class TestSheet:
         assert sheet.references["[my_ref]"] == [6, 8, True, False]
 
     def test_translate_references(self):
-        formula = "=[a]+[b]"
+        formula = "[a]+[b]"
         references = {
             "[a]": [0, 0, True, True],
             "[b]": [1, 0, False, False],
@@ -570,8 +570,27 @@ class TestSheet:
         sheet.set_reference("b")
         sheet.current_row = 1
         sheet.current_col = 1
-        sheet.fill_formula("=[a]*[b]", 3, 5, "my_number")
+        sheet.fill_formula("[a]*[b]", 3, 5, "my_number")
         assert TestSheet.count_cells(sheet, row=1, col=1, formula="=A1*F11") == 1
         assert TestSheet.count_cells(sheet, row=2, col=2, formula="=A1*G12") == 1
         assert TestSheet.count_cells(sheet, row=3, col=5, formula="=A1*J13") == 1
         assert TestSheet.count_cells(sheet, format_name="my_number") == 15
+
+    def test_fill_formula_overwrite(self):
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet.set_reference("a", fixed_row=True, fixed_col=True)
+        sheet.current_row = 10
+        sheet.current_col = 5
+        sheet.set_reference("b")
+        sheet.current_row = 1
+        sheet.current_col = 1
+        sheet.fill_formula("[a]*[b]", 3, 5, "my_number")
+        sheet.current_row = 2
+        sheet.current_col = 2
+        sheet.fill_formula("[a]+[b]", 2, 2, "my_number", overwrite=True)
+        assert TestSheet.count_cells(sheet, row=1, col=1, formula="=A1*F11") == 1
+        assert TestSheet.count_cells(sheet, row=2, col=2, formula="=A1+F11") == 1
+        assert TestSheet.count_cells(sheet, row=3, col=3, formula="=A1+G12") == 1
+        assert TestSheet.count_cells(sheet, row=3, col=5, formula="=A1*J13") == 1
+        assert TestSheet.count_cells(sheet, format_name="my_number") == 15
+
