@@ -430,7 +430,7 @@ class ExportSheet:
         # running total revenue
         new.bump_row()
         new.set_reference("prev_running_rec_revenue")
-        new.insert_col(["Running QTD Revenue"])
+        new.insert_col(["Running Total Revenue"])
         new.fill_formula("[prev_running_rec_revenue]+[rec_revenue]", 1, model.num_quarters, "whole_dollar")
         # reset column and delete previous rec revenue from first cell
         new.current_col = 1
