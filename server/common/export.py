@@ -1,6 +1,7 @@
 import math
 import re
 import json
+from io import BytesIO
 
 import xlsxwriter
 
@@ -55,8 +56,9 @@ class Cell:
 
 
 class ExportVersion:
-    def __init__(self, name, period, display_selections, revenue_milestones,
+    def __init__(self, version_id, name, period, display_selections, revenue_milestones,
                  external_spend, headcount_effort, forecast_expenses):
+        self.id = version_id
         self.name = name
         self.period = period
         self.display_selections = display_selections
@@ -83,6 +85,7 @@ class ExportVersion:
         revenue_milestones = json_vals['revenueMilestones']
 
         return cls(
+            json_vals['versionID'],
             json_vals['versionName'],
             json_vals['versionPeriod'],
             display_selections,
@@ -95,7 +98,7 @@ class ExportVersion:
 
 class ExportModel:
     def __init__(self, model_name, start_year, end_year, program_names, program_fte_rates,
-                 quarter_index, num_quarters, versions):
+                 quarter_index, num_quarters, versions, active_version_id):
         self.model_name = model_name
         self.start_year = start_year
         self.end_year = end_year
@@ -104,10 +107,15 @@ class ExportModel:
         self.quarter_index = quarter_index
         self.num_quarters = num_quarters
         self.versions = versions
+        self.active_version_id = active_version_id
 
     @classmethod
     def from_json(cls, model_json: str):
         model = json.loads(model_json)
+        return cls.from_model(model)
+
+    @classmethod
+    def from_model(cls, model):
         model_name = model['modelName']
         start_year = int(model['startYear'])
         end_year = int(model['endYear'])
@@ -127,18 +135,24 @@ class ExportModel:
         versions.sort(key=lambda version: version.period)
 
         return cls(model_name, start_year, end_year, program_names, program_fte_rates,
-                   quarter_index, num_quarters, versions)
+                   quarter_index, num_quarters, versions, model['activeVersionID'])
 
 
 class ExportSheet:
-    def __init__(self, model):
+    def __init__(self, model, period):
         self.current_row = 0
         self.current_col = 0
+        self.is_active = False
         self.next_row = None
         self.cells = []
         self.quarter_totals = [self.label_from_quarter(quarter) for quarter in sorted(model.quarter_index.keys())]
         self.quarter_totals.append("Total")
         self.references = {}
+        self.period = period
+
+    @property
+    def name(self):
+        return self.label_from_quarter(self.period) + " period end"
 
     @property
     def colrow(self):
@@ -203,6 +217,10 @@ class ExportSheet:
         self.references['['+name+']'] = \
             [self.current_row + offset_row, self.current_col + offset_col, fixed_row, fixed_col]
 
+    def set_reference_position(self, name, fixed_row=False, fixed_col=False, row=0, col=0):
+        self.references['['+name+']'] = \
+            [row, col, fixed_row, fixed_col]
+
     def shift_reference(self, name, offset_row=0, offset_col=0):
         self.references['['+name+']'][0] = self.references['['+name+']'][0] + offset_row
         self.references['['+name+']'][1] = self.references['['+name+']'][1] + offset_col
@@ -253,15 +271,16 @@ class ExportSheet:
 
     @classmethod
     def from_version(cls, model, version, sheets):
-        new = cls(model)
+        new = cls(model, version.period)
+        new.is_active = (model.active_version_id == version.id)
 
         # Annual FTE Data
         new.insert_row(['Programs', 'Annual FTE Rate'], "bold")
         new.bump_row()
         new.set_reference('program_names', fixed_col=True)
         new.insert_col(model.program_names)
-        new.set_reference('fte', fixed_col=True)
-        new.insert_col(model.program_fte_rates)
+        new.set_reference('fte_rate', fixed_col=True)
+        new.insert_col(model.program_fte_rates, "whole_dollar")
 
         # Milestones
         new.bump_row(2)
@@ -269,16 +288,39 @@ class ExportSheet:
         new.bump_row()
         new.set_reference('milestone_name', fixed_col=True)
         new.insert_col([milestone['name'] for milestone in version.revenue_milestones])
-        new.set_reference('milestone_date', fixed_col=True)
+        new.set_reference('milestone_date_start', fixed_col=True, fixed_row=True)
+        new.set_reference('milestone_date_end', fixed_col=True, fixed_row=True,
+                          offset_row=len(version.revenue_milestones))
         new.insert_col([new.label_from_quarter(milestone['dateEarned']) for milestone in version.revenue_milestones])
-        new.set_reference('milestone_amount', fixed_col=True)
-        new.insert_col([milestone['amount'] for milestone in version.revenue_milestones])
+        new.set_reference('milestone_amount_start', fixed_col=True, fixed_row=True)
+        new.set_reference('milestone_amount_end', fixed_col=True, fixed_row=True,
+                          offset_row=len(version.revenue_milestones))
+        new.insert_col([milestone['amount'] for milestone in version.revenue_milestones], "whole_dollar")
+
+        # Running total revenue
+        new.bump_row(2)
+        new.set_reference('quarter_name', fixed_row=True, offset_col=1)
+        new.quarter_heading("Revenue Pool")
+        # remove the "Total" column, since we don't use it in this case:
+        del new.cells[-1]
+        new.bump_row()
+        new.set_reference("previous_revenue_pool")
+        new.insert_col(["At Period End"])
+        new.set_reference("revenue_pool")
+        formula = ("=[previous_revenue_pool]+SUMIF([milestone_date_start]:[milestone_date_end],"
+                   "[quarter_name],[milestone_amount_start]:[milestone_amount_end])")
+        new.fill_formula(formula, 1, model.num_quarters, "whole_dollar")
+        # reset to first cell and delete tally from formula
+        new.current_col = 1
+        new.fill_formula(
+            ("=SUMIF([milestone_date_start]:[milestone_date_end],[quarter_name],[milestone_amount_start]:"
+             "[milestone_amount_end])"), 1, 1, "whole_dollar", overwrite=True)
 
         # External Spend
         new.bump_row(2)
         new.quarter_heading("External Spend")
         new.bump_row()
-        new.set_reference('external_spend')
+        new.set_reference('external_spend', offset_col=1)
         for ix, program_name in enumerate(model.program_names):
             new.insert_col([program_name])
             sum_base = new.colrow
@@ -291,7 +333,7 @@ class ExportSheet:
         new.bump_row(2)
         new.quarter_heading("FTE Effort")
         new.bump_row()
-        new.set_reference('fte_effort')
+        new.set_reference('fte_effort', offset_col=1)
         for ix, program_name in enumerate(model.program_names):
             new.insert_col([program_name])
             sum_base = new.colrow
@@ -303,8 +345,9 @@ class ExportSheet:
         # FTE Spend - FTE effort * Annual amount (at top)
         new.bump_row(2)
         new.quarter_heading("FTE Spend")
-        new.set_reference('fte_spend')
+        new.bump_row()
         new.insert_col(model.program_names)
+        new.set_reference('fte_spend')
         new.fill_formula("([fte_effort]*[fte_rate])/4", len(model.program_names), len(model.quarter_index),
                          "whole_dollar")
         new.insert_sum_col(len(model.program_names), len(model.quarter_index), "whole_dollar")
@@ -314,19 +357,20 @@ class ExportSheet:
         # Total Spend in $
         new.bump_row(2)
         new.quarter_heading("Total Spend")
+        new.bump_row()
         new.insert_col(model.program_names)
         new.fill_formula("[external_spend]+[fte_spend]", len(model.program_names), len(model.quarter_index),
                          "whole_dollar")
         new.insert_sum_col(len(model.program_names), len(model.quarter_index), "whole_dollar")
         new.bump_row()
-        new.set_reference('total_spend_dollars')
+        new.set_reference('total_spend_dollars', offset_col=1)
+        new.set_reference('grand_total_spend_dollars', True, True, offset_col=1+model.num_quarters)
         new.insert_sum_row(
             len(model.program_names),
             1 + len(model.quarter_index),
             "whole_dollar",
             label="Total Development Costs ($)"
         )
-        new.set_reference('grand_total_spend_dollars', True, True, offset_col=-1)
 
         # Total Spend in percent
         new.bump_row()
@@ -353,59 +397,103 @@ class ExportSheet:
         # First, fill out as though this is the only sheet
         new.bump_row(2)
         new.quarter_heading("Revenue Recognized")
-        # Note that we can do a "forward reference" but we've got to keep track of rows to do this.
-        # don't forget the label in the offset
-        new.set_reference("revenue_pool", offset_row=3, offset_col=1)
-        new.set_reference("running_total_revenue", offset_row=1, offset_col=1)
-        # running OTD revenue line.  Two formulas and a sum
+        new.bump_row()
+        # running QTD revenue line
+        new.set_reference("prev_rec_revenue")
         new.insert_col(["Total QTD Revenue"])
-        new.set_reference("qtd_revenue")
+        new.set_reference("rec_revenue")  # used in following row
         sum_base = new.colrow
-        new.fill_formula("[total_development_percent]*[revenue_pool]", 1, 1, "whole_dollar")
-        new.fill_formula("([running_total_percent]*[revenue_pool])-[running_total_revenue]",
+        new.fill_formula("([running_total_percent]*[revenue_pool])-[prev_rec_revenue]",
                          1,
-                         len(model.quarter_index)-1,
+                         model.num_quarters,
                          "whole_dollar"
                          )
         new.insert_single_sum(sum_base, "whole_dollar")
+        # reset column and delete previous rec revenue from first cell
+        new.current_col = 1
+        new.fill_formula("([running_total_percent]*[revenue_pool])", 1, 1, "whole_dollar", overwrite=True)
+        if len(sheets) > 0:
+            # if there are previous sheets, then fill all quarters prior to this one with
+            # data from the previous sheet.
+            # NOTE: only one level deep is necessary.  Prior sheet references will happen recursively
+            last_sheet = sheets[-1]
+            # we make a reference that actually only makes sense in the previous quarter
+            last_sheet_ref = last_sheet.references['[rec_revenue]']
+            last_sheet_rev_row = last_sheet_ref[0]
+            last_sheet_rev_col = last_sheet_ref[1]
+            last_sheet_col_count = model.quarter_index[last_sheet.period]+1
+            new.set_reference_position("lastsheet_rec", row=last_sheet_rev_row, col=last_sheet_rev_col)
+            new.current_col = 1
+            new.fill_formula("'" + last_sheet.name + "'![lastsheet_rec]", 1,
+                             last_sheet_col_count, "whole_dollar", overwrite=True)
+
         # running total revenue
         new.bump_row()
+        new.set_reference("prev_running_rec_revenue")
         new.insert_col(["Running QTD Revenue"])
-        new.fill_formula("[running_total_percent]*[revenue_pool]", 1, len(model.quarter_index), "whole_dollar")
-        # revenue pool
-        new.bump_row(2)
-        new.insert_col(["Revenue Pool at Period End"])
-
-        new.fill_formula("([running_total_percent]*[revenue_pool])-[previous_recognized]",
-                         1, len(model.quarter_index), "whole_dollar")
-        new.insert_sum_col(1, len(model.quarter_index), "whole_dollar")
-        new.bump_row()
+        new.fill_formula("[prev_running_rec_revenue]+[rec_revenue]", 1, model.num_quarters, "whole_dollar")
+        # reset column and delete previous rec revenue from first cell
+        new.current_col = 1
+        new.fill_formula("[rec_revenue]", 1, 1, "whole_dollar", overwrite=True)
 
         return new
 
 
-def export(output_location, model_json):
-    model = ExportModel.from_json(model_json)
-    # can't use a for comprehension here because we use the accumulating sheets array to build the sheets
-    sheets = []
-    for version in model.versions:
-        sheet = ExportSheet.from_version(model, version, sheets)
-        sheets.append(sheet)
+class Exporter:
+    @staticmethod
+    def export(model_data):
+        model = ExportModel.from_model(model_data)
+        # can't use a for comprehension here because we use the accumulating sheets array to build the sheets
+        sheets = []
+        for version in model.versions:
+            sheet = ExportSheet.from_version(model, version, sheets)
+            sheets.append(sheet)
 
-    all_style_names = set()
-    for sheet in sheets:
-        all_style_names = all_style_names.union({cell.format for cell in sheet.cells})
+        all_style_names = set()
+        for sheet in sheets:
+            all_style_names = all_style_names.union({cell.format for cell in sheet.cells})
 
-    # ... set up styles
-    formats = {}
+        output = BytesIO()
+        workbook = xlsxwriter.Workbook(output)
+        workbook.calc_on_load = True
 
-    path = "/temp/blah.xlsx"
-    workbook = xlsxwriter.Workbook(path)
-
-    for sheet in sheets:
-        ws = workbook.add_worksheet()
-        for cell in sheet.cells:
-            if cell.formula.startswith('='):
-                ws.write_formula(cell.colrow, cell.formula, formats[cell.format])
+        # ... set up styles
+        formats = {}
+        for style_name in all_style_names:
+            if style_name == "bold":
+                f = workbook.add_format()
+                f.set_bold()
+                formats[style_name] = f
+            elif style_name == "whole_dollar":
+                f = workbook.add_format()
+                f.set_num_format("_(* #,##0_);_(* \(#,##0\);_(* \"-\"??_);_(@_)")
+                formats[style_name] = f
+            elif style_name == "decimal":
+                f = workbook.add_format()
+                f.set_num_format("0.00")
+                formats[style_name] = f
+            elif style_name == "percent":
+                f = workbook.add_format()
+                f.set_num_format("0.0%")
+                formats[style_name] = f
+            elif style_name == "":
+                f = workbook.add_format()
+                formats[style_name] = f
             else:
-                ws.write(cell.row, cell.col, cell.formula, formats[cell.format])
+                raise ValueError("Unknown style name: " + style_name)
+
+        for sheet in sheets:
+            ws = workbook.add_worksheet(sheet.name)
+            ws.set_column(1, 100, 11)
+            ws.set_column(0, 0, 35)
+            if sheet.is_active:
+                ws.activate()
+            for cell in sheet.cells:
+                print(cell.row, cell.col, cell.colrow, cell.formula)
+                if str(cell.formula).startswith('='):
+                    ws.write_formula(cell.colrow, cell.formula, formats[cell.format])
+                else:
+                    ws.write(cell.row, cell.col, cell.formula, formats[cell.format])
+
+        workbook.close()
+        return output.getvalue()

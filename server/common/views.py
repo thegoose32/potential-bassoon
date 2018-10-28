@@ -9,14 +9,17 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 
 from common.models import LRPModel
+from common.export import Exporter
 
 logger = logging.getLogger(__name__)
+
 
 def _serialize_lrp_model(lrp_model):
     return {
         'data': lrp_model.data,
         # add name + created on
     }
+
 
 @login_required
 def main(request):
@@ -47,6 +50,45 @@ def get_lrp_model(request):
     except LRPModel.DoesNotExist as e:
         logger.exception('User %s attempted to get lrp_model when there was none', user.pk)
         return HttpResponse(status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+@transaction.atomic
+def export_lrp_model(request):
+    user = request.user
+    try:
+        request_data = json.loads(request.body.decode('utf-8'))
+    except (UnicodeError, json.JSONDecodeError) as e:
+        logger.exception('User %s sent request with invalidly encoded json', user.pk)
+        return HttpResponse(status=400)
+
+    try:
+        lrp_model_data = request_data['data']
+        expected_version = lrp_model_data['version']
+    except KeyError as e:
+        logger.exception('Missing an expected keys from payload', user.pk)
+        return HttpResponse(status=400)
+
+    try:
+        latest_lrp_model = user.lrpmodel_set.latest('version')
+        actual_version = latest_lrp_model.version
+    except LRPModel.DoesNotExist as e:
+        actual_version = 0
+
+    if expected_version == actual_version:
+        lrp_model_data['version'] += 1
+
+        xlsbytes = Exporter.export(lrp_model_data)
+        response = HttpResponse(xlsbytes,
+                                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = 'attachment; filename=%s_Report.xlsx' % id
+        return response
+    else:
+        msg = 'User %s sent request with expected previous version %d, but actual was %d'
+        logger.error(msg, user.pk, expected_version, actual_version)
+        return HttpResponse(status=409)
 
 
 @login_required
