@@ -603,5 +603,5 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, 0, 0, "bold", "Programs") == 1
         assert TestSheet.count_cells(sheet, 1, 0, formula=model.program_names[0]) == 1
         assert TestSheet.count_cells(sheet, 1, 1, formula=model.program_fte_rates[0]) == 1
-        assert sheet.references['fte'][0] == 1
-        assert sheet.references['fte'][1] == 1
+        assert sheet.references['[fte_rate]'][0] == 1
+        assert sheet.references['[fte_rate]'][1] == 1
