@@ -428,7 +428,7 @@ class TestSheet:
         assert ExportSheet.label_from_quarter(1996.75) == "Q4 1996"
 
     def test_bump_row(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         assert sheet.current_col == 0
         sheet.current_col = 3
         sheet.current_row = 4
@@ -437,7 +437,7 @@ class TestSheet:
         assert sheet.current_col == 0
 
     def test_bump_row_with_next_row(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         assert sheet.current_col == 0
         sheet.current_col = 3
         sheet.current_row = 4
@@ -447,14 +447,14 @@ class TestSheet:
         assert sheet.current_col == 0
 
     def test_insert_row_basic(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         assert len(sheet.cells) == 0
         sheet.insert_row(["The Test"])
         assert TestSheet.count_cells(sheet, formula="The Test") == 1
         assert sheet.current_col == 1
 
     def test_insert_row_two_elements(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         assert len(sheet.cells) == 0
         sheet.insert_row(["The Test", "A Second Test"], "my_format")
         assert TestSheet.count_cells(sheet, col=0, format_name="my_format", formula="The Test") == 1
@@ -463,14 +463,14 @@ class TestSheet:
         assert sheet.current_row == 0
 
     def test_insert_col_basic(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         assert len(sheet.cells) == 0
         sheet.insert_col(["The Test"])
         assert TestSheet.count_cells(sheet, formula="The Test") == 1
         assert sheet.current_col == 1
 
     def test_insert_col_two_elements(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         assert len(sheet.cells) == 0
         sheet.insert_col(["The Test", "A Second Test"], "my_format")
         assert TestSheet.count_cells(sheet, row=0, format_name="my_format", formula="The Test") == 1
@@ -481,7 +481,7 @@ class TestSheet:
         assert sheet.current_row == 2
 
     def test_quarter_heading(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.quarter_heading("My Heading")
         assert TestSheet.count_cells(sheet, row=0, format_name="bold", formula="My Heading") == 1
         assert TestSheet.count_cells(sheet, row=0, format_name="bold", formula="Total") == 1
@@ -492,13 +492,13 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, row=1) == 0
 
     def test_insert_single_sum_row(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.insert_row([1, 2, 3])
         sheet.insert_single_sum("A1", "my_format")
         assert TestSheet.count_cells(sheet, formula="=SUM(A1:C1)") == 1
 
     def test_insert_single_sum_col(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.insert_row(["Heading"])
         sheet.bump_row()
         sheet.insert_col([1, 2, 3])
@@ -507,7 +507,7 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, formula="=SUM(A2:A4)") == 1
 
     def test_insert_sum_col(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.insert_row(["Col A", "Col B", "Col C", "Col D"])
         sheet.bump_row()
         sheet.insert_col([1, 2, 3])
@@ -522,7 +522,7 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, col=4) == 3
 
     def test_insert_sum_row(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.insert_row(["Label", "Col A", "Col B", "Col C", "Col D"])
         sheet.bump_row()
         sheet.insert_col(["Row A", "Row B", "Row C"])
@@ -540,14 +540,14 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, row=4) == 5
 
     def test_set_reference(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.current_row = 3
         sheet.current_col = 4
         sheet.set_reference("my_ref", fixed_row=True, fixed_col=False, offset_row=3, offset_col=4)
         assert sheet.references["[my_ref]"] == [6, 8, True, False]
 
     def test_shift_references(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.set_reference("my_ref", fixed_row=True, fixed_col=False, offset_row=3, offset_col=4)
         sheet.shift_reference("my_ref", 3, 4)
         assert sheet.references["[my_ref]"] == [6, 8, True, False]
@@ -563,7 +563,7 @@ class TestSheet:
         assert translated == "=A1+D4"
 
     def test_fill_formula(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.set_reference("a", fixed_row=True, fixed_col=True)
         sheet.current_row = 10
         sheet.current_col = 5
@@ -577,7 +577,7 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, format_name="my_number") == 15
 
     def test_fill_formula_overwrite(self):
-        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json))
+        sheet = ExportSheet(ExportModel.from_json(ExportTestFixtures.model_1_json), 0)
         sheet.set_reference("a", fixed_row=True, fixed_col=True)
         sheet.current_row = 10
         sheet.current_col = 5
@@ -594,3 +594,14 @@ class TestSheet:
         assert TestSheet.count_cells(sheet, row=3, col=5, formula="=A1*J13") == 1
         assert TestSheet.count_cells(sheet, format_name="my_number") == 15
 
+    def test_sheet_single_version(self):
+        sheets = []
+        model = ExportModel.from_json(ExportTestFixtures.model_1_json)
+        version = model.versions[0]
+
+        sheet = ExportSheet.from_version(model, version, sheets)
+        assert TestSheet.count_cells(sheet, 0, 0, "bold", "Programs") == 1
+        assert TestSheet.count_cells(sheet, 1, 0, formula=model.program_names[0]) == 1
+        assert TestSheet.count_cells(sheet, 1, 1, formula=model.program_fte_rates[0]) == 1
+        assert sheet.references['fte'][0] == 1
+        assert sheet.references['fte'][1] == 1

@@ -15,6 +15,7 @@ urlpatterns += staticfiles_urlpatterns()
 urlpatterns += [
     path('api/get_lrp_model', common.views.get_lrp_model),
     path('api/save_lrp_model', common.views.save_lrp_model),
+    path('api/export_lrp_model', common.views.save_lrp_model),
     path('test/', common.views.test),
     path('', common.views.main),
 ]
