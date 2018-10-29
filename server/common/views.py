@@ -54,6 +54,22 @@ def get_lrp_model(request):
 
 @login_required
 @csrf_exempt
+@require_http_methods(["GET"])
+def get_lrp_model_excel(request):
+    user = request.user
+    try:
+        latest_lrp_model = user.lrpmodel_set.latest('version')
+        xlsbytes = Exporter.export(latest_lrp_model.data)
+        response = HttpResponse(xlsbytes,
+                                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = 'attachment; filename=%s_Report.xlsx' % id
+        return response
+    except LRPModel.DoesNotExist as e:
+        logger.exception('User %s attempted to get lrp_model when there was none', user.pk)
+        return HttpResponse(status=400)
+
+@login_required
+@csrf_exempt
 @require_http_methods(["POST"])
 @transaction.atomic
 def export_lrp_model(request):
