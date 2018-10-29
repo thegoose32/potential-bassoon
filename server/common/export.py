@@ -383,9 +383,9 @@ class ExportSheet:
         new.set_reference('previous_period_total')
         new.insert_col(["Running Total Development Costs ($)"])
         new.set_reference('running_total_dollars')
-        new.fill_formula("[total_spend_dollars]", 1, 1, "whole_dollar")
-        new.fill_formula("[previous_period_total]+[total_spend_dollars]", 1, len(model.quarter_index) - 1,
-                         "whole_dollar")
+        new.fill_formula("[previous_period_total]+[total_spend_dollars]", 1, model.num_quarters, "whole_dollar")
+        new.current_col = 1
+        new.fill_formula("[total_spend_dollars]", 1, model.num_quarters, "whole_dollar", overwrite=True)
 
         # Running total percentage
         new.bump_row()
