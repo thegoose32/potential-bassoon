@@ -758,8 +758,8 @@ function SideNavigation(props) {
         </tr>
       </table>
       <hr></hr>
-      <a id="hidden-export-link" style="display: none;" href="/api/get_lrp_model_excel" download="model.xlsx"></a>
-      <a href="/api/get_lrp_model_excel" download="model.xlsx">Save &amp; Export</a>
+      <a id="hidden-export-link" style={{display: "none"}} href="/api/get_lrp_model_excel" download="model.xlsx"></a>
+      <a href="#" onClick={saveAndDownload}>Save &amp; Export</a>
     </div>
   )
 }
