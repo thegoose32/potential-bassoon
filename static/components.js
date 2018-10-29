@@ -456,7 +456,7 @@ export class PharmaRevRec extends React.Component {
   handleSaveClick() {
     const saveErrorMessage = "We were unable to save your changes.  We apologize " +
           "about the inconvenience."
-    fetch('/api/save_lrp_model', {
+    return fetch('/api/save_lrp_model', {
         method: 'POST',
         credentials: 'include',
         body: JSON.stringify({
@@ -470,11 +470,14 @@ export class PharmaRevRec extends React.Component {
         window.alert("It appears that this model was saved from another computer " +
             "since you last loaded your copy.  Unfortunately, this means we were " +
             "unable to save your changes.");
+        return Promise.reject();
       } else {
         window.alert(saveErrorMessage);
+        return Promise.reject();
       }
     }, () => {
         window.alert(saveErrorMessage);
+        return Promise.reject();
     });
   }
 
@@ -545,6 +548,7 @@ export class PharmaRevRec extends React.Component {
           setActiveVersionID={this.setActiveVersionID}
           csvLabel={csvLabel}
           csvData={csvData}
+          handleSaveClick={this.handleSaveClick}
         />
         <div id="content">
           <ModelSetup
@@ -714,7 +718,8 @@ function SideNavigation(props) {
     activeVersionID,
     setActiveVersionID,
     csvData,
-    csvLabel
+    csvLabel,
+    handleSaveClick
   } = props;
 
   let versionNames = versions.map((version) => {
@@ -722,6 +727,12 @@ function SideNavigation(props) {
   })
 
   let activeScenarioName = versions[activeVersionID].versionName;
+
+  const saveAndDownload = () => {
+    handleSaveClick().then(() => {
+      document.getElementById('hidden-export-link').click();
+    });
+  };
 
   return(
     <div id="sidebar">
@@ -747,7 +758,8 @@ function SideNavigation(props) {
         </tr>
       </table>
       <hr></hr>
-      <a href="/api/get_lrp_model_excel" download="model.xlsx">Export Data</a>
+      <a id="hidden-export-link" style={{display: "none"}} href="/api/get_lrp_model_excel" download="model.xlsx"></a>
+      <a href="#" onClick={saveAndDownload}>Save &amp; Export</a>
     </div>
   )
 }

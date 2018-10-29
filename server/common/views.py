@@ -62,11 +62,12 @@ def get_lrp_model_excel(request):
         xlsbytes = Exporter.export(latest_lrp_model.data)
         response = HttpResponse(xlsbytes,
                                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        response['Content-Disposition'] = 'attachment; filename=%s_Report.xlsx' % id
+        response['Content-Disposition'] = 'attachment; filename=RevRecModel_%s.xlsx' % latest_lrp_model.pk
         return response
     except LRPModel.DoesNotExist as e:
         logger.exception('User %s attempted to get lrp_model when there was none', user.pk)
         return HttpResponse(status=400)
+
 
 @login_required
 @csrf_exempt
