@@ -214,7 +214,7 @@ export class PharmaRevRec extends React.Component {
 
   addProgram() {
     let startYear = this.state.startYear;
-    let yearsOut = this.state.yearsOut;
+    let yearsOut = this.state.endYear - startYear + 1;
  
     this.setState((prevState, props) => {
       let programArray = prevState.programs;
