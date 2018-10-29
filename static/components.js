@@ -747,12 +747,7 @@ function SideNavigation(props) {
         </tr>
       </table>
       <hr></hr>
-      <CSVLink
-        filename={"Rev-rec-model.csv"}
-        data={csvData}
-        headers={csvLabel}
-      > Export Data
-      </CSVLink>
+      <a href="/api/get_lrp_model_excel" download="model.xlsx">Export Data</a>
     </div>
   )
 }
