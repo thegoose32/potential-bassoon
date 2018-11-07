@@ -2413,14 +2413,21 @@ class RevenueProjections extends React.Component {
     super(props)
     this.state = {
       copyExpMultiplier: 100,
+      forecastPeriod: 2018.5
     }
 
     this.setCopyExpMultiplier = this.setCopyExpMultiplier.bind(this);
+    this.setForecastPeriod = this.setForecastPeriod.bind(this);
   }
 
   setCopyExpMultiplier(newMultiplier) {
     let newExpMultiplier = newMultiplier;
     this.setState({copyExpMultiplier: newExpMultiplier});
+  }
+
+  setForecastPeriod(newPeriod) {
+    let newSelectedPeriod = periodStringToNumber(newPeriod);
+    this.setState({forecastPeriod: newSelectedPeriod});
   }
 
   render() {
@@ -2469,7 +2476,7 @@ class RevenueProjections extends React.Component {
       return(
         <React.Fragment>
           <tr>
-            <td>{program.name}</td>
+            <td>{program.name} costs</td>
             <td className="numerical">
               <NumberFormat
                 displayType="text"
@@ -2511,6 +2518,9 @@ class RevenueProjections extends React.Component {
     })
 
     let fcstExpArray = calculatePeriodTotal(keepCloning(curVersion.forecastExpenses));
+
+    let periodSelections = periodLabels(versionPeriod, yearsOut)
+    let fcstPeriodLabel = periodNumberToString(this.state.forecastPeriod) 
 
     let totalRevenue = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, curVersion.revenueMilestones, programs);
     let revenueThruPeriod = arrayTotal(totalRevenue.filter(period => period.period < versionPeriod));
@@ -2566,7 +2576,7 @@ class RevenueProjections extends React.Component {
         <table>
           <tbody>
             <tr>
-              <td>Reset Expenses at a multiple of X%</td>
+              <td>Reset costs at a multiple of X%</td>
               <td>
                 <NumberFormat
                   value={this.state.copyExpMultiplier}
@@ -2580,13 +2590,25 @@ class RevenueProjections extends React.Component {
                 <button onClick={(e) => this.props.setFcstExpMultiplier(this.state.copyExpMultiplier, programs)}>Copy</button>
               </td>
             </tr>
+            <tr>
+              <td>Revenue as of</td>
+              <td>
+                <select
+                  value={fcstPeriodLabel}
+                  onChange={(e) => this.setForecastPeriod(e.target.value)}
+                >
+                  <Dropdown options={periodSelections}/>
+                </select>
+              </td>
+              <td></td>
+            </tr>
           </tbody>
         </table>
         <br></br>
         <table>
           <thead>
             <tr>
-              <th>Program</th>
+              <th>Program costs</th>
               <th>Incurred thru {periodNumberToString(versionPeriod - 0.25)}</th>
               {tableHeaders}
               <th>Total</th>
