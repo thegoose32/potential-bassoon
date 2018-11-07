@@ -31,6 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'app.intheblksoftware.com',
+    'revrec-staging.herokuapp.com',
     '127.0.0.1',
 ]
 
