@@ -72,12 +72,13 @@ class ExportVersion:
         # this internal routine is used to convert a list in the form [{period, value}, ...] to [value, ...] where
         # the period is the index.  The latter is way simpler to use.  Brute force; allocate an empty list, then set
         # the values in it.
-        def value_map_to_list(value_map_lists):
+        def value_map_to_list(value_map_lists, default_value=None):
             by_program_by_quarter = []
             for value_map_list in value_map_lists:
-                value_list = [None] * num_quarters
+                value_list = [default_value] * num_quarters
                 for value_map in value_map_list:
-                    value_list[quarter_index[value_map['period']]] = value_map['amount']
+                    if 'period' in value_map and value_map['period'] in quarter_index:
+                        value_list[quarter_index[value_map['period']]] = value_map['amount']
                 by_program_by_quarter.append(value_list)
             return by_program_by_quarter
 
@@ -90,9 +91,9 @@ class ExportVersion:
             json_vals['versionPeriod'],
             display_selections,
             revenue_milestones,
-            value_map_to_list(json_vals['externalSpend']),
-            value_map_to_list(json_vals['headcountEffort']),
-            value_map_to_list(json_vals['forecastExpenses'])
+            value_map_to_list(json_vals['externalSpend'], default_value=0),
+            value_map_to_list(json_vals['headcountEffort'], default_value=0),
+            value_map_to_list(json_vals['forecastExpenses'], default_value=0)
         )
 
 
