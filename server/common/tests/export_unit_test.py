@@ -1,6 +1,5 @@
 from common.export import Cell, ExportModel, ExportSheet
 
-
 class TestCell:
     def test_decode_colrow_a1(self):
         assert Cell.decode_colrow('A1') == (0, 0)
@@ -25,6 +24,13 @@ class TestCell:
         assert c.col == 107
         assert c.formula == "C1+C2"
         assert c.colrow == "DD3"
+
+    def test_creation_3(self):
+        c = Cell.from_colrow("AA10", "C1+C2")
+        assert c.row == 9
+        assert c.col == 26
+        assert c.formula == "C1+C2"
+        assert c.colrow == "AA10"
 
 
 class ExportTestFixtures:

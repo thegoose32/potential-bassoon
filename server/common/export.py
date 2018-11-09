@@ -1,6 +1,7 @@
 import math
 import re
 import json
+import string
 from io import BytesIO
 
 import xlsxwriter
@@ -40,19 +41,25 @@ class Cell:
         return row-1, col-1
 
     @staticmethod
+    def divmod_excel(n):
+        a, b = divmod(n, 26)
+        if b == 0:
+            return a - 1, b + 26
+        return a, b
+
+    @staticmethod
+    def to_excel(num):
+        chars = []
+        while num > 0:
+            num, d = Cell.divmod_excel(num)
+            chars.append(string.ascii_uppercase[d - 1])
+        return ''.join(reversed(chars))
+
+    @staticmethod
     def encode_colrow(row, col):
         if row is None or col is None:
             return None
-
-        letter_accum = ""
-        col_accum = col+1
-
-        while True:
-            letter_accum = chr(col_accum % 26 + 64) + letter_accum
-            col_accum = int(col_accum / 26)
-            if col_accum == 0:
-                break
-        return letter_accum + str(1 + row)
+        return Cell.to_excel(1 + col) + str(1 + row)
 
 
 class ExportVersion:
@@ -490,7 +497,6 @@ class Exporter:
             if sheet.is_active:
                 ws.activate()
             for cell in sheet.cells:
-                print(cell.row, cell.col, cell.colrow, cell.formula)
                 if str(cell.formula).startswith('='):
                     ws.write_formula(cell.colrow, cell.formula, formats[cell.format])
                 else:
