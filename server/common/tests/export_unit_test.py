@@ -28,7 +28,7 @@ class TestCell:
     def test_creation_3(self):
         c = Cell.from_colrow("AA10", "C1+C2")
         assert c.row == 9
-        assert c.col == 27
+        assert c.col == 26
         assert c.formula == "C1+C2"
         assert c.colrow == "AA10"
 
