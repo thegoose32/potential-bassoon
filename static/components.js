@@ -48,6 +48,7 @@ export class PharmaRevRec extends React.Component {
     this.setStartYear = this.setStartYear.bind(this);
     this.setEndYear = this.setEndYear.bind(this);
     this.setYearsOut = this.setYearsOut.bind(this);
+    this.clearPeriods = this.clearPeriods.bind(this);
 
     //Years Display
     this.setDisplayType = this.setDisplayType.bind(this);
@@ -200,6 +201,34 @@ export class PharmaRevRec extends React.Component {
   setYearsOut(startYear, yearsOut) {
     let newYearsOut = Number(yearsOut); 
     this.setState(setYearsOut(startYear, yearsOut))
+  }
+
+  clearPeriods(startYear, endYear) {
+    this.setState(function(prevState, props) {
+      let endYearPeriod = endYear + 1;
+      let versions = prevState.versions
+      let newVersions = versions.map((version) => {
+        let newExtSpend = version.externalSpend.map((progExtSpend) => {
+          let newProgExtSpend = progExtSpend.filter(period => period.period >= startYear && endYearPeriod > period.period);
+          return newProgExtSpend;
+        });
+        let newHCEffort = version.headcountEffort.map((progHCEffort) => {
+          let newProgHCEffort = progHCEffort.filter(period => period.period >= startYear && endYearPeriod > period.period);
+          return newProgHCEffort;
+        });
+        let newFcstExp = version.forecastExpenses.map((progFcstExp) => {
+          let newProgFcstExp = progFcstExp.filter(period => period.period >= startYear && endYearPeriod > period.period);
+          return newProgFcstExp;
+        });
+        version.externalSpend = newExtSpend;
+        version.headcountEffort = newHCEffort;
+        version.forecastExpenses = newFcstExp;
+        return version;
+      })
+      return {
+        versions: newVersions
+      }
+    })
   }
 
   setDisplayType(display, displayIndex) {
@@ -560,6 +589,7 @@ export class PharmaRevRec extends React.Component {
             yearsOut={yearsOut}
             endYear={endYear}
             setEndYear={this.setEndYear}
+            clearPeriods={this.clearPeriods}
           />
           <VersionManager
             versions={this.state.versions}
@@ -791,6 +821,7 @@ class ModelSetup extends React.Component {
     this.props.setStartYear(this.state.startYear);
     this.props.setEndYear(this.state.endYear);
     this.props.setYearsOut(this.state.startYear, this.state.endYear - this.state.startYear + 1)
+    this.props.clearPeriods(this.state.startYear, this.state.endYear);
   }
 
   render() {
