@@ -497,7 +497,6 @@ class Exporter:
             if sheet.is_active:
                 ws.activate()
             for cell in sheet.cells:
-                print(cell.row, cell.col, cell.colrow, cell.formula)
                 if str(cell.formula).startswith('='):
                     ws.write_formula(cell.colrow, cell.formula, formats[cell.format])
                 else:
