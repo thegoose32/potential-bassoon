@@ -2537,7 +2537,7 @@ class RevenueProjections extends React.Component {
     let quarterLabels = periodLabels(versionPeriod, 1 - (versionPeriod % 1));
     let periodHeaders = forecastDisplaySelections.map((selection, selectionIndex) => {
       if (selection.type === "Annual" && selection.year > versionPeriod) {
-        quarterLabels.push("FY " + (Math.floor(versionPeriod) + selectionIndex));
+        quarterLabels.push("FY " + (Math.floor(versionPeriod) + (selection.year - versionPeriod)));
       }
     })
     let tableHeaders = quarterLabels.map((label) => {
