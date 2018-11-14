@@ -689,6 +689,14 @@ export class PharmaRevRec extends React.Component {
             versions={versions}
             activeVersionID={activeVersionID}
           />
+          <MaterialityCalc
+            startYear={startYear}
+            yearsOut={yearsOut}
+            programs={programs}
+            versions={versions}
+            activeVersionID={activeVersionID}
+            revenueMilestones={revenueMilestones}
+          />
           <PeriodBridge
             startYear={startYear}
             yearsOut={yearsOut}
@@ -1898,6 +1906,166 @@ function DeferredRevenueRoll (props) {
       </table>
     </section>
   )
+}
+
+class MaterialityCalc extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      materialityAmnt: 0,
+      materialityTotal: 0,
+      materialityProg: 0,
+      materialityTotalProg: 0
+    }
+
+    this.setMaterialityAmnt = this.setMaterialityAmnt.bind(this);
+    this.setMaterialityTotal = this.setMaterialityTotal.bind(this);
+  }
+ 
+  setMaterialityAmnt(newAmount) {
+    let newMaterialityAmnt = Number(newAmount);
+    this.setState({materialityAmnt: newMaterialityAmnt})
+  }
+ 
+  setMaterialityTotal(newAmount) {
+    let newMaterialityTotal = Number(newAmount);
+    this.setState({materialityTotal: newMaterialityTotal})
+  }
+
+  setMaterialityProg(newProg) {
+    let newProgIndex = this.props.programs.findIndex(x => x.name === newProg);
+    this.setState({materialityProg: newProgIndex})
+  }
+
+  setMaterialityTotalProg(newProg) {
+    let newProgIndex = this.props.programs.findIndex(x => x.name === newProg);
+    this.setState({materialityTotalProg: newProgIndex})
+  }
+
+  render() {
+    let programs = this.props.programs;
+    let startYear = this.props.startYear;
+    let yearsOut = this.props.yearsOut;
+    let versions = this.props.versions;
+    let activeVersionID = this.props.activeVersionID;
+    let revenueMilestones = this.props.revenueMilestones;
+
+    let programNames = programs.map((prog) => {
+      return prog.name
+    })
+
+    let verCopyActExp = keepCloning(versions);
+    let curVerActExpCopy = verCopyActExp[activeVersionID];
+    let currentPeriodIndex = curVerActExpCopy.externalSpend[0].findIndex(x => x.period === curVerActExpCopy.versionPeriod);
+    let originalActualExp = versions[activeVersionID].externalSpend[this.state.materialityProg][currentPeriodIndex].amount;
+    curVerActExpCopy.externalSpend[this.state.materialityProg][currentPeriodIndex].amount = originalActualExp + this.state.materialityAmnt;
+
+    let actualRevenue = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs) 
+    let adjActExpRevenue = calculateTotalRevenue(startYear, yearsOut, verCopyActExp, activeVersionID, revenueMilestones, programs); 
+    let revDiffActExp = adjActExpRevenue[currentPeriodIndex].amount - actualRevenue[currentPeriodIndex].amount; 
+
+    let verCopyBdgtExp = keepCloning(versions);
+    let curVerBdgtExpCopy = verCopyBdgtExp[activeVersionID];
+    //TODO need to chnage below bug for check if period is last period in array//
+    let lastPeriodIndex = currentPeriodIndex + 1;
+    let originalBdgtExp = versions[activeVersionID].externalSpend[this.state.materialityTotalProg][lastPeriodIndex].amount;
+    curVerBdgtExpCopy.externalSpend[this.state.materialityTotalProg][lastPeriodIndex].amount = originalBdgtExp + this.state.materialityTotal;
+    
+    let adjBdgtExpRevenue = calculateTotalRevenue(startYear, yearsOut, verCopyBdgtExp, activeVersionID, revenueMilestones, programs); 
+    let revDiffBdgtExp = adjBdgtExpRevenue[currentPeriodIndex].amount - actualRevenue[currentPeriodIndex].amount; 
+
+    return (
+      <section id="Materiality-Calculation">
+        <h2>Materiality Calculator</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Actual Expenses</th>
+              <th>Selection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Program</td>
+              <td>
+                <select
+                  value={programs[this.state.materialityProg].name}
+                  onChange={(e) => this.setMaterialityProg(e.target.value)}
+                >
+                  <Dropdown options={programNames}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Actual Expense Change</td>
+              <td>
+                <NumberFormat
+                  value={this.state.materialityAmnt}
+                  className="numerical"
+                  onValueChange={(values, e) => this.setMaterialityAmnt(Number(values.value))}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Revenue impact</td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(revDiffActExp,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th>Budgeted Expenses</th>
+              <th>Selection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Program</td>
+              <td>
+                <select
+                  value={programs[this.state.materialityProg].name}
+                  onChange={(e) => this.setMaterialityTotalProg(e.target.value)}
+                >
+                  <Dropdown options={programNames}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Budgeted Expense Change</td>
+              <td>
+                <NumberFormat
+                  value={this.state.materialityTotal}
+                  className="numerical"
+                  onValueChange={(values, e) => this.setMaterialityTotal(Number(values.value))}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Revenue impact</td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(revDiffBdgtExp,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </section>
+    )
+  }
 }
 
 class PeriodBridge extends React.Component {
