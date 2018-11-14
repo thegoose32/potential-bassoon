@@ -1882,8 +1882,9 @@ class MaterialityCalc extends React.Component {
     super(props)
     this.state = {
       materialityAmnt: 0,
-      materialityTotal: 1000,
-      materialityProg: 0
+      materialityTotal: 0,
+      materialityProg: 0,
+      materialityTotalProg: 0
     }
 
     this.setMaterialityAmnt = this.setMaterialityAmnt.bind(this);
@@ -1905,6 +1906,11 @@ class MaterialityCalc extends React.Component {
     this.setState({materialityProg: newProgIndex})
   }
 
+  setMaterialityTotalProg(newProg) {
+    let newProgIndex = this.props.programs.findIndex(x => x.name === newProg);
+    this.setState({materialityTotalProg: newProgIndex})
+  }
+
   render() {
     let programs = this.props.programs;
     let startYear = this.props.startYear;
@@ -1917,22 +1923,33 @@ class MaterialityCalc extends React.Component {
       return prog.name
     })
 
-    let versionsCopy = keepCloning(versions);
-    let currentVersionCopy = versionsCopy[activeVersionID];
-    let currentPeriodIndex = currentVersionCopy.externalSpend[0].findIndex(x => x.period === currentVersionCopy.versionPeriod);
-    currentVersionCopy.externalSpend[this.state.materialityProg][currentPeriodIndex].amount += this.state.materialityAmnt;
+    let verCopyActExp = keepCloning(versions);
+    let curVerActExpCopy = verCopyActExp[activeVersionID];
+    let currentPeriodIndex = curVerActExpCopy.externalSpend[0].findIndex(x => x.period === curVerActExpCopy.versionPeriod);
+    let originalActualExp = versions[activeVersionID].externalSpend[this.state.materialityProg][currentPeriodIndex].amount;
+    curVerActExpCopy.externalSpend[this.state.materialityProg][currentPeriodIndex].amount = originalActualExp + this.state.materialityAmnt;
 
     let actualRevenue = calculateTotalRevenue(startYear, yearsOut, versions, activeVersionID, revenueMilestones, programs) 
-    let adjustedRevenue = calculateTotalRevenue(startYear, yearsOut, versionsCopy, activeVersionID, revenueMilestones, programs); 
-    let revDiff = actualRevenue[currentPeriodIndex].amount - adjustedRevenue[currentPeriodIndex].amount; 
+    let adjActExpRevenue = calculateTotalRevenue(startYear, yearsOut, verCopyActExp, activeVersionID, revenueMilestones, programs); 
+    let revDiffActExp = adjActExpRevenue[currentPeriodIndex].amount - actualRevenue[currentPeriodIndex].amount; 
+
+    let verCopyBdgtExp = keepCloning(versions);
+    let curVerBdgtExpCopy = verCopyBdgtExp[activeVersionID];
+    //TODO need to chnage below bug for check if period is last period in array//
+    let lastPeriodIndex = currentPeriodIndex + 1;
+    let originalBdgtExp = versions[activeVersionID].externalSpend[this.state.materialityTotalProg][lastPeriodIndex].amount;
+    curVerBdgtExpCopy.externalSpend[this.state.materialityTotalProg][lastPeriodIndex].amount = originalBdgtExp + this.state.materialityTotal;
     
+    let adjBdgtExpRevenue = calculateTotalRevenue(startYear, yearsOut, verCopyBdgtExp, activeVersionID, revenueMilestones, programs); 
+    let revDiffBdgtExp = adjBdgtExpRevenue[currentPeriodIndex].amount - actualRevenue[currentPeriodIndex].amount; 
+
     return (
       <section id="Materiality-Calculation">
         <h2>Materiality Calculator</h2>
         <table>
           <thead>
             <tr>
-              <th>Item</th>
+              <th>Actual Expenses</th>
               <th>Selection</th>
             </tr>
           </thead>
@@ -1949,7 +1966,7 @@ class MaterialityCalc extends React.Component {
               </td>
             </tr>
             <tr>
-              <td>Additional Expense</td>
+              <td>Actual Expense Change</td>
               <td>
                 <NumberFormat
                   value={this.state.materialityAmnt}
@@ -1964,11 +1981,55 @@ class MaterialityCalc extends React.Component {
               <td className="numerical">
                 <NumberFormat
                   displayType="text"
-                  value={rounding(revDiff,1)}
+                  value={rounding(revDiffActExp,1)}
                   thousandSeparator={true}
                 />
               </td>
             </tr>
+          </tbody>
+        </table>
+        <br></br>
+        <table>
+          <thead>
+            <tr>
+              <th>Budgeted Expenses</th>
+              <th>Selection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Program</td>
+              <td>
+                <select
+                  value={programs[this.state.materialityProg].name}
+                  onChange={(e) => this.setMaterialityTotalProg(e.target.value)}
+                >
+                  <Dropdown options={programNames}/>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Budgeted Expense Change</td>
+              <td>
+                <NumberFormat
+                  value={this.state.materialityTotal}
+                  className="numerical"
+                  onValueChange={(values, e) => this.setMaterialityTotal(Number(values.value))}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Revenue impact</td>
+              <td className="numerical">
+                <NumberFormat
+                  displayType="text"
+                  value={rounding(revDiffBdgtExp,1)}
+                  thousandSeparator={true}
+                />
+              </td>
+            </tr>
+
           </tbody>
         </table>
       </section>
