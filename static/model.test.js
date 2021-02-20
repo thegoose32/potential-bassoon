@@ -1280,13 +1280,13 @@ test("incurredSpendVariance", () => {
   const versions = revenueBridgeModel.versions;
   const activeVersionID = revenueBridgeModel.activeVersionID;
   const compVersionIndex = 0;
-  const curPeriod = 2018; 
-  const selectedCompPeriod = 2018;
+  const curPeriod = 2018.25; 
+  const selectedCompPeriod = 2018.25;
   const programs = revenueBridgeModel.programs;
   const programIndex = 1;
   const periodType = "QTD"
   const actual = model.incurredSpendVariance(versions, activeVersionID, compVersionIndex, curPeriod, selectedCompPeriod, programs, programIndex, periodType);
-  const expected = -25;
+  const expected = 25;
   expect(actual).toEqual(expected);
 })
 
@@ -1335,7 +1335,7 @@ test("totalVarPercComplete", () => {
   const programIndex = 1;
   const selectedPeriodType = "QTD"
   const actual = model.totalVarPercComplete(versions, activeVersionID, compVersionIndex, programs, programIndex, selectedPeriod, selectedPeriodType)
-  const expected = -0.08928571428571429;
+  const expected = -0.17857142857142858;
   expect(actual).toEqual(expected);
 })
 
@@ -1356,7 +1356,7 @@ test("incurredTotalSpend", () => {
   const versions = revenueBridgeModel.versions;
   const curVer = 1; 
   const programs = revenueBridgeModel.programs;
-  const programIndex = 1;
+  const programIndex = 0;
   const selectedPeriod = 2018.25;
   const selectedPeriodType = "QTD";
   const actual = model.incurredTotalSpend(versions, curVer, programs, programIndex, selectedPeriod, selectedPeriodType);
@@ -1466,13 +1466,10 @@ test("calculateCurrentPeriodRev - scenario 2", () => {
   ];
   const programs = revenueBridgeModel.programs;
   const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
-  const expected = [
-    {period: 2018.0, revVerIndex: 0, amount: 0},
-    {period: 2018.25, revVerIndex: 1, amount: 0},
-    {period: 2018.5, revVerIndex: 1, amount: 400},
-    {period: 2018.75, revVerIndex: 1, amount: 275},
-  ];
-  expect(actual).toEqual(expected);
+  const expectedPeriodThreeAmount = 400;
+  const expectedPeriodFourAmount = 275;
+  expect(actual[2].amount).toBeCloseTo(expectedPeriodThreeAmount, 1);
+  expect(actual[3].amount).toBeCloseTo(expectedPeriodFourAmount, 1);
 })
 
 test("calculatePriorPrdTrueup - scenario 2", () => {
@@ -1519,13 +1516,14 @@ test("calculateCurrentPeriodRev - scenario 3", () => {
   ];
   const programs = revenueBridgeModel.programs;
   const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
-  const expected = [
-    {period: 2018.0, revVerIndex: 0, amount: 250},
-    {period: 2018.25, revVerIndex: 1, amount: 175},
-    {period: 2018.5, revVerIndex: 1, amount: 400},
-    {period: 2018.75, revVerIndex: 1, amount: 275},
-  ];
-  expect(actual).toEqual(expected);
+  const expectedPeriodZero = 250;
+  const expectedPeriodOne = 175;
+  const expectedPeriodTwo = 400;
+  const expectedPeriodThree = 275;
+  expect(actual[0].amount).toBeCloseTo(expectedPeriodZero, 1);
+  expect(actual[1].amount).toBeCloseTo(expectedPeriodOne, 1);
+  expect(actual[2].amount).toBeCloseTo(expectedPeriodTwo, 1);
+  expect(actual[3].amount).toBeCloseTo(expectedPeriodThree, 1);
 })
 
 test("calculatePriorPrdTrueup - scenario 3", () => {
@@ -1572,13 +1570,14 @@ test("calculateCurrentPeriodRev - scenario 4", () => {
   ];
   const programs = revenueBridgeModel.programs;
   const actual = model.calculateCurrentPeriodRev(milestone, revArray, versions, programs);
-  const expected = [
-    {period: 2018.0, revVerIndex: 0, amount: 250},
-    {period: 2018.25, revVerIndex: 1, amount: 175},
-    {period: 2018.5, revVerIndex: 2, amount: 375},
-    {period: 2018.75, revVerIndex: 2, amount: 218.75},
-  ];
-  expect(actual).toEqual(expected);
+  const expectedPeriodZero = 0;
+  const expectedPeriodOne = 175;
+  const expectedPeriodTwo = 375;
+  const expectedPeriodThree = 218.75;
+  expect(actual[0].amount).toBeCloseTo(expectedPeriodZero, 1);
+  expect(actual[1].amount).toBeCloseTo(expectedPeriodOne, 1);
+  expect(actual[2].amount).toBeCloseTo(expectedPeriodTwo, 1);
+  expect(actual[3].amount).toBeCloseTo(expectedPeriodThree, 1);
 })
 
 test("calculatePriorPrdTrueup - scenario 4", () => {
